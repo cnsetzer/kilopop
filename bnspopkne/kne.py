@@ -1216,13 +1216,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             self.param9[ind] = kappa
 
 
-
-
-
-
-
-
-
 def compute_ye_at_arbitrary_angle(self, angle):
     """
     Fit function that determines the average electron fraction of the
