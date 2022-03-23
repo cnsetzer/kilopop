@@ -1,28 +1,19 @@
-__all__ = ["transient_distribution"]
-import os
-import re
-import sys
 import warnings
 from copy import deepcopy
 import numpy as np
-from scipy.interpolate import interp1d
-from pandas import read_csv
 from astropy.constants import c as speed_of_light_ms
+import astropy.units as units
 from astropy.time import Time
-from sncosmo import TimeSeriesSource, Model, zdist, read_griddata_ascii
-from .observation_utils import bandflux
-from astropy.cosmology import Planck15 as cosmos
+from sncosmo import TimeSeriesSource, Model, read_griddata_ascii
+from astropy.cosmology import Planck18 as cosmos
+from astropy.cosmology import z_at_value
 from sfdmap import SFDMap as sfd
 from extinction import fitzpatrick99 as F99
 from extinction import apply
 from .macronovae_wrapper import make_rosswog_seds as mw
-from pycbc.waveform import get_td_waveform
 
 warnings.filterwarnings("ignore", message="ERFA function")
-# import warnings
-#
-# warnings.filterwarnings("ignore", message="numpy.dtype size changed")
-# warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 # Set global module constants.
 speed_of_light_kms = speed_of_light_ms.to("km/s").value  # Convert m/s to km/s
 # Initialze sfdmap for dust corrections
@@ -31,12 +22,13 @@ sfdmap = sfd()
 
 class kilonova(em_transient, compact_binary_inspiral):
     """
-    Base class for kilonova transients, group relevant class methods.
+    Base class for kilonova transients, groups relevant class methods and attributes.
     """
 
     def __init__(self):
         self.type = "kne"
-        super().__init__()
+        em_transient.__init__(self)
+        compact_binary_inspiral.__init__(self)
 
 
 class em_transient(object):
@@ -49,8 +41,6 @@ class em_transient(object):
     """
 
     def __init__(self):
-
-        # self.extend_sed_waves()
         source = TimeSeriesSource(self.phase, self.wave, self.flux)
         self.model = deepcopy(Model(source=source))
         # Use deepcopy to make sure full class is saved as attribute of new class
@@ -59,7 +49,9 @@ class em_transient(object):
         self.wave = None
         self.flux = None
 
-    def put_in_universe(self, id, t, ra, dec, z, cosmo=cosmos, r_v=3.1, pec_vel=None, peak=True, sim_gw=True):
+    def put_in_universe(
+        self, t, ra, dec, z, pec_vel=None, dl=None, cosmo=cosmos, r_v=3.1, id=None,
+    ):
         """
         Function to take transient instance and 'place' it into the simulated
         Universe. It sets spacetime location, ra, dec, t0, redshift, etc.
@@ -68,29 +60,35 @@ class em_transient(object):
         -----------------
 
         """
-        self.id = int(id)
+        if id is None:
+            self.id = np.random.randint(0, high=2 ** 31)
+        else:
+            self.id = int(id)
         self.t0 = t
         t_1 = Time(t, format="mjd")
         t_1.format = "gps"
         self.t0_gps = t_1.value
         self.ra = ra
         self.dec = dec
-        self.z = z
-        self.dist_mpc = cosmo.luminosity_distance(z).value
+        if z and not dl:
+            self.z = z
+            self.dist_mpc = cosmo.luminosity_distance(z).value
+        elif dl and not z:
+            self.dist_mpc = dl
+            self.z = z_at_value(cosmo.luminosity_distance, dl * units.Mpc).value
+        elif z and dl:
+            self.dist_mpc = dl
+            self.z = z
+        else:
+            raise ValueError
+
+        self.dist_pc = self.dist_mpc * 1000000.0
         self.peculiar_velocity(pec_vel)
-        self.redshift(cosmo)
+        self.redshift()
         self.tmax = t + self.model.maxtime()
-
-        if "has_gw" in self.__dict__.keys() and sim_gw is True:
-            self.simulate_inspiral_merger()
-
         self.extinct_model(r_v=3.1)
 
-        if peak is True:
-            self.save_peaks(cosmo)
-        return self
-
-    def redshift(self, cosmo):
+    def redshift(self):
         """
         Wrapper function to redshift the spectrum of the transient instance,
         and scale the flux according to the luminosity distance.
@@ -108,23 +106,26 @@ class em_transient(object):
         self.model.set(z=self.obs_z)
         # Note that it is necessary to scale the amplitude relative to the 10pc
         # (i.e. 10^2 in the following eqn.) placement of the SED currently
-        #lumdist = self.dist_mpc * 1e6  # in pc
-        #amp = np.power(10.0 / lumdist, 2)
-        #self.model.set(amplitude=amp)
+        # lumdist = self.dist_mpc * 1e6  # in pc
+        # amp = np.power(10.0 / lumdist, 2)
+        # self.model.set(amplitude=amp)
 
         # Current working around for issue with amplitude...
-        mapp = cosmo.distmod(self.z).value + self.model.source_peakmag(
-             "lsstz", "ab", sampling=0.1)
-        self.model.set_source_peakmag(m=mapp, band="lsstz", magsys="ab", sampling=0.1)
+        mapp = 5.0 * np.log10(self.dist_pc / 10.0) + self.model.source_peakmag(
+            "lsstz", "ab", sampling=0.05
+        )
+        self.model.set_source_peakmag(m=mapp, band="lsstz", magsys="ab", sampling=0.05)
 
     def extinct_model(self, r_v=3.1):
         phases = np.linspace(self.model.mintime(), self.model.maxtime(), num=1000)
-        waves = np.linspace(self.model.minwave(), self.model.maxwave(), num=1000)
+        waves = np.linspace(self.model.minwave(), self.model.maxwave(), num=2000)
         unreddend_fluxes = self.model.flux(phases, waves)
         reddend_fluxes = np.empty_like(unreddend_fluxes)
         uncorr_ebv = sfdmap.ebv(self.ra, self.dec, frame="icrs", unit="radian")
         for i, phase in enumerate(phases):
-            reddend_fluxes[i, :] = apply(F99(waves, r_v*uncorr_ebv, r_v=r_v), unreddend_fluxes[i, :])
+            reddend_fluxes[i, :] = apply(
+                F99(waves, r_v * uncorr_ebv, r_v=r_v), unreddend_fluxes[i, :]
+            )
 
         source = TimeSeriesSource(phases, waves, reddend_fluxes)
         self.extincted_model = deepcopy(Model(source=source))
@@ -136,13 +137,9 @@ class em_transient(object):
         setting the peculiar velocity, this is for reproducibility.
         """
         state = np.random.get_state()
-        if self.id < pow(2, 32):
-            np.random.seed(seed=self.id)
-        else:
-            print(
-                "For some reason this transient id is > 2^32, it is: {}".format(self.id)
-            )
+        np.random.seed(seed=self.id)
         if pec_vel is None:
+            # Apply typical peculiar_velocity type correction
             self.peculiar_vel = np.random.normal(loc=0, scale=300)
         else:
             self.peculiar_vel = pec_vel
@@ -153,45 +150,6 @@ class em_transient(object):
                 / ((1 - (self.peculiar_vel / speed_of_light_kms)))
             )
         ) - 1.0
-
-    def extend_sed_waves(self):
-        min_wave = np.min(self.wave)
-        max_wave = np.max(self.wave)
-        delta_wave = abs(self.wave[0] - self.wave[1])
-        extension_flux = 0.0
-        new_max = 12000.0
-        new_min = 500.0
-
-        # insert new max and min
-        if max_wave < new_max:
-            for wave in np.arange(
-                start=max_wave + delta_wave, stop=new_max + delta_wave, step=delta_wave
-            ):
-                self.wave = np.insert(self.wave, self.wave.size, wave, axis=0)
-                self.flux = np.insert(
-                    self.flux, self.flux.shape[1], extension_flux, axis=1
-                )
-
-        if min_wave > new_min:
-            for wave in np.arange(
-                start=min_wave - delta_wave, stop=new_min - delta_wave, step=-delta_wave
-            ):
-                self.wave = np.insert(self.wave, 0, wave, axis=0)
-                self.flux = np.insert(self.flux, 0, extension_flux, axis=1)
-
-    def save_peaks(self, cosmo):
-        self.peak_lsstu = self.extincted_model.source_peakmag("lsstu", "ab", sampling=0.1)
-        self.peak_lsstg = self.extincted_model.source_peakmag("lsstg", "ab", sampling=0.1)
-        self.peak_lsstr = self.extincted_model.source_peakmag("lsstr", "ab", sampling=0.1)
-        self.peak_lssti = self.extincted_model.source_peakmag("lssti", "ab", sampling=0.1)
-        self.peak_lsstz = self.extincted_model.source_peakmag("lsstz", "ab", sampling=0.1)
-        self.peak_lssty = self.extincted_model.source_peakmag("lssty", "ab", sampling=0.1)
-        self.peak_abs_lsstu = self.model.source_peakabsmag("lsstu", "ab", sampling=0.1, cosmo=cosmo)
-        self.peak_abs_lsstg = self.model.source_peakabsmag("lsstg", "ab", sampling=0.1, cosmo=cosmo)
-        self.peak_abs_lsstr = self.model.source_peakabsmag("lsstr", "ab", sampling=0.1, cosmo=cosmo)
-        self.peak_abs_lssti = self.model.source_peakabsmag("lssti", "ab", sampling=0.1, cosmo=cosmo)
-        self.peak_abs_lsstz = self.model.source_peakabsmag("lsstz", "ab", sampling=0.1, cosmo=cosmo)
-        self.peak_abs_lssty = self.model.source_peakabsmag("lssty", "ab", sampling=0.1, cosmo=cosmo)
 
 
 class saee_bns_emgw_with_viewing_angle(kilonova):
@@ -226,16 +184,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             The total ejecta mass of the expanding kilonova material.
         EOS: str
             The name of the equation of state of the neutron star matter.
-        KNE_parameters: list
-            List of parameters needed to generate the kilonova SED. List format
-            input instead of inputting mej, vej, etc. separately. Default=None.
-        parameter_dist: boolean
-            Flag to specify if this should just be a sampling distribution
-            of the parameters that define the signals without creating the
-            events. Default=False.
-        num_samples: float
-            The number of transients for which to sample the parameter
-            distributions. Default=1.
+
 
     Returns (Implicitly):
     ---------------------
@@ -278,10 +227,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         spin2z=None,
         only_load_EOS=None,
         transient_duration=25.0,
-        KNE_parameters=None,
-        parameter_dist=False,
-        num_samples=1,
-        opac_debug=None,
         consistency_check=True,
         min_wave=500.0,
         max_wave=12000.0,
@@ -291,7 +236,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         threshold_opacity=False,
     ):
         self.gp_interp = gp_interp
-        self.parameter_dist = parameter_dist
         self.min_wave = min_wave
         self.max_wave = max_wave
         self.mapping_type = mapping_type
@@ -355,7 +299,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             return
         self.num_params = 12
         self.has_gw = True
-        self.number_of_samples = num_samples
         try:
             self.transient_duration = self.__class__.transient_duration[0]
         except IndexError:
@@ -394,22 +337,10 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
         self.draw_parameters(consistency_check=consistency_check)
 
-        if parameter_dist is True:
-            if num_samples > 1:
-                self.pre_dist_params = True
-            else:
-                print(
-                    "To generate a parameter distribution you need to supply\
-                        a number of samples greater than one."
-                )
-                exit()
-            self.subtype = "semi-analytic eigenmode expansion with viewing angle"
-            self.type = "parameter distribution"
-        else:
-            self.pre_dist_params = False
-            self.make_sed(KNE_parameters)
-            self.subtype = "rosswog semi-analytic with viewing angle"
-            super().__init__()
+        self.pre_dist_params = False
+        self.make_sed()
+        self.subtype = "rosswog semi-analytic with viewing angle"
+        super().__init__()
 
     def draw_parameters(self, consistency_check=True):
         """
@@ -527,7 +458,9 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             KNE_parameters, self.min_wave, self.max_wave
         )
 
-    def check_kne_priors(self, m_upper=0.1, m_lower=0.001, v_upper=0.4, v_lower=0.05, kappa_lower=0.1):
+    def check_kne_priors(
+        self, m_upper=0.1, m_lower=0.001, v_upper=0.4, v_lower=0.05, kappa_lower=0.1
+    ):
         """
         Function to see if the fit functions produce values of the ejecta mass
         and ejecta velocity that are broadly consistent with reasonable physical
@@ -571,25 +504,40 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             all_inds = np.union1d(minds, vinds)
 
 
+###############################################################################
+
+# The following functions are for future iterations and are in progress.
+
+###############################################################################
+
+
 def compute_ye_band_factors(self, n_phi=101):
     inclination = self.param5
-    phi_grid = np.sort(np.arccos(
-    2.0 * np.linspace(start=0.0, stop=1.0, num=n_phi, endpoint=True) - 1.0
-    )) + inclination - np.pi/2.0
+    phi_grid = (
+        np.sort(
+            np.arccos(
+                2.0 * np.linspace(start=0.0, stop=1.0, num=n_phi, endpoint=True) - 1.0
+            )
+        )
+        + inclination
+        - np.pi / 2.0
+    )
     ye = compute_ye_at_arbitrary_angle(phi_grid)
     factor = []
     for i, phi in enumerate(phi_grid):
         if i == 0:
             phi_min = phi
-            phi_max = phi + (phi_grid[1] - phi)/2.0
-        elif i == n_phi-1:
-            phi_min = phi - (phi - phi_grid[i - 1])/2.0
+            phi_max = phi + (phi_grid[1] - phi) / 2.0
+        elif i == n_phi - 1:
+            phi_min = phi - (phi - phi_grid[i - 1]) / 2.0
             phi_max = phi
         else:
-            phi_min = phi - (phi - phi_grid[i - 1])/2.0
-            phi_max = phi + (phi_grid[i+1] - phi)/2.0
+            phi_min = phi - (phi - phi_grid[i - 1]) / 2.0
+            phi_max = phi + (phi_grid[i + 1] - phi) / 2.0
 
-        F_raw, err = scipy.integrate.quadrature(compute_fphi, phi_min, phi_max, (inclination))
+        F_raw, err = scipy.integrate.quadrature(
+            compute_fphi, phi_min, phi_max, (inclination)
+        )
         F = F_raw / np.pi
         factor.append(F)
     fac_array = np.asarray(factor)
@@ -597,24 +545,26 @@ def compute_ye_band_factors(self, n_phi=101):
 
 
 def compute_fphi(phi, inclination):
-    if inclination == np.pi/2.0:
-        theta_min = -np.pi/2.0
-        theta_max = np.pi/2.0
-    elif inclination < np.pi/2.0 and phi < np.pi/2.0 - inclination:
+    if inclination == np.pi / 2.0:
+        theta_min = -np.pi / 2.0
+        theta_max = np.pi / 2.0
+    elif inclination < np.pi / 2.0 and phi < np.pi / 2.0 - inclination:
         theta_min = -np.pi
         theta_max = np.pi
-    elif inclination > np.pi/2.0 and phi > 3.0*np.pi/2.0 - inclination:
+    elif inclination > np.pi / 2.0 and phi > 3.0 * np.pi / 2.0 - inclination:
         theta_min = -np.pi
         theta_max = np.pi
     else:
-        targ1 = np.arccos(np.cos(phi)/np.sin(inclination))
-        targ2 = -np.arccos(np.cos(phi)/np.sin(inclination))
-        x1 = np.cos(targ1)*np.cos(inclination)
-        x2 = np.cos(targ2)*np.cos(inclination)
+        targ1 = np.arccos(np.cos(phi) / np.sin(inclination))
+        targ2 = -np.arccos(np.cos(phi) / np.sin(inclination))
+        x1 = np.cos(targ1) * np.cos(inclination)
+        x2 = np.cos(targ2) * np.cos(inclination)
         y1 = np.sin(targ1)
         y2 = np.sin(targ2)
         theta1 = np.arctan2(y1, x1)
         theta2 = np.arctan2(y2, x2)
         theta_min = np.min([theta1, theta2])
         theta_max = np.max([theta1, theta2])
-    return np.sin(inclination)*np.sin(phi)*np.sin(phi)*(np.sin(theta_max) - np.sin(theta_min)) + (theta_max - theta_min)*np.cos(inclination)*np.cos(phi)
+    return np.sin(inclination) * np.sin(phi) * np.sin(phi) * (
+        np.sin(theta_max) - np.sin(theta_min)
+    ) + (theta_max - theta_min) * np.cos(inclination) * np.cos(phi)

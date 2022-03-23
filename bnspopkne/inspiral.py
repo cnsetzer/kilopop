@@ -1,29 +1,44 @@
-
-
 class compact_binary_inspiral(object):
+    def __init__(self, appx="TaylorF2", dt=1.0 / 2048.0, f_low=25.0, **kwargs):
+        self.appx = appx
+        self.dt = dt
+        self.f_low = f_low
+        self.simulate_inspiral_merger()
+        super.__init__()
 
-    def simulate_inspiral_merger(self, appx="TaylorF2", dt=1.0 / 2048.0, f_low=25.0):
+    def simulate_inspiral_merger(self):
         """
         Function to calculate the inspiral signal from the BNS merger.
 
-        Returns:
+        Parameters:
+        -----------
+            appx: string
+                Name of approximant from pycbc to use as the gw template.
+            dt: float
+                Sampling rate delta time for waveform generation.
+            f_low: float
+                Lower frequency at which to being the waveform.
+
+        Generates:
         --------
-            self.gw_signal_plus:
-            self.gw_signal_cross:
+            self.gw_signal_plus: Pycbc TimeSeries object
+                The plus polarization of the (2,2) mode gravitational wave.
+            self.gw_signal_cross: Pycbc TimeSeries object
+                The cross polarization of the (2,2) mode gravitational wave.
         """
         gps_sec_year = 31536000.0
 
         self.polarization = 0.0
         wave_p, wave_c = get_td_waveform(
-            approximant=appx,
+            approximant=self.appx,
             mass1=self.param1,
             mass2=self.param2,
             spin1z=0.0,
             spin2z=0.0,
             inclination=self.param5,
-            delta_t=dt,
+            delta_t=self.dt,
             distance=self.dist_mpc,
-            f_lower=f_low,
+            f_lower=self.f_low,
         )
         # avoid invalid time for far future times in lalsimulation
         # but preserve the RA DEC per year positioning by modulating the time

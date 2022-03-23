@@ -1,3 +1,7 @@
+from scipy.integrate import simps
+import numpy as np
+
+
 def bandflux(band_throughput, SED_model=None, phase=None, ref_model=None):
     """This is wrapper function to compute either the reference system bandflux
        or the bandflux of a source.
@@ -5,7 +9,7 @@ def bandflux(band_throughput, SED_model=None, phase=None, ref_model=None):
     Parameters:
     ----------
     band_throughput : dict of two np.arrays
-        This is a dictionary of the wavelengths and transmission fractions that
+        This is a dictionary of the wavelengths and transmission functions that
         characterize the throughput for the given bandfilter.
     SED_model : :obj:, optional
         The sncosmo model object that represents the spectral energy
