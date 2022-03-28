@@ -51,7 +51,7 @@ def calculate_secular_ejecta(
         disc_effs = np.random.uniform(0.1, 0.4, size=out_shape)
     else:
         dind = np.argwhere(np.isnan(disc_effs))
-        disc_effs[dind] = np.random.uniform(0.1, 0.4, size=dind[:, None].shape)
+        disc_effs[dind] = np.random.uniform(0.1, 0.4, size=dind.shape)
 
     if mapping_type == "coughlin":
         a = -31.335
