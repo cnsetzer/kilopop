@@ -25,7 +25,9 @@ class tanaka_mean_fixed(Model):
         return amp
 
 
-def calculate_secular_ejecta(self):
+def calculate_secular_ejecta(
+    mass1, comp1, mass2, comp2, disc_effs=None, mapping_type="coughlin", out_shape=1,
+):
     """
     Function to compute the additional amount of mass resulting from secular
     channels of mass ejection. This is largely modeled as a fraction of the
@@ -33,35 +35,36 @@ def calculate_secular_ejecta(self):
     of recent numerical simulations to estimate this total amount of secular
     mass ejected to be in the range of 10-40% of the disk mass.
 
-    Returns (Implicitly):
-    ---------------------
-    self.param10: ndarray
-        Secular component of the total ejecta mass.
-    self.param11: ndarray
-        The total ejecta mass, i.e., dynamic and secular.
+    Parameters:
+    -----------
+
+
+    Returns:
+    --------
+    m_sec: scalar or ndarray
+        Secular component of the total ejecta mass in solar masses.
+    m_tot: scalar or ndarray
+        The total ejecta mass, i.e., dynamic and secular in solar masses.
     """
-    which = self.mapping_type
 
-    if self.param12 is None:
-        disk_eff = np.random.uniform(0.1, 0.4, size=self.out_shape)
-        self.param12 = disk_eff
+    if disc_effs is None:
+        disc_effs = np.random.uniform(0.1, 0.4, size=out_shape)
     else:
-        dind = np.argwhere(np.isnan(self.param12[:, 0]))[:, 0]
-        self.param12[dind] = np.random.uniform(0.1, 0.4, size=dind[:, None].shape)
-        disk_eff = self.param12[dind]
+        dind = np.argwhere(np.isnan(disc_effs))
+        disc_effs[dind] = np.random.uniform(0.1, 0.4, size=dind[:, None].shape)
 
-    if which == "coughlin":
+    if mapping_type == "coughlin":
         a = -31.335
         b = -0.9760
         c = 1.0474
         d = 0.05957
-    elif which == "kruger":
-        m1 = self.param1
-        c1 = self.param3
+    elif mapping_type == "kruger":
+        m1 = mass1
+        c1 = comp1
         a = -8.1324
         c = 1.4820
         d = 1.7784
-    elif which == "radice":
+    elif mapping_type == "radice":
         alpha = 0.084
         beta = 0.127
         gamma = 567.1
@@ -78,7 +81,7 @@ def calculate_secular_ejecta(self):
                 self.param11 = np.add(self.param7, self.param10)
         else:
             ind = np.argwhere(np.isnan(self.param10[:, 0]))[:, 0]
-            if which == "kruger":
+            if mapping_type == "kruger":
                 m1 = self.param1[ind]
                 c1 = self.param3[ind]
 
@@ -87,7 +90,7 @@ def calculate_secular_ejecta(self):
             M_tot = np.add(self.param1, self.param2)
         else:
             M_tot = np.add(self.param1[ind], self.param2[ind])
-        if which == "coughlin":
+        if mapping_type == "coughlin":
             m_disk = np.power(10.0, a * (1.0 + b * np.tanh((c - (M_tot / M_thr)) / d)))
             if not np.isscalar(m_disk):
                 disk_ind = np.argwhere(m_disk < 1.0e-3)[:, 0]
@@ -95,7 +98,7 @@ def calculate_secular_ejecta(self):
             else:
                 if m_disk < 1.0e-3:
                     m_disk = 1.0e-3
-        elif which == "kruger":
+        elif mapping_type == "kruger":
             m_disk_intermediate = a * c1 + c
             if not np.isscalar(m_disk_intermediate):
                 disk_ind = np.argwhere(m_disk_intermediate < 5 * 1.0e-4)[:, 0]
@@ -105,7 +108,7 @@ def calculate_secular_ejecta(self):
                 if m_disk_intermediate < 5 * 1.0e-4:
                     m_disk_intermediate = 5 * 1.0e-4
                     m_disk = m1 * np.power(m_disk_intermediate, d)
-        elif which == "radice":
+        elif mapping_type == "radice":
             lambda_tilde = 0.0  # Future todo.
             raise NotImplementedError(
                 "The full Radice et al. 2018 disk formulation is not available. Please use options 'coughlin' or 'kruger'."
@@ -244,10 +247,18 @@ def map_kne_to_grey_opacity(self):
     self.map_ye_kne_to_kappa_via_GP()
 
 
-def map_binary_to_kne(self):
+def map_binary_to_kne(mass1, comp1, mass2, comp2, mapping_type="coughlin"):
     """
-    Wrapper for fit functions from Coughlin et. al 2018 to map m1,m2,c1,c2 to
-    mej,vej.
+    Wrapper for fit functions from various references: Coughlin et. al 2018 etc.
+    to map m1,m2,c1,c2 to mej,vej.
+
+    Parameters:
+    -----------
+
+
+    mapping_type: string
+        The choice of reference work from which to use the relations mapping
+        between these sets of parameters.
 
     Returns (Implicitly):
     ---------------------
@@ -255,9 +266,10 @@ def map_binary_to_kne(self):
             The total ejecta mass of the kilonova dynamical ejecta.
         self.param8: float
             The mean ejecta velocity of the kilonova dynamical ejecta.
+
+
     """
-    which = self.mapping_type
-    if which == "coughlin":
+    if mapping_type == "coughlin":
         # Fit params from Coughlin et. al 2018
         a = -0.0719
         b = 0.2116
@@ -267,7 +279,7 @@ def map_binary_to_kne(self):
         f = -1.879
         g = 0.657
 
-    elif which == "radice":
+    elif mapping_type == "radice":
         alpha = -0.657
         beta = 4.254
         gamma = -32.61
@@ -277,7 +289,7 @@ def map_binary_to_kne(self):
         f = -3.0
         g = 0.494
 
-    elif which == "kruger":
+    elif mapping_type == "kruger":
         a = -9.3335
         b = 114.17
         c = -337.56
@@ -299,7 +311,7 @@ def map_binary_to_kne(self):
         c1 = self.param3[ind]
         c2 = self.param4[ind]
     if len(ind) > 0:
-        if which == "coughlin":
+        if mapping_type == "coughlin":
             mej = np.power(
                 10.0,
                 (
@@ -313,7 +325,7 @@ def map_binary_to_kne(self):
                     + (d / 2.0)
                 ),
             )
-        elif which == "radice":
+        elif mapping_type == "radice":
             bary_m1 = self.__class__.EOS_mass_to_bary_mass[0](m1)
             bary_m2 = self.__class__.EOS_mass_to_bary_mass[0](m2)
             mej = (1.0e-3) * (
@@ -331,7 +343,7 @@ def map_binary_to_kne(self):
                 * bary_m2
                 + delta
             )
-        elif which == "kruger":
+        elif mapping_type == "kruger":
             mej = (1.0e-3) * (
                 ((a / c1) + b * np.power(m2 / m1, n) + c * c1) * m1
                 + ((a / c2) + b * np.power(m1 / m2, n) + c * c2) * m2
@@ -363,32 +375,6 @@ def map_binary_to_kne(self):
             self.param8 = vej
         else:
             self.param8[ind] = vej
-
-
-def draw_viewing_angle(self):
-    """
-    Function draw the observer angle at which the kilonovae is observed. This is
-    drawn assuming uniform distribution of binary orbital planes in the Universe
-    and making the equivalence of the observer angle and the polar angle of the
-    kNe, due to assumed axisymmetry about the normal axis to the binary merger
-    plane.
-
-    Returns (Implicitly):
-    ---------------------
-        self.param5: float
-            The observer viewing angle with respect to the binary merger plane.
-    """
-    if self.param5 is None:
-        o_shape = self.out_shape
-    else:
-        ind = np.argwhere(np.isnan(self.param5))
-        o_shape = self.param5[ind].shape
-
-    theta_obs = np.arccos(2 * np.random.random_sample(size=o_shape) - 1)  # in radians
-    if self.param5 is None:
-        self.param5 = theta_obs
-    else:
-        self.param5[ind] = theta_obs
 
 
 def draw_masses_from_EOS_bounds(self, m_low=1.0, mass_ratio_cut=2.0 / 3.0):
@@ -476,67 +462,53 @@ def draw_masses_from_EOS_bounds(self, m_low=1.0, mass_ratio_cut=2.0 / 3.0):
         self.param2[ind2] = m2
 
 
-def compute_ye_at_viewing_angle(self):
+def compute_ye_at_viewing_angle(inclination, EOS, Ye=None):
     """
     Fit function that determines the average electron fraction of the
     material directly in the line of sight of the observer. Determined
     from performing a least squares fit to the BNS merger data from
     Radice et. al 2018.
 
-    Returns (Implicitly):
-    ---------------------
-        self.param6: float
-            The electron fraction of the material.
-    """
-    if self.param6 is None:
-        theta_obs = self.param5
-    else:
-        ind = np.argwhere(np.isnan(self.param6))
-        theta_obs = self.param5[ind]
-    if self.__class__.EOS_name[0] == "bhblp":
-        ye = 0.20640 * (np.cos(theta_obs) ** 2) + 0.16974
-    elif self.__class__.EOS_name[0] == "ls220":
-        ye = 0.24599 * (np.cos(theta_obs) ** 2) + 0.15083
-    elif self.__class__.EOS_name[0] == "dd2":
-        ye = 0.19935 * (np.cos(theta_obs) ** 2) + 0.16013
-    elif self.__class__.EOS_name[0] == "sfho":
-        ye = 0.22704 * (np.cos(theta_obs) ** 2) + 0.16147
-    else:
-        print(
-            "There is a problem with the given EOS: {}".format(
-                self.__class__.EOS_name[0]
-            )
-        )
-    if self.param6 is None:
-        self.param6 = ye
-    else:
-        self.param6[ind] = ye
+    Parameters:
+    -----------
+        inclination: float or ndarray
+            The orientation of the kNe w.r.t the observer.
 
+        EOS: string
+            The short-hand name of the equation of state to be used when
+            performing the mapping.
 
-def compute_ye_at_arbitrary_angle(self, angle):
-    """
-    Fit function that determines the average electron fraction of the
-    material directly in the line of sight of the observer. Determined
-    from performing a least squares fit to the BNS merger data from
-    Radice et. al 2018.
+        Ye: ndarray (optional)
+            Exisiting draws for a population of the mass-weighted electron
+            fraction. Useful for redrawing values of a population if certain
+            kNe were rejected based on consistency checks.
 
-    Returns (Implicitly):
-    ---------------------
-    self.param6: float
-        The electron fraction of the material.
+    Returns:
+    --------
+        Ye: float or ndarray
+            The mass-weighted average electron fraction of the material at the
+            given inclination or viewing-angle of the observer.
     """
-    if self.__class__.EOS_name[0] == "bhblp":
-        ye = 0.20640 * (np.cos(theta_obs) ** 2) + 0.16974
-    elif self.__class__.EOS_name[0] == "ls220":
-        ye = 0.24599 * (np.cos(theta_obs) ** 2) + 0.15083
-    elif self.__class__.EOS_name[0] == "dd2":
-        ye = 0.19935 * (np.cos(theta_obs) ** 2) + 0.16013
-    elif self.__class__.EOS_name[0] == "sfho":
-        ye = 0.22704 * (np.cos(theta_obs) ** 2) + 0.16147
+    if Ye is None:
+        theta_obs = inclination
     else:
-        print(
-            "There is a problem with the given EOS: {}".format(
-                self.__class__.EOS_name[0]
-            )
-        )
-    return ye
+        ind = np.argwhere(np.isnan(Ye))
+        theta_obs = inclination[ind]
+
+    if EOS == "bhblp":
+        new_ye = 0.20640 * (np.cos(theta_obs) ** 2) + 0.16974
+    elif EOS == "ls220":
+        new_ye = 0.24599 * (np.cos(theta_obs) ** 2) + 0.15083
+    elif EOS == "dd2":
+        new_ye = 0.19935 * (np.cos(theta_obs) ** 2) + 0.16013
+    elif EOS == "sfho":
+        new_ye = 0.22704 * (np.cos(theta_obs) ** 2) + 0.16147
+    else:
+        print("The specified EOS: {}, is not implemented.".format(EOS))
+        raise NotImplementedError
+
+    if Ye is None:
+        Ye = new_ye
+    else:
+        Ye[ind] = new_ye
+    return Ye

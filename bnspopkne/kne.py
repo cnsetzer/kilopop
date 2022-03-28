@@ -82,7 +82,7 @@ class em_transient(object):
         else:
             raise ValueError
 
-        self.dist_pc = self.dist_mpc * 1000000.0
+        self.dist_pc = self.dist_mpc * 1000000.0  # convert Mpc to pc
         self.peculiar_velocity(pec_vel)
         self.redshift()
         self.tmax = t + self.model.maxtime()
@@ -198,9 +198,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
     EOS_mass_to_rad = []
     EOS_mass_to_bary_mass = []
     EOS_mass_to_rad_prime = []
-    EOS_mass_to_rad2 = []
-    EOS_mass_to_bary_mass2 = []
-    EOS_mass_to_rad_prime2 = []
     transient_duration = []
     grey_opacity_interp = []
     opacity_data = []

@@ -1,0 +1,24 @@
+# This file may be used to create an environment using:
+# $ conda env create --name <env> --file <this file>
+# platform: unix-64
+name: astrotog
+
+channels:
+  - conda-forge
+
+dependencies:
+  - astropy>=3.0
+  - jupyter>=1.0.0
+  - matplotlib>=2.1.2
+  - numpy>=1.13
+  - pandas>=0.23.0
+  - scipy>=1.0.0
+  - seaborn>=0.9.0
+  - pip>=18.0
+
+  - pip:
+    - sncosmo>=1.5.3
+    - sfdmap>=0.1.1
+    - mpi4py>=3.0.0
+    - lalsuite>=6.60
+    - pycbc>=1.14

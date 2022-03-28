@@ -1,0 +1,21 @@
+# Dependencies list for astrotog
+
+dependencies:
+  - astropy>=3.0
+  - jupyter>=1.0.0
+  - matplotlib>=2.1.2
+  - numpy>=1.14
+  - pandas>=0.24.0
+  - scipy>=1.0.0
+  - seaborn>=0.8.1
+
+  - pip:
+    - sncosmo>=1.5.3
+    - lalsuite
+    - pycbc
+    - sfdmap
+    - mpi4py
+
+# Other dependencies need to be installed separately
+# Cadence/LSSTMetrics from rbiswas4@github.com
+# OpSimSummary from rbiswas4@github.com
