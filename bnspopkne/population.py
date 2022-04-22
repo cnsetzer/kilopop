@@ -1,5 +1,10 @@
-def draw_viewing_angle(inclinations=None, shape=1):
-    """
+"""Public module for drawing population intrinsic parameters."""
+import numpy as np
+
+
+def draw_viewing_angle(inclinations=None, out_shape=1):
+    """Set the observer viewing-angle.
+
     Function draw the observer angle at which the kilonovae is observed. This is
     drawn assuming uniform distribution of binary orbital plane alignment in the
     Universe and making the equivalence of the observer angle and the polar angle

@@ -14,6 +14,9 @@ from extinction import apply
 from .macronovae_wrapper import make_rosswog_seds as mw
 from bnspopkne.inspiral import compact_binary_inspiral
 from bnspopkne import equation_of_state as eos
+from bnspopkne import mappings
+from bnspopkne import population
+from scipy.integrate import quadrature
 
 warnings.filterwarnings("ignore", message="ERFA function")
 
@@ -206,10 +209,8 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
     EOS_name = []
     max_mass = []
     EOS_table = []
-    EOS_table2 = []
     EOS_mass_to_rad = []
     EOS_mass_to_bary_mass = []
-    EOS_mass_to_rad_prime = []
     transient_duration = []
     grey_opacity_interp = []
     opacity_data = []
@@ -240,15 +241,15 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         dz_enhancement=1.0,
         thermalisation_eff=0.25,
         mapping_type="coughlin",
-        threshold_opacity=True,
     ):
+        """Init SAEE viewing-angle class."""
         self.num_params = 12
         self.min_wave = min_wave
         self.max_wave = max_wave
         self.mapping_type = mapping_type
-        self.threshold_opacity = threshold_opacity
         self.dz_enhancement = dz_enhancement
         self.thermalisation_eff = thermalisation_eff
+        self.consistency_check = consistency_check
         self.subtype = "Semi-analytic eigenmode expansion with viewing angle."
 
         # Handle setup of EOS dependent mapping objects
@@ -262,7 +263,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             f2 = eos.get_bary_mass_from_EOS()
             self.__class__.EOS_mass_to_bary_mass.append(f2)
             self.__class__.transient_duration.append(transient_duration)
-            self.__class__.grey_opacity_interp.append(self.get_kappa_GP(kappa_grid_path))
+            self.__class__.grey_opacity_interp.append(self.construct_opacity_gaussian_process(kappa_grid_path))
         elif not self.__class__.EOS_name and not EOS:
             raise Exception("You must first specify the EOS.")
         elif self.__class__.EOS_name[0] and not EOS:
@@ -278,7 +279,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             f2 = self.get_bary_mass_from_EOS()
             self.__class__.EOS_mass_to_bary_mass[0] = f2
             self.__class__.transient_duration[0] = transient_duration
-            self.__class__.grey_opacity_interp[0] = self.get_kappa_GP(kappa_grid_path)
+            self.__class__.grey_opacity_interp[0] = self.construct_opacity_gaussian_process(kappa_grid_path)
         elif self.__class__.EOS_name[0] == EOS:
             pass
         else:
@@ -329,11 +330,11 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         if disk_eff is not None:
             self.param12 = float(disk_eff)
 
-        self.draw_parameters(consistency_check=consistency_check)
+        self.draw_parameters()
         self.make_sed()
         super().__init__()
 
-    def draw_parameters(self, consistency_check=True):
+    def draw_parameters(self):
         """Draw parameters not populated by the user.
 
         Wrapper function to sample the generating parameter distributions for
@@ -362,38 +363,33 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
                 observer.
 
         """
-        # Determine output shape for parameters based on size
-        if self.number_of_samples > 1:
-            self.out_shape = (self.number_of_samples, 1)
-        else:
-            self.out_shape = None
-
         if (None in (self.param1, self.param2)) and (
             None in (self.param7, self.param8)
         ):
-            self.draw_masses_from_EOS_bounds()
+            mappings.draw_masses_from_EOS_bounds()
 
         if None in (self.param3, self.param4):
-            self.compute_compactnesses_from_EOS()
+            eos.compute_compactnesses_from_EOS()
 
         if None in list([self.param5]):
-            self.draw_viewing_angle()
+            population.draw_viewing_angle()
 
         if None in list([self.param6]):
-            self.compute_ye_at_viewing_angle()
+            mappings.compute_ye_at_viewing_angle()
 
         if None in (self.param7, self.param8):
-            self.map_binary_to_kne()
-            self.calculate_secular_ejecta()
+            mappings.map_to_dynamical_ejecta()
+            mappings.map_to_secular_ejecta()
 
         if None in list([self.param9]):
-            self.map_kne_to_grey_opacity()
+            mappings.map_kne_to_grey_opacity_via_gaussian_process()
 
-        if consistency_check is True:
+        if self.consistency_check is True:
             self.check_kne_priors()
 
     def make_sed(self, KNE_parameters=None):
-        """
+        """Create the SED for this kNe instance.
+
         Wrapper function to send the selected, and default parameters to the
         fortran library which computes the Kilonova SED evolution.
 
@@ -439,7 +435,8 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
     def check_kne_priors(
         self, m_upper=0.1, m_lower=0.001, v_upper=0.4, v_lower=0.05, kappa_lower=0.1
     ):
-        """
+        """Check consistency of parameters with model boundaries.
+
         Function to see if the fit functions produce values of the ejecta mass
         and ejecta velocity that are broadly consistent with reasonable physical
         limits on their values. This means no more than a quarter of the total
@@ -451,33 +448,29 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         ind2 = np.argwhere(self.param11 < m_lower)
         ind3 = np.argwhere(self.param8 > v_upper)
         ind4 = np.argwhere(self.param8 < v_lower)
-        if self.threshold_opacity is False:
-            ind5 = np.argwhere(self.param9 < kappa_lower)
-            ind6 = np.union1d(ind1, ind5)
-            ind1 = ind6
-        minds = np.union1d(ind1, ind2)
+        ind5 = np.argwhere(self.param9 < kappa_lower)
+        ind6 = np.union1d(ind1, ind5)
+        minds = np.union1d(ind6, ind2)
         vinds = np.union1d(ind3, ind4)
         all_inds = np.union1d(minds, vinds)
 
         while all_inds.shape[0] > 0:
             for i in range(self.num_params):
                 getattr(self, "param{}".format(i + 1))[all_inds] = None
-            self.draw_masses_from_EOS_bounds()
-            self.compute_compactnesses_from_EOS()
-            self.draw_viewing_angle()
-            self.compute_ye_at_viewing_angle()
-            self.map_binary_to_kne()
-            self.calculate_secular_ejecta()
-            self.map_kne_to_grey_opacity()
+            eos.draw_masses_from_EOS_bounds()
+            eos.compute_compactnesses_from_EOS()
+            population.draw_viewing_angle()
+            mappings.compute_ye_at_viewing_angle()
+            mappings.map_to_dynamical_ejecta()
+            mappings.map_to_secular_ejecta()
+            mappings.map_kne_to_grey_opacity_via_gaussian_process()
             ind1 = np.argwhere(self.param11 > m_upper)
             ind2 = np.argwhere(self.param11 < m_lower)
             ind3 = np.argwhere(self.param8 > v_upper)
             ind4 = np.argwhere(self.param8 < v_lower)
-            if self.threshold_opacity is False:
-                ind5 = np.argwhere(self.param9 < kappa_lower)
-                ind6 = np.union1d(ind1, ind5)
-                ind1 = ind6
-            minds = np.union1d(ind1, ind2)
+            ind5 = np.argwhere(self.param9 < kappa_lower)
+            ind6 = np.union1d(ind1, ind5)
+            minds = np.union1d(ind6, ind2)
             vinds = np.union1d(ind3, ind4)
             all_inds = np.union1d(minds, vinds)
 
@@ -500,7 +493,7 @@ def compute_ye_band_factors(self, n_phi=101):
         + inclination
         - np.pi / 2.0
     )
-    ye = compute_ye_at_arbitrary_angle(phi_grid)
+    ye = mappings.compute_ye_at_viewing_angle(phi_grid, EOS=self.__class__.EOS_name[0])
     factor = []
     for i, phi in enumerate(phi_grid):
         if i == 0:
@@ -513,7 +506,7 @@ def compute_ye_band_factors(self, n_phi=101):
             phi_min = phi - (phi - phi_grid[i - 1]) / 2.0
             phi_max = phi + (phi_grid[i + 1] - phi) / 2.0
 
-        F_raw, err = scipy.integrate.quadrature(
+        F_raw, err = quadrature(
             compute_fphi, phi_min, phi_max, (inclination)
         )
         F = F_raw / np.pi

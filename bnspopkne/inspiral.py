@@ -1,11 +1,14 @@
 """Public module docstring placeholder."""
 
+from copy import deepcopy
 from pycbc.waveform import get_td_waveform
 
 
 class compact_binary_inspiral(object):
-    def __init__(self, appx="TaylorF2", dt=1.0 / 2048.0, f_low=25.0, **kwargs):
+    """Basic binary inspiral class for GW signal."""
 
+    def __init__(self, appx="TaylorF2", dt=1.0 / 2048.0, f_low=25.0, **kwargs):
+        """Init binary inspiral class."""
         self.appx = appx
         self.dt = dt
         self.f_low = f_low
@@ -13,8 +16,7 @@ class compact_binary_inspiral(object):
         super.__init__()
 
     def simulate_inspiral_merger(self):
-        """
-        Function to calculate the inspiral signal from the BNS merger.
+        """Calculate the inspiral signal from the BNS merger.
 
         Parameters:
         -----------

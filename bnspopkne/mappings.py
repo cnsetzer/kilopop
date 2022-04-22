@@ -1,17 +1,19 @@
+"""Module which contains mappings between intrinsic population parameters and kilonova parameters."""
+
 import numpy as np
 import george
 from george.modeling import Model
 
 
 class tanaka_mean_fixed(Model):
-    """
+    """Construct GP mean model based on Tanaka et al. 2019.
+
     Mean model class to be used with the Gaussian process model of the opacity
     surface. This is based on the work of Tanaka et. al 2019.
-
-
     """
 
     def get_value(self, x):
+        """Get value function in george format."""
         amp = np.zeros((len(x[:, 0]),))
         amp[x[:, 2] <= 0.2] = 25.0
         amp[(x[:, 2] > 0.2) & (x[:, 2] < 0.25)] = ((-21.0) / (0.05)) * x[
@@ -25,10 +27,11 @@ class tanaka_mean_fixed(Model):
         return amp
 
 
-def calculate_secular_ejecta(
-    mass1, comp1, mass2, comp2, disc_effs=None, mapping_type="coughlin", out_shape=1,
+def map_to_secular_ejecta(
+    mass1, comp1, mass2, comp2, disc_effs=None, m_sec=None, m_tot=None, mapping_type="coughlin", out_shape=1,
 ):
-    """
+    """Compute the non-dynamical timescale components of the ejecta.
+
     Function to compute the additional amount of mass resulting from secular
     channels of mass ejection. This is largely modeled as a fraction of the
     remnant disk mass with a floor of 10e-4 solar masses. We take results
@@ -70,28 +73,28 @@ def calculate_secular_ejecta(
         gamma = 567.1
         delta = 405.14
 
-    M_thr = self.calculate_threshold_mass()
+    M_thr = eos.calculate_threshold_mass()
 
-    if self.param10 is None:
+    if m_sec is None:
         ind = np.array([1, 1])
     else:
-        if np.isscalar(self.param10) is True:
+        if np.isscalar(m_sec) is True:
             ind = np.array([])
-            if self.param11 is None:
-                self.param11 = np.add(self.param7, self.param10)
+            if m_tot is None:
+                m_tot = np.add(self.param7, m_sec)
         else:
-            ind = np.argwhere(np.isnan(self.param10[:, 0]))[:, 0]
+            ind = np.argwhere(np.isnan(m_sec[:, 0]))[:, 0]
             if mapping_type == "kruger":
-                m1 = self.param1[ind]
-                c1 = self.param3[ind]
+                m1 = mass1[ind]
+                c1 = comp1[ind]
 
     if ind.shape[0] > 0:
-        if self.param10 is None:
-            M_tot = np.add(self.param1, self.param2)
+        if m_sec is None:
+            M_ns_tot = np.add(mass1, mass2)
         else:
-            M_tot = np.add(self.param1[ind], self.param2[ind])
+            M_ns_tot = np.add(mass1[ind], mass2[ind])
         if mapping_type == "coughlin":
-            m_disk = np.power(10.0, a * (1.0 + b * np.tanh((c - (M_tot / M_thr)) / d)))
+            m_disk = np.power(10.0, a * (1.0 + b * np.tanh((c - (M_ns_tot / M_thr)) / d)))
             if not np.isscalar(m_disk):
                 disk_ind = np.argwhere(m_disk < 1.0e-3)[:, 0]
                 m_disk[disk_ind] = 1.0e-3
@@ -122,18 +125,18 @@ def calculate_secular_ejecta(
                     m_disk = 5 * 1.0e-4
 
         m_sec = np.multiply(disk_eff, m_disk)
-        if self.param10 is None:
-            self.param10 = m_sec
-            self.param11 = np.add(self.param7, self.param10)
+        if m_sec is None:
+            m_sec = m_sec
+            m_tot = np.add(self.param7, m_sec)
         else:
-            self.param10[ind] = m_sec
-            self.param11[ind] = np.add(self.param7[ind], self.param10[ind])
+            m_sec[ind] = m_sec
+            m_tot[ind] = np.add(self.param7[ind], m_sec[ind])
 
     else:
         pass
 
 
-def get_kappa_GP(self, csv_loc):
+def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
     """
     Wrapper function to build the gaussian process instance for obtaining a
     grey opacity value for arbitray values of total ejecta mass, median
@@ -151,27 +154,33 @@ def get_kappa_GP(self, csv_loc):
             Trained interpolator function to map (m_ej_tot,v_ej,Ye) to grey opacity.
     """
     opac_dataframe = read_csv(csv_loc, index_col=0)
-    self.__class__.opacity_data.append(opac_dataframe["kappa"].values)
+    grey_opac_vals = opac_dataframe["kappa"].values
     opacity_std = opac_dataframe["sigma_kappa"].values
     masses = opac_dataframe["m_ej"].values
     velocities = opac_dataframe["v_ej"].values
     electron_fractions = opac_dataframe["Y_e"].values
+
     x = np.empty(shape=(len(masses), 3))
     x[:, 0] = masses
     x[:, 1] = velocities
     x[:, 2] = electron_fractions
+
     kernel_choice = np.var(
-        self.__class__.opacity_data[0]
+        grey_opac_vals
     ) * george.kernels.Matern52Kernel(metric=[0.01, 0.05, 0.05], ndim=3)
+
     opacity_GP = george.GP(mean=tanaka_mean_fixed(), kernel=kernel_choice)
+
     opacity_GP.compute(x, opacity_std)
+    hyper_vec = np.load_txt(hyperparam_file)
     opacity_GP.set_parameter_vector(
         np.array([9.05275106, -3.34210729, -0.43019937, -2.93326251])
     )
+    opacity_GP.set_parameter_vector(hyper_vec)
     return opacity_GP
 
 
-def map_ye_kne_to_kappa_via_GP(self):
+def map_kne_to_grey_opacity_via_gaussian_process(self):
     """
     Wrapper funciton to use an interpolation instance or other function to
     calculate the corresponding grey opacity that was fit from simulation
@@ -179,20 +188,20 @@ def map_ye_kne_to_kappa_via_GP(self):
 
     Returns (Implicitly):
     ---------------------
-        self.param9: ndarray
+        grey_opacity: ndarray
             The grey opacity for the instance set of binary and kilonova
             parameters to generate the kilonovae signal.
     """
 
-    if self.param9 is None:
-        m_ej_pred = self.param11
-        v_ej_pred = self.param8
-        Y_e_pred = self.param6
+    if grey_opacity is None:
+        m_ej_pred = m_tot
+        v_ej_pred = v_ej
+        Y_e_pred = Y_e
     else:
-        ind = np.argwhere(np.isnan(self.param9))
-        m_ej_pred = self.param11[ind]
-        v_ej_pred = self.param8[ind]
-        Y_e_pred = self.param6[ind]
+        ind = np.argwhere(np.isnan(grey_opacity))
+        m_ej_pred = m_tot[ind]
+        v_ej_pred = v_ej[ind]
+        Y_e_pred = Y_e[ind]
     if np.isscalar(m_ej_pred):
         x_pred = np.empty(shape=(1, 3))
         x_pred[0, 0] = m_ej_pred
@@ -228,26 +237,14 @@ def map_ye_kne_to_kappa_via_GP(self):
         if ind2.shape[0] > 0 and self.threshold_opacity is True:
             kappa[ind2] = 0.1
 
-    if self.param9 is None:
-        self.param9 = kappa
+    if grey_opacity is None:
+        grey_opacity = kappa
     else:
         kappa = kappa.reshape((kappa.size, 1))
-        self.param9[ind] = kappa
+        grey_opacity[ind] = kappa
 
 
-def map_kne_to_grey_opacity(self):
-    """
-    This is a wrapper function for whatever I get from Oleg and Stephan.
-
-    Returns (Implicitly):
-    ---------------------
-        self.param9: float
-            The grey opacity of the dynamical ejecta material.
-    """
-    self.map_ye_kne_to_kappa_via_GP()
-
-
-def map_binary_to_kne(mass1, comp1, mass2, comp2, mapping_type="coughlin"):
+def map_to_dynamical_ejecta(mass1, comp1, mass2, comp2, mapping_type="coughlin"):
     """
     Wrapper for fit functions from various references: Coughlin et. al 2018 etc.
     to map m1,m2,c1,c2 to mej,vej.
@@ -264,7 +261,7 @@ def map_binary_to_kne(mass1, comp1, mass2, comp2, mapping_type="coughlin"):
     ---------------------
         self.param7: float
             The total ejecta mass of the kilonova dynamical ejecta.
-        self.param8: float
+        v_ej: float
             The mean ejecta velocity of the kilonova dynamical ejecta.
 
 
@@ -300,14 +297,14 @@ def map_binary_to_kne(mass1, comp1, mass2, comp2, mapping_type="coughlin"):
 
     if self.param7 is None:
         ind = np.array([1, 1])
-        m1 = self.param1
-        m2 = self.param2
+        m1 = mass1
+        m2 = mass2
         c1 = self.param3
         c2 = self.param4
     else:
         ind = np.argwhere(np.isnan(self.param7))
-        m1 = self.param1[ind]
-        m2 = self.param2[ind]
+        m1 = mass1[ind]
+        m2 = mass2[ind]
         c1 = self.param3[ind]
         c2 = self.param4[ind]
     if len(ind) > 0:
@@ -353,28 +350,28 @@ def map_binary_to_kne(mass1, comp1, mass2, comp2, mapping_type="coughlin"):
         else:
             self.param7[ind] = mej
 
-    if self.param8 is None:
+    if v_ej is None:
         ind = np.array([1, 1])
-        m1 = self.param1
-        m2 = self.param2
+        m1 = mass1
+        m2 = mass2
         c1 = self.param3
         c2 = self.param4
     else:
-        if np.isscalar(self.param8) is True:
+        if np.isscalar(v_ej) is True:
             ind = []
         else:
-            ind = np.argwhere(np.isnan(self.param8))
-            m1 = self.param1[ind]
-            m2 = self.param2[ind]
+            ind = np.argwhere(np.isnan(v_ej))
+            m1 = mass1[ind]
+            m2 = mass2[ind]
             c1 = self.param3[ind]
             c2 = self.param4[ind]
     if len(ind) > 0:
         vej = ((e * m1 * (f * c1 + 1.0)) / (m2)) + (g / 2.0)
         +(((e * m2 * (f * c2 + 1.0)) / (m1)) + (g / 2.0))
-        if self.param8 is None:
-            self.param8 = vej
+        if v_ej is None:
+            v_ej = vej
         else:
-            self.param8[ind] = vej
+            v_ej[ind] = vej
 
 
 def draw_masses_from_EOS_bounds(self, m_low=1.0, mass_ratio_cut=2.0 / 3.0):
@@ -390,35 +387,35 @@ def draw_masses_from_EOS_bounds(self, m_low=1.0, mass_ratio_cut=2.0 / 3.0):
 
     Returns (Implicitly):
     ---------------------
-        self.param1: float
+        mass1: float
             The gravitational mass of the first neutron star.
-        self.param2: float
+        mass2: float
             The gravitational mass of the second neutron star.
     """
     m_high = self.__class__.max_mass[0]
-    if self.param1 is None:
+    if mass1 is None:
         ind = np.array([1, 1])
         o_shape = self.out_shape
     else:
-        ind = np.argwhere(np.isnan(self.param1))
-        o_shape = self.param1[ind].shape
+        ind = np.argwhere(np.isnan(mass1))
+        o_shape = mass1[ind].shape
 
     if len(ind) > 0:
         m1 = np.random.uniform(low=m_low, high=m_high, size=o_shape)
     else:
-        m1 = self.param1
+        m1 = mass1
 
-    if self.param2 is None:
+    if mass2 is None:
         ind2 = np.array([1, 1])
         o_shape = self.out_shape
     else:
-        ind2 = np.argwhere(np.isnan(self.param2))
-        o_shape = self.param2[ind2].shape
+        ind2 = np.argwhere(np.isnan(mass2))
+        o_shape = mass2[ind2].shape
 
     if len(ind2) > 0:
         m2 = np.random.uniform(low=m_low, high=m_high, size=o_shape)
     else:
-        m2 = self.param2
+        m2 = mass2
 
     if np.isscalar(m1) is True:
         if m1 < m2:
@@ -451,15 +448,15 @@ def draw_masses_from_EOS_bounds(self, m_low=1.0, mass_ratio_cut=2.0 / 3.0):
             # combine indicies into single set to resample
             ridx_1 = np.union1d(ind3, ind4)
 
-    if self.param1 is None:
-        self.param1 = m1
+    if mass1 is None:
+        mass1 = m1
     else:
-        self.param1[ind] = m1
+        mass1[ind] = m1
 
-    if self.param2 is None:
-        self.param2 = m2
+    if mass2 is None:
+        mass2 = m2
     else:
-        self.param2[ind2] = m2
+        mass2[ind2] = m2
 
 
 def compute_ye_at_viewing_angle(inclination, EOS, Ye=None):
