@@ -1,5 +1,11 @@
+"""Public module docstring placeholder."""
+
+from pycbc.waveform import get_td_waveform
+
+
 class compact_binary_inspiral(object):
     def __init__(self, appx="TaylorF2", dt=1.0 / 2048.0, f_low=25.0, **kwargs):
+
         self.appx = appx
         self.dt = dt
         self.f_low = f_low

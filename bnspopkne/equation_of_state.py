@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def calculate_threshold_mass(self):
     """
     Function to calculate the prompt collapse threshold mass, given the

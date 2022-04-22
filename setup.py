@@ -6,10 +6,10 @@ import numpy.f2py as npf2py
 ext = Extension(
     name="macronova2py",
     sources=[
-        "astrotog/fortran_source/module_physics_constants.f90",
-        "astrotog/fortran_source/hratelib.f90",
-        "astrotog/fortran_source/macronova_Pinto_Eastman_CNS.f90",
-        "astrotog/fortran_source/macronova2py.f90",
+        "bnspopkne/fortran_source/module_physics_constants.f90",
+        "bnspopkne/fortran_source/hratelib.f90",
+        "bnspopkne/fortran_source/macronova_Pinto_Eastman_CNS.f90",
+        "bnspopkne/fortran_source/macronova2py.f90",
     ],
     extra_f90_compile_args=[
         "-cpp",
@@ -38,10 +38,10 @@ ext = Extension(
 if __name__ == "__main__":
 
     setup(
-        name="astrotog",
-        version="0.11.0",
-        description="Functions for generating mock observations of astrophysical transients",
-        url="http://github.com/cnsetzer/astrotog",
+        name="bnspopkne",
+        version="0.0.1",
+        description="Kilonova population model used in C. N. Setzer et al. 2022.",
+        url="http://github.com/cnsetzer/Setzer2022_BNSpopkNe",
         author="Christian Setzer",
         author_email="christian.setzer@fysik.su.se",
         license="MIT",
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             #   3 - Alpha
             #   4 - Beta
             #   5 - Production/Stable
-            "Development Status :: 4 - Beta",
+            "Development Status :: 3 - Alpha",
             # Indicate who your project is intended for
             "Intended Audience :: Astronomers",
             # Pick your license as you wish (should match "license" above)

@@ -1,16 +1,19 @@
+"""This is a sample docstring for module."""
 import warnings
 from copy import deepcopy
 import numpy as np
 from astropy.constants import c as speed_of_light_ms
 import astropy.units as units
 from astropy.time import Time
-from sncosmo import TimeSeriesSource, Model, read_griddata_ascii
+from sncosmo import TimeSeriesSource, Model
 from astropy.cosmology import Planck18 as cosmos
 from astropy.cosmology import z_at_value
 from sfdmap import SFDMap as sfd
 from extinction import fitzpatrick99 as F99
 from extinction import apply
 from .macronovae_wrapper import make_rosswog_seds as mw
+from bnspopkne.inspiral import compact_binary_inspiral
+from bnspopkne import equation_of_state as eos
 
 warnings.filterwarnings("ignore", message="ERFA function")
 
@@ -18,17 +21,6 @@ warnings.filterwarnings("ignore", message="ERFA function")
 speed_of_light_kms = speed_of_light_ms.to("km/s").value  # Convert m/s to km/s
 # Initialze sfdmap for dust corrections
 sfdmap = sfd()
-
-
-class kilonova(em_transient, compact_binary_inspiral):
-    """
-    Base class for kilonova transients, groups relevant class methods and attributes.
-    """
-
-    def __init__(self):
-        self.type = "kne"
-        em_transient.__init__(self)
-        compact_binary_inspiral.__init__(self)
 
 
 class em_transient(object):
@@ -41,6 +33,7 @@ class em_transient(object):
     """
 
     def __init__(self):
+        """Init of the em_transient class wrapper."""
         source = TimeSeriesSource(self.phase, self.wave, self.flux)
         self.model = deepcopy(Model(source=source))
         # Use deepcopy to make sure full class is saved as attribute of new class
@@ -52,9 +45,11 @@ class em_transient(object):
     def put_in_universe(
         self, t, ra, dec, z, pec_vel=None, dl=None, cosmo=cosmos, r_v=3.1, id=None,
     ):
-        """
-        Function to take transient instance and 'place' it into the simulated
-        Universe. It sets spacetime location, ra, dec, t0, redshift, etc.
+        """Place transient instance into the simulated Universe.
+
+        It sets spacetime location, ra, dec, t0, redshift, and properties of the
+        transient due to the environment such as peculiar velocity and dervied
+        observed redshift.
 
         Input parameters:
         -----------------
@@ -89,7 +84,8 @@ class em_transient(object):
         self.extinct_model(r_v=3.1)
 
     def redshift(self):
-        """
+        """Redshift the source.
+
         Wrapper function to redshift the spectrum of the transient instance,
         and scale the flux according to the luminosity distance.
 
@@ -117,6 +113,7 @@ class em_transient(object):
         self.model.set_source_peakmag(m=mapp, band="lsstz", magsys="ab", sampling=0.05)
 
     def extinct_model(self, r_v=3.1):
+        """Apply dust extinction to transient."""
         phases = np.linspace(self.model.mintime(), self.model.maxtime(), num=1000)
         waves = np.linspace(self.model.minwave(), self.model.maxwave(), num=2000)
         unreddend_fluxes = self.model.flux(phases, waves)
@@ -131,7 +128,8 @@ class em_transient(object):
         self.extincted_model = deepcopy(Model(source=source))
 
     def peculiar_velocity(self, pec_vel=None):
-        """ "
+        """Set peculiar velocity.
+
         Draw from Gaussian peculiar velocity distribution with width 300km/s
         Reference: Hui and Greene (2006) Also, use transient id to set seed for
         setting the peculiar velocity, this is for reproducibility.
@@ -150,6 +148,20 @@ class em_transient(object):
                 / ((1 - (self.peculiar_vel / speed_of_light_kms)))
             )
         ) - 1.0
+
+
+class kilonova(em_transient, compact_binary_inspiral):
+    """Base class for kilonova transients, groups relevant class methods and attributes."""
+
+    def __init__(self):
+        """Init class.
+
+        Wrapper class to handle different kilonva models.
+
+        """
+        self.type = "kne"
+        em_transient.__init__(self)
+        compact_binary_inspiral.__init__(self)
 
 
 class saee_bns_emgw_with_viewing_angle(kilonova):
@@ -219,87 +231,75 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         EOS=None,
         EOS_path=None,
         kappa_grid_path=None,
-        gp_interp=None,
         spin1z=None,
         spin2z=None,
-        only_load_EOS=None,
         transient_duration=25.0,
         consistency_check=True,
         min_wave=500.0,
         max_wave=12000.0,
         dz_enhancement=1.0,
         thermalisation_eff=0.25,
-        mapping_type="kruger",
-        threshold_opacity=False,
+        mapping_type="coughlin",
+        threshold_opacity=True,
     ):
-        self.gp_interp = gp_interp
+        self.num_params = 12
         self.min_wave = min_wave
         self.max_wave = max_wave
         self.mapping_type = mapping_type
         self.threshold_opacity = threshold_opacity
+        self.dz_enhancement = dz_enhancement
+        self.thermalisation_eff = thermalisation_eff
+        self.subtype = "Semi-analytic eigenmode expansion with viewing angle."
+
+        # Handle setup of EOS dependent mapping objects
         if not self.__class__.EOS_name and EOS:
             self.__class__.EOS_name.append(EOS)
-            E1, E2 = self.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
+            E1 = eos.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
             self.__class__.EOS_table.append(E1)
-            self.__class__.EOS_table2.append(E2)
-            self.__class__.max_mass.append(self.get_max_EOS_mass())
-            f, fp, f2, fp2 = self.get_radius_from_EOS()
-            self.__class__.EOS_mass_to_rad.append(f)
-            self.__class__.EOS_mass_to_rad2.append(f2)
-            f, fp, f2, fp2 = self.get_bary_mass_from_EOS()
-            self.__class__.EOS_mass_to_bary_mass.append(f)
-            self.__class__.EOS_mass_to_bary_mass2.append(f2)
+            self.__class__.max_mass.append(eos.get_max_EOS_mass())
+            f1 = eos.get_radius_from_EOS()
+            self.__class__.EOS_mass_to_rad.append(f1)
+            f2 = eos.get_bary_mass_from_EOS()
+            self.__class__.EOS_mass_to_bary_mass.append(f2)
             self.__class__.transient_duration.append(transient_duration)
-            if self.gp_interp is True:
-                self.__class__.grey_opacity_interp.append(
-                    self.get_kappa_GP(kappa_grid_path)
-                )
-            else:
-                self.__class__.grey_opacity_interp.append(
-                    self.get_kappa_interp(kappa_grid_path)
-                )
+            self.__class__.grey_opacity_interp.append(self.get_kappa_GP(kappa_grid_path))
         elif not self.__class__.EOS_name and not EOS:
-            print("You must first specify the EOS.")
-            print(self.__class__.EOS_name, EOS)
-            exit()
+            raise Exception("You must first specify the EOS.")
         elif self.__class__.EOS_name[0] and not EOS:
-            pass
+            warnings.warn('Be aware that you are using a pre-loaded EOS.', category=UserWarning)
         elif self.__class__.EOS_name[0] != EOS:
+            warnings.warn('Be aware that you are changing to a different EOS.', category=UserWarning)
             self.__class__.EOS_name[0] = EOS
-            E1, E2 = self.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
+            E1 = eos.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
             self.__class__.EOS_table[0] = E1
-            self.__class__.EOS_table2[0] = E2
-            self.__class__.max_mass[0] = self.get_max_EOS_mass()
-            f, fp, f2, fp2 = self.get_radius_from_EOS()
-            self.__class__.EOS_mass_to_rad[0] = f
-            self.__class__.EOS_mass_to_rad2[0] = f2
-            f, fp, f2, fp2 = self.get_bary_mass_from_EOS()
-            self.__class__.EOS_mass_to_bary_mass[0] = f
-            self.__class__.EOS_mass_to_bary_mass2[0] = f2
+            self.__class__.max_mass[0] = eos.get_max_EOS_mass()
+            f1 = eos.get_radius_from_EOS()
+            self.__class__.EOS_mass_to_rad[0] = f1
+            f2 = self.get_bary_mass_from_EOS()
+            self.__class__.EOS_mass_to_bary_mass[0] = f2
             self.__class__.transient_duration[0] = transient_duration
-            if self.gp_interp is True:
-                self.__class__.grey_opacity_interp[0] = self.get_kappa_GP(
-                    kappa_grid_path
-                )
-            else:
-                self.__class__.grey_opacity_interp[0] = self.get_kappa_interp(
-                    kappa_grid_path
-                )
-
+            self.__class__.grey_opacity_interp[0] = self.get_kappa_GP(kappa_grid_path)
         elif self.__class__.EOS_name[0] == EOS:
             pass
         else:
-            print("You must specify an EOS.")
-            exit()
+            raise Exception("You must specify an EOS.")
 
-        if only_load_EOS:
-            return
-        self.num_params = 12
-        self.has_gw = True
-        try:
-            self.transient_duration = self.__class__.transient_duration[0]
-        except IndexError:
-            self.transient_duration = transient_duration
+        self.transient_duration = self.__class__.transient_duration[0]
+
+        # Instantiate parameter values as none to be filled in later
+        # Set the parameter names
+        self.param1_name = "m1"
+        self.param2_name = "m2"
+        self.param3_name = "c1"
+        self.param4_name = "c2"
+        self.param5_name = "theta_obs"
+        self.param6_name = "Y_e"
+        self.param7_name = "m_ej_dynamic"
+        self.param8_name = "v_ej"
+        self.param9_name = "kappa"
+        self.param10_name = "m_ej_sec"
+        self.param11_name = "m_ej_total"
+        self.param12_name = "disk_eff"
 
         for i in range(self.num_params):
             setattr(self, "param{}".format(i + 1), None)
@@ -329,18 +329,13 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         if disk_eff is not None:
             self.param12 = float(disk_eff)
 
-        self.dz_enhancement = dz_enhancement
-        self.thermalisation_eff = thermalisation_eff
-
         self.draw_parameters(consistency_check=consistency_check)
-
-        self.pre_dist_params = False
         self.make_sed()
-        self.subtype = "rosswog semi-analytic with viewing angle"
         super().__init__()
 
     def draw_parameters(self, consistency_check=True):
-        """
+        """Draw parameters not populated by the user.
+
         Wrapper function to sample the generating parameter distributions for
         BNS kilonova with viewing angle.
 
@@ -367,20 +362,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
                 observer.
 
         """
-        # Set the parameter names
-        self.param1_name = "m1"
-        self.param2_name = "m2"
-        self.param3_name = "c1"
-        self.param4_name = "c2"
-        self.param5_name = "theta_obs"
-        self.param6_name = "Y_e"
-        self.param7_name = "m_ej_dynamic"
-        self.param8_name = "v_ej"
-        self.param9_name = "kappa"
-        self.param10_name = "m_ej_sec"
-        self.param11_name = "m_ej_total"
-        self.param12_name = "disk_eff"
-
         # Determine output shape for parameters based on size
         if self.number_of_samples > 1:
             self.out_shape = (self.number_of_samples, 1)
