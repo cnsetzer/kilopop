@@ -158,7 +158,7 @@ class em_transient(object):
 class kilonova(em_transient, compact_binary_inspiral):
     """Base class for kilonova transients, groups relevant class methods and attributes."""
 
-    def __init__(self, t, ra, dec, z):
+    def __init__(self, t, ra, dec, z, sim_gw):
         """Init class.
 
         Wrapper class to handle different kilonva models.
@@ -166,7 +166,8 @@ class kilonova(em_transient, compact_binary_inspiral):
         """
         self.type = "kne"
         em_transient.__init__(self, t, ra, dec, z)
-        compact_binary_inspiral.__init__(self)
+        if sim_gw is True:
+            compact_binary_inspiral.__init__(self)
 
 
 class saee_bns_emgw_with_viewing_angle(kilonova):
@@ -246,7 +247,8 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         t=0.0,
         ra=0.0,
         dec=0.0,
-        z=0.001
+        z=0.001,
+        sim_gw=False,
     ):
         """Init SAEE viewing-angle class."""
         self.num_params = 12
@@ -268,6 +270,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             warnings.warn('Be aware that you are changing to a different EOS.', category=UserWarning)
             load_EOS = True
         elif self.__class__.EOS_name == EOS:
+            warnings.warn('You have already loaded this EOS.', category=UserWarning)
             load_EOS = False
         else:
             raise Exception("You must specify an EOS.")
@@ -337,7 +340,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
         self.draw_parameters()
         self.make_sed()
-        super().__init__(t, ra, dec, z)
+        super().__init__(t, ra, dec, z, sim_gw)
 
     def draw_parameters(self):
         """Draw parameters not populated by the user.
