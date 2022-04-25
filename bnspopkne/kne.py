@@ -35,7 +35,7 @@ class em_transient(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, t=0.0, ra=0.0, dec=0.0, z=0.001):
         """Init of the em_transient class wrapper."""
         source = TimeSeriesSource(self.phase, self.wave, self.flux)
         self.model = deepcopy(Model(source=source))
@@ -44,6 +44,8 @@ class em_transient(object):
         self.phase = None
         self.wave = None
         self.flux = None
+        self.put_in_universe(t, ra, dec, z)
+        super().__init__()
 
     def put_in_universe(
         self, t, ra, dec, z, pec_vel=None, dl=None, cosmo=cosmos, r_v=3.1, id=None,
@@ -156,14 +158,14 @@ class em_transient(object):
 class kilonova(em_transient, compact_binary_inspiral):
     """Base class for kilonova transients, groups relevant class methods and attributes."""
 
-    def __init__(self):
+    def __init__(self, t, ra, dec, z):
         """Init class.
 
         Wrapper class to handle different kilonva models.
 
         """
         self.type = "kne"
-        em_transient.__init__(self)
+        em_transient.__init__(self, t, ra, dec, z)
         compact_binary_inspiral.__init__(self)
 
 
@@ -206,14 +208,13 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         instance of the class
     """
 
-    EOS_name = []
-    max_mass = []
-    EOS_table = []
-    EOS_mass_to_rad = []
-    EOS_mass_to_bary_mass = []
-    transient_duration = []
-    grey_opacity_interp = []
-    opacity_data = []
+    EOS_name = None
+    tov_mass = None
+    EOS_mass_to_rad = None
+    EOS_mass_to_bary_mass = None
+    threshold_mass = None
+    grey_opacity_interp = None
+    opacity_data = None
 
     def __init__(
         self,
@@ -232,6 +233,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         EOS=None,
         EOS_path=None,
         kappa_grid_path=None,
+        hyperparam_file=None,
         spin1z=None,
         spin2z=None,
         transient_duration=25.0,
@@ -241,6 +243,10 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         dz_enhancement=1.0,
         thermalisation_eff=0.25,
         mapping_type="coughlin",
+        t=0.0,
+        ra=0.0,
+        dec=0.0,
+        z=0.001
     ):
         """Init SAEE viewing-angle class."""
         self.num_params = 12
@@ -254,38 +260,37 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
         # Handle setup of EOS dependent mapping objects
         if not self.__class__.EOS_name and EOS:
-            self.__class__.EOS_name.append(EOS)
-            E1 = eos.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
-            self.__class__.EOS_table.append(E1)
-            self.__class__.max_mass.append(eos.get_max_EOS_mass())
-            f1 = eos.get_radius_from_EOS()
-            self.__class__.EOS_mass_to_rad.append(f1)
-            f2 = eos.get_bary_mass_from_EOS()
-            self.__class__.EOS_mass_to_bary_mass.append(f2)
-            self.__class__.transient_duration.append(transient_duration)
-            self.__class__.grey_opacity_interp.append(self.construct_opacity_gaussian_process(kappa_grid_path))
-        elif not self.__class__.EOS_name and not EOS:
-            raise Exception("You must first specify the EOS.")
-        elif self.__class__.EOS_name[0] and not EOS:
+            load_EOS = True
+        elif self.__class__.EOS_name and not EOS:
             warnings.warn('Be aware that you are using a pre-loaded EOS.', category=UserWarning)
-        elif self.__class__.EOS_name[0] != EOS:
+            load_EOS = False
+        elif self.__class__.EOS_name != EOS:
             warnings.warn('Be aware that you are changing to a different EOS.', category=UserWarning)
-            self.__class__.EOS_name[0] = EOS
-            E1 = eos.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
-            self.__class__.EOS_table[0] = E1
-            self.__class__.max_mass[0] = eos.get_max_EOS_mass()
-            f1 = eos.get_radius_from_EOS()
-            self.__class__.EOS_mass_to_rad[0] = f1
-            f2 = self.get_bary_mass_from_EOS()
-            self.__class__.EOS_mass_to_bary_mass[0] = f2
-            self.__class__.transient_duration[0] = transient_duration
-            self.__class__.grey_opacity_interp[0] = self.construct_opacity_gaussian_process(kappa_grid_path)
-        elif self.__class__.EOS_name[0] == EOS:
-            pass
+            load_EOS = True
+        elif self.__class__.EOS_name == EOS:
+            load_EOS = False
         else:
             raise Exception("You must specify an EOS.")
 
-        self.transient_duration = self.__class__.transient_duration[0]
+        if load_EOS is True:
+            if EOS_path is None:
+                raise Exception('You must specify the path to an EOS mass-radius table to load.')
+            self.__class__.EOS_name = EOS
+            E1 = eos.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
+            self.__class__.tov_mass = eos.get_max_EOS_mass(E1)
+            f1 = eos.get_radius_from_EOS(E1)
+            self.__class__.EOS_mass_to_rad = f1
+            f2 = eos.get_bary_mass_from_EOS(E1)
+            self.__class__.EOS_mass_to_bary_mass = f2
+            self.__class__.threshold_mass = eos.calculate_threshold_mass(self.__class__.tov_mass, f1)
+            if kappa_grid_path is None:
+                raise Exception('You must specify path to opacity data to construct the Gaussian process object.')
+            num_data, gp = mappings.construct_opacity_gaussian_process(kappa_grid_path, hyperparam_file)
+            self.__class__.grey_opacity_interp = gp
+            self.__class__.opacity_data = num_data
+
+        self.transient_duration = transient_duration
+        self.EOS_name = self.__class__.EOS_name
 
         # Instantiate parameter values as none to be filled in later
         # Set the parameter names
@@ -332,7 +337,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
         self.draw_parameters()
         self.make_sed()
-        super().__init__()
+        super().__init__(t, ra, dec, z)
 
     def draw_parameters(self):
         """Draw parameters not populated by the user.
@@ -366,23 +371,25 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         if (None in (self.param1, self.param2)) and (
             None in (self.param7, self.param8)
         ):
-            mappings.draw_masses_from_EOS_bounds()
+            self.param1, self.param2 = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut()
+
 
         if None in (self.param3, self.param4):
-            eos.compute_compactnesses_from_EOS()
+            self.param3 = eos.compute_compactnesses_from_EOS(self.param1, self.__class__.EOS_mass_to_rad)
+            self.param4 = eos.compute_compactnesses_from_EOS(self.param2, self.__class__.EOS_mass_to_rad)
 
         if None in list([self.param5]):
-            population.draw_viewing_angle()
+            self.param5 = population.draw_viewing_angle(inclinations=self.param5)
 
         if None in list([self.param6]):
-            mappings.compute_ye_at_viewing_angle()
+            self.param6 = mappings.compute_ye_at_viewing_angle(self.param5, self.EOS_name)
 
         if None in (self.param7, self.param8):
-            mappings.map_to_dynamical_ejecta()
-            mappings.map_to_secular_ejecta()
+            self.param7, self.param8 = mappings.map_to_dynamical_ejecta(self.param1, self.param3, self.param2, self.param4, self.__class__.EOS_mass_to_bary_mass)
+            self.param10, self.param11, self.param12 = mappings.map_to_secular_ejecta(self.param1, self.param3, self.param2, self.param4, self.param7, self.__class__.tov_mass)
 
         if None in list([self.param9]):
-            mappings.map_kne_to_grey_opacity_via_gaussian_process()
+            self.param9 = mappings.map_kne_to_grey_opacity_via_gaussian_process(self.param11, self.param8, self.param6, self.__class__.grey_opacity_interp, self.__class__.opacity_data, grey_opacity=self.param9)
 
         if self.consistency_check is True:
             self.check_kne_priors()
@@ -493,7 +500,7 @@ def compute_ye_band_factors(self, n_phi=101):
         + inclination
         - np.pi / 2.0
     )
-    ye = mappings.compute_ye_at_viewing_angle(phi_grid, EOS=self.__class__.EOS_name[0])
+    ye = mappings.compute_ye_at_viewing_angle(phi_grid, EOS=self.__class__.EOS_name)
     factor = []
     for i, phi in enumerate(phi_grid):
         if i == 0:

@@ -13,7 +13,7 @@ class compact_binary_inspiral(object):
         self.dt = dt
         self.f_low = f_low
         self.simulate_inspiral_merger()
-        super.__init__()
+        super().__init__()
 
     def simulate_inspiral_merger(self):
         """Calculate the inspiral signal from the BNS merger.
