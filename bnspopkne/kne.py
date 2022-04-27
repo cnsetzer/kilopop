@@ -34,6 +34,7 @@ class em_transient(object):
     These include assign the transient a peculiar velocity, redshifting, etc.
 
     """
+
     def __init__(self, t=0.0, ra=0.0, dec=0.0, z=0.001):
         """Init of the em_transient class wrapper."""
         source = TimeSeriesSource(self.phase, self.wave, self.flux)
@@ -263,20 +264,27 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         if not self.__class__.EOS_name and EOS:
             load_EOS = True
         elif self.__class__.EOS_name and not EOS:
-            warnings.warn('Be aware that you are using a pre-loaded EOS.', category=UserWarning)
+            warnings.warn(
+                "Be aware that you are using a pre-loaded EOS.", category=UserWarning
+            )
             load_EOS = False
         elif self.__class__.EOS_name != EOS:
-            warnings.warn('Be aware that you are changing to a different EOS.', category=UserWarning)
+            warnings.warn(
+                "Be aware that you are changing to a different EOS.",
+                category=UserWarning,
+            )
             load_EOS = True
         elif self.__class__.EOS_name == EOS:
-            warnings.warn('You have already loaded this EOS.', category=UserWarning)
+            warnings.warn("You have already loaded this EOS.", category=UserWarning)
             load_EOS = False
         else:
             raise Exception("You must specify an EOS.")
 
         if load_EOS is True:
             if EOS_path is None:
-                raise Exception('You must specify the path to an EOS mass-radius table to load.')
+                raise Exception(
+                    "You must specify the path to an EOS mass-radius table to load."
+                )
             self.__class__.EOS_name = EOS
             E1 = eos.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
             self.__class__.tov_mass = eos.get_max_EOS_mass(E1)
@@ -284,10 +292,16 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             self.__class__.EOS_mass_to_rad = f1
             f2 = eos.get_bary_mass_from_EOS(E1)
             self.__class__.EOS_mass_to_bary_mass = f2
-            self.__class__.threshold_mass = eos.calculate_threshold_mass(self.__class__.tov_mass, f1)
+            self.__class__.threshold_mass = eos.calculate_threshold_mass(
+                self.__class__.tov_mass, f1
+            )
             if kappa_grid_path is None:
-                raise Exception('You must specify path to opacity data to construct the Gaussian process object.')
-            num_data, gp = mappings.construct_opacity_gaussian_process(kappa_grid_path, hyperparam_file)
+                raise Exception(
+                    "You must specify path to opacity data to construct the Gaussian process object."
+                )
+            num_data, gp = mappings.construct_opacity_gaussian_process(
+                kappa_grid_path, hyperparam_file
+            )
             self.__class__.grey_opacity_interp = gp
             self.__class__.opacity_data = num_data
 
@@ -342,7 +356,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         super().__init__(t, ra, dec, z, sim_gw)
 
     def __call__():
-
+        pass
 
     def set(self, **kwargs):
         """
@@ -383,25 +397,53 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         if (None in (self.param1, self.param2)) and (
             None in (self.param7, self.param8)
         ):
-            self.param1, self.param2 = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut()
-
+            (
+                self.param1,
+                self.param2,
+            ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut()
 
         if None in (self.param3, self.param4):
-            self.param3 = eos.compute_compactnesses_from_EOS(self.param1, self.__class__.EOS_mass_to_rad)
-            self.param4 = eos.compute_compactnesses_from_EOS(self.param2, self.__class__.EOS_mass_to_rad)
+            self.param3 = eos.compute_compactnesses_from_EOS(
+                self.param1, self.__class__.EOS_mass_to_rad
+            )
+            self.param4 = eos.compute_compactnesses_from_EOS(
+                self.param2, self.__class__.EOS_mass_to_rad
+            )
 
         if None in list([self.param5]):
             self.param5 = population.draw_viewing_angle(inclinations=self.param5)
 
         if None in list([self.param6]):
-            self.param6 = mappings.compute_ye_at_viewing_angle(self.param5, self.EOS_name)
+            self.param6 = mappings.compute_ye_at_viewing_angle(
+                self.param5, self.EOS_name
+            )
 
         if None in (self.param7, self.param8):
-            self.param7, self.param8 = mappings.map_to_dynamical_ejecta(self.param1, self.param3, self.param2, self.param4, self.__class__.EOS_mass_to_bary_mass)
-            self.param10, self.param11, self.param12 = mappings.map_to_secular_ejecta(self.param1, self.param3, self.param2, self.param4, self.param7, self.__class__.tov_mass)
+            self.param7, self.param8 = mappings.map_to_dynamical_ejecta(
+                self.param1,
+                self.param3,
+                self.param2,
+                self.param4,
+                self.__class__.EOS_mass_to_bary_mass,
+            )
+            self.param10, self.param11, self.param12 = mappings.map_to_secular_ejecta(
+                self.param1,
+                self.param3,
+                self.param2,
+                self.param4,
+                self.param7,
+                self.__class__.tov_mass,
+            )
 
         if None in list([self.param9]):
-            self.param9 = mappings.map_kne_to_grey_opacity_via_gaussian_process(self.param11, self.param8, self.param6, self.__class__.grey_opacity_interp, self.__class__.opacity_data, grey_opacity=self.param9)
+            self.param9 = mappings.map_kne_to_grey_opacity_via_gaussian_process(
+                self.param11,
+                self.param8,
+                self.param6,
+                self.__class__.grey_opacity_interp,
+                self.__class__.opacity_data,
+                grey_opacity=self.param9,
+            )
 
         if self.consistency_check is True:
             self.check_kne_priors()
@@ -525,9 +567,7 @@ def compute_ye_band_factors(self, n_phi=101):
             phi_min = phi - (phi - phi_grid[i - 1]) / 2.0
             phi_max = phi + (phi_grid[i + 1] - phi) / 2.0
 
-        F_raw, err = quadrature(
-            compute_fphi, phi_min, phi_max, (inclination)
-        )
+        F_raw, err = quadrature(compute_fphi, phi_min, phi_max, (inclination))
         F = F_raw / np.pi
         factor.append(F)
     fac_array = np.asarray(factor)
