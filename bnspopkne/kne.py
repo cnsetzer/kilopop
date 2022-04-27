@@ -34,7 +34,6 @@ class em_transient(object):
     These include assign the transient a peculiar velocity, redshifting, etc.
 
     """
-
     def __init__(self, t=0.0, ra=0.0, dec=0.0, z=0.001):
         """Init of the em_transient class wrapper."""
         source = TimeSeriesSource(self.phase, self.wave, self.flux)
@@ -341,6 +340,16 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.draw_parameters()
         self.make_sed()
         super().__init__(t, ra, dec, z, sim_gw)
+
+    def __call__():
+
+
+    def set(self, **kwargs):
+        """
+
+        """
+        self.__init__(kwargs)
+        self.model.set(kwargs)
 
     def draw_parameters(self):
         """Draw parameters not populated by the user.
