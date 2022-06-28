@@ -355,9 +355,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.make_sed()
         super().__init__(t, ra, dec, z, sim_gw)
 
-    def __call__():
-        pass
-
     def set(self, **kwargs):
         """
 

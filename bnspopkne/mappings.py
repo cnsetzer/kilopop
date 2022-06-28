@@ -30,7 +30,17 @@ class tanaka_mean_fixed(Model):
 
 
 def map_to_secular_ejecta(
-    mass1, comp1, mass2, comp2, mej_dyn, M_thr, disk_effs=None, m_sec=None, m_tot=None, mapping_type="coughlin", out_shape=1,
+    mass1,
+    comp1,
+    mass2,
+    comp2,
+    mej_dyn,
+    M_thr,
+    disk_effs=None,
+    m_sec=None,
+    m_tot=None,
+    mapping_type="coughlin",
+    out_shape=1,
 ):
     """Compute the non-dynamical timescale components of the ejecta.
 
@@ -94,7 +104,9 @@ def map_to_secular_ejecta(
         else:
             M_ns_tot = np.add(mass1[ind], mass2[ind])
         if mapping_type == "coughlin":
-            m_disk = np.power(10.0, a * (1.0 + b * np.tanh((c - (M_ns_tot / M_thr)) / d)))
+            m_disk = np.power(
+                10.0, a * (1.0 + b * np.tanh((c - (M_ns_tot / M_thr)) / d))
+            )
             if not np.isscalar(m_disk):
                 disk_ind = np.argwhere(m_disk < 1.0e-3)[:, 0]
                 m_disk[disk_ind] = 1.0e-3
@@ -136,6 +148,7 @@ def map_to_secular_ejecta(
         pass
     return m_sec, m_tot, disk_effs
 
+
 def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
     """
     Wrapper function to build the gaussian process instance for obtaining a
@@ -173,9 +186,9 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
     x[:, 1] = velocities
     x[:, 2] = electron_fractions
 
-    kernel_choice = np.var(
-        grey_opac_vals
-    ) * george.kernels.Matern52Kernel(metric=[0.01, 0.05, 0.05], ndim=3)
+    kernel_choice = np.var(grey_opac_vals) * george.kernels.Matern52Kernel(
+        metric=[0.01, 0.05, 0.05], ndim=3
+    )
 
     opacity_GP = george.GP(mean=tanaka_mean_fixed(), kernel=kernel_choice)
     opacity_GP.compute(x, opacity_std)
@@ -183,7 +196,9 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
     return grey_opac_vals, opacity_GP
 
 
-def map_kne_to_grey_opacity_via_gaussian_process(m_tot, v_ej, Y_e, grey_opacity_gp, opacity_data, grey_opacity=None):
+def map_kne_to_grey_opacity_via_gaussian_process(
+    m_tot, v_ej, Y_e, grey_opacity_gp, opacity_data, grey_opacity=None
+):
     """
     Wrapper funciton to use an interpolation instance or other function to
     calculate the corresponding grey opacity that was fit from simulation
@@ -248,7 +263,16 @@ def map_kne_to_grey_opacity_via_gaussian_process(m_tot, v_ej, Y_e, grey_opacity_
     return grey_opacity
 
 
-def map_to_dynamical_ejecta(mass1, comp1, mass2, comp2, bary_mass_mapping, mej_dyn=None, v_ej=None, mapping_type="coughlin"):
+def map_to_dynamical_ejecta(
+    mass1,
+    comp1,
+    mass2,
+    comp2,
+    bary_mass_mapping,
+    mej_dyn=None,
+    v_ej=None,
+    mapping_type="coughlin",
+):
     """
     Wrapper for fit functions from various references: Coughlin et. al 2018 etc.
     to map m1,m2,c1,c2 to mej,vej.

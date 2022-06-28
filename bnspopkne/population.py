@@ -1,6 +1,10 @@
 """Public module for drawing population intrinsic parameters."""
 import numpy as np
 
+class Setzer2022_population(object):
+    def __init__():
+
+
 
 def draw_viewing_angle(inclinations=None, out_shape=1):
     """Set the observer viewing-angle.
