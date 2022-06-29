@@ -173,7 +173,7 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
         hyper_vec = np.load(hyperparam_file)
     except (FileNotFoundError, TypeError) as error:
         print(error)
-        hyper_vec = np.array([9.05275106, -3.34210729, -0.43019937, -2.93326251])
+        hyper_vec = np.array([8.49442447, 0.22154227, -0.34043063, -2.99573227])
     opac_dataframe = read_csv(csv_loc, index_col=0)
     grey_opac_vals = opac_dataframe["kappa"].values
     opacity_std = opac_dataframe["sigma_kappa"].values
