@@ -7,6 +7,7 @@ from bnspopkne import mappings
 class Setzer2022_population(object):
     def __init__(EOS='sfho',
                  EOS_path=None,
+                 gp_hyperparameter_file=None,
                  kappa_grid_path=None,
                  num_samples=50000,
                  transient_duration=21.0,
@@ -35,7 +36,7 @@ class Setzer2022_population(object):
                 "You must specify path to opacity data to construct the Gaussian process object."
             )
         num_data, gp = mappings.construct_opacity_gaussian_process(
-            kappa_grid_path,
+            kappa_grid_path, gp_hyperparameter_file
         )
         self.grey_opacity_interp = gp
         self.opacity_data = num_data

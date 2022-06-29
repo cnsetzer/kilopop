@@ -234,7 +234,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         EOS=None,
         EOS_path=None,
         kappa_grid_path=None,
-        hyperparam_file=None,
+        gp_hyperparameter_file=None,
         spin1z=None,
         spin2z=None,
         transient_duration=25.0,
@@ -300,7 +300,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
                     "You must specify path to opacity data to construct the Gaussian process object."
                 )
             num_data, gp = mappings.construct_opacity_gaussian_process(
-                kappa_grid_path, hyperparam_file
+                kappa_grid_path, gp_hyperparameter_file
             )
             self.__class__.grey_opacity_interp = gp
             self.__class__.opacity_data = num_data
