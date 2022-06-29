@@ -1,9 +1,179 @@
 """Public module for drawing population intrinsic parameters."""
 import numpy as np
+from bnspopkne import equation_of_state as eos
+from bnspopkne import mappings
+
 
 class Setzer2022_population(object):
-    def __init__():
+    def __init__(EOS='sfho',
+                 EOS_path=None,
+                 kappa_grid_path=None,
+                 num_samples=50000,
+                 transient_duration=21.0,
+                 ):
+        """Init SAEE viewing-angle class."""
+        self.num_transients = num_samples
+        self.pre_dist_params = True # relic flag for use with Astrotog software
+        self.num_params = 12
+        self.min_wave = 500
+        self.max_wave = 1200
+        self.mapping_type = "coughlin"
+        self.dz_enhancement = 1.0
+        self.thermalisation_eff = 0.25
+        self.consistency_check = True
+        E1 = eos.get_EOS_table(EOS=EOS, EOS_path=EOS_path)
+        self.tov_mass = eos.get_max_EOS_mass(E1)
+        f1 = eos.get_radius_from_EOS(E1)
+        self.EOS_mass_to_rad = f1
+        f2 = eos.get_bary_mass_from_EOS(E1)
+        self.EOS_mass_to_bary_mass = f2
+        self.threshold_mass = eos.calculate_threshold_mass(
+            self.tov_mass, f1
+        )
+        if kappa_grid_path is None:
+            raise Exception(
+                "You must specify path to opacity data to construct the Gaussian process object."
+            )
+        num_data, gp = mappings.construct_opacity_gaussian_process(
+            kappa_grid_path,
+        )
+        self.grey_opacity_interp = gp
+        self.opacity_data = num_data
 
+        self.transient_duration = transient_duration
+        self.EOS_name = EOS
+
+        # Instantiate parameter values as none to be filled in later
+        # Set the parameter names
+        self.param1_name = "m1"
+        self.param2_name = "m2"
+        self.param3_name = "c1"
+        self.param4_name = "c2"
+        self.param5_name = "theta_obs"
+        self.param6_name = "Y_e"
+        self.param7_name = "m_ej_dynamic"
+        self.param8_name = "v_ej"
+        self.param9_name = "kappa"
+        self.param10_name = "m_ej_sec"
+        self.param11_name = "m_ej_total"
+        self.param12_name = "disk_eff"
+
+        for i in range(self.num_params):
+            setattr(self, "param{}".format(i + 1), None)
+
+        (
+            self.param1,
+            self.param2,
+        ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(out_shape=(self.num_transients, 1))
+
+        self.param3 = eos.compute_compactnesses_from_EOS(
+            self.param1, self.EOS_mass_to_rad
+        )
+        self.param4 = eos.compute_compactnesses_from_EOS(
+            self.param2, self.EOS_mass_to_rad
+        )
+
+        self.param5 = draw_viewing_angle(inclinations=self.param5, out_shape=(self.num_transients, 1))
+
+        self.param6 = mappings.compute_ye_at_viewing_angle(
+                self.param5, self.EOS_name
+            )
+
+        self.param7, self.param8 = mappings.map_to_dynamical_ejecta(
+            self.param1,
+            self.param3,
+            self.param2,
+            self.param4,
+            self.EOS_mass_to_bary_mass,
+        )
+        self.param10, self.param11, self.param12 = mappings.map_to_secular_ejecta(
+            self.param1,
+            self.param3,
+            self.param2,
+            self.param4,
+            self.param7,
+            self.tov_mass,
+        )
+
+        self.param9 = mappings.map_kne_to_grey_opacity_via_gaussian_process(
+            self.param11,
+            self.param8,
+            self.param6,
+            self.grey_opacity_interp,
+            self.opacity_data,
+            grey_opacity=self.param9,
+        )
+
+        m_upper=0.1
+        m_lower=0.001
+        v_upper=0.4
+        v_lower=0.05
+        kappa_lower=0.1
+
+        ind1 = np.argwhere(self.param11 > m_upper)
+        ind2 = np.argwhere(self.param11 < m_lower)
+        ind3 = np.argwhere(self.param8 > v_upper)
+        ind4 = np.argwhere(self.param8 < v_lower)
+        ind5 = np.argwhere(self.param9 < kappa_lower)
+        ind6 = np.union1d(ind1, ind5)
+        minds = np.union1d(ind6, ind2)
+        vinds = np.union1d(ind3, ind4)
+        all_inds = np.union1d(minds, vinds)
+
+        while all_inds.shape[0] > 0:
+            for i in range(self.num_params):
+                getattr(self, "param{}".format(i + 1))[all_inds] = None
+            (
+                self.param1,
+                self.param2,
+            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(out_shape=(self.num_transients, 1))
+
+            self.param3 = eos.compute_compactnesses_from_EOS(
+                self.param1, self.EOS_mass_to_rad
+            )
+            self.param4 = eos.compute_compactnesses_from_EOS(
+                self.param2, self.EOS_mass_to_rad
+            )
+
+            self.param5 = draw_viewing_angle(inclinations=self.param5, out_shape=(self.num_transients, 1))
+
+            self.param6 = mappings.compute_ye_at_viewing_angle(
+                    self.param5, self.EOS_name
+                )
+
+            self.param7, self.param8 = mappings.map_to_dynamical_ejecta(
+                self.param1,
+                self.param3,
+                self.param2,
+                self.param4,
+                self.EOS_mass_to_bary_mass,
+            )
+            self.param10, self.param11, self.param12 = mappings.map_to_secular_ejecta(
+                self.param1,
+                self.param3,
+                self.param2,
+                self.param4,
+                self.param7,
+                self.tov_mass,
+            )
+
+            self.param9 = mappings.map_kne_to_grey_opacity_via_gaussian_process(
+                self.param11,
+                self.param8,
+                self.param6,
+                self.grey_opacity_interp,
+                self.opacity_data,
+                grey_opacity=self.param9,
+            )
+            ind1 = np.argwhere(self.param11 > m_upper)
+            ind2 = np.argwhere(self.param11 < m_lower)
+            ind3 = np.argwhere(self.param8 > v_upper)
+            ind4 = np.argwhere(self.param8 < v_lower)
+            ind5 = np.argwhere(self.param9 < kappa_lower)
+            ind6 = np.union1d(ind1, ind5)
+            minds = np.union1d(ind6, ind2)
+            vinds = np.union1d(ind3, ind4)
+            all_inds = np.union1d(minds, vinds)
 
 
 def draw_viewing_angle(inclinations=None, out_shape=1):
