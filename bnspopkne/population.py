@@ -5,7 +5,8 @@ from bnspopkne import mappings
 
 
 class Setzer2022_population(object):
-    def __init__(EOS='sfho',
+    def __init__(self,
+                 EOS='sfho',
                  EOS_path=None,
                  gp_hyperparameter_file=None,
                  kappa_grid_path=None,
