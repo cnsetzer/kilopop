@@ -124,10 +124,7 @@ class Setzer2022_population(object):
         all_inds = np.union1d(minds, vinds)
 
         while all_inds.shape[0] > 0:
-            print(all_inds.shape)
             for i in range(self.num_params):
-
-                print(getattr(self, f"param{i+1}").shape)
                 getattr(self, "param{}".format(i + 1))[all_inds] = None
             (
                 self.param1,
