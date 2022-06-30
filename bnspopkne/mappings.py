@@ -216,10 +216,8 @@ def map_kne_to_grey_opacity_via_gaussian_process(
         v_ej_pred = v_ej
         Y_e_pred = Y_e
     else:
-        ind = np.argwhere(np.isnan(grey_opacity))
-        print(np.isnan(grey_opacity).shape, ind.shape)
+        ind = np.isnan(grey_opacity)
         m_ej_pred = m_tot[ind]
-        print(m_ej_pred.shape)
         v_ej_pred = v_ej[ind]
         Y_e_pred = Y_e[ind]
     if np.isscalar(m_ej_pred):
