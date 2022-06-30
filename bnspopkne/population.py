@@ -95,6 +95,7 @@ class Setzer2022_population(object):
             self.param4,
             self.param7,
             self.tov_mass,
+            out_shape=(self.num_transients, 1),
         )
 
         self.param9 = mappings.map_kne_to_grey_opacity_via_gaussian_process(
@@ -160,6 +161,7 @@ class Setzer2022_population(object):
                 self.param4,
                 self.param7,
                 self.tov_mass,
+                out_shape=(self.num_transients, 1),
             )
 
             self.param9 = mappings.map_kne_to_grey_opacity_via_gaussian_process(
