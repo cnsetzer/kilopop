@@ -254,10 +254,11 @@ def map_kne_to_grey_opacity_via_gaussian_process(
             kit += 1
         if ind2.shape[0] > 0:
             kappa[ind2] = 0.1
-
+    print(kappa.size)
     if grey_opacity is None:
         grey_opacity = kappa
     else:
+        print(ind.size)
         grey_opacity[ind] = kappa
     return np.expand_dims(grey_opacity, axis=1)
 
