@@ -205,7 +205,7 @@ def draw_viewing_angle(inclinations=None, out_shape=1):
     if inclinations is None:
         o_shape = out_shape
     else:
-        ind = np.argwhere(np.isnan(inclinations))
+        ind = np.isnan(inclinations)
         o_shape = inclinations[ind].shape
 
     theta_obs = np.arccos(2 * np.random.random_sample(size=o_shape) - 1)  # in radians
@@ -232,7 +232,7 @@ def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, mass=None, out_shape=1):
         ind = np.array([1])
         o_shape = out_shape
     else:
-        ind = np.argwhere(np.isnan(mass))
+        ind = np.isnan(mass)
         o_shape = mass[ind].shape
 
     new_mass = np.random.uniform(low=m_low, high=max_mass, size=o_shape)
