@@ -65,7 +65,7 @@ def map_to_secular_ejecta(
     if disk_effs is None:
         disk_effs = np.random.uniform(0.1, 0.4, size=out_shape)
     else:
-        dind = np.argwhere(np.isnan(disk_effs))
+        dind = np.isnan(disk_effs)
         disk_effs[dind] = np.random.uniform(0.1, 0.4, size=dind.shape)
 
     if mapping_type == "coughlin":
@@ -93,7 +93,7 @@ def map_to_secular_ejecta(
             if m_tot is None:
                 m_tot = np.add(mej_dyn, m_sec)
         else:
-            ind = np.argwhere(np.isnan(m_sec[:, 0]))[:, 0]
+            ind = np.isnan(m_sec[:, 0])[:, 0]
             if mapping_type == "kruger":
                 m1 = mass1[ind]
                 c1 = comp1[ind]
@@ -330,7 +330,7 @@ def map_to_dynamical_ejecta(
         c1 = comp1
         c2 = comp2
     else:
-        ind = np.argwhere(np.isnan(mej_dyn))
+        ind = np.isnan(mej_dyn)
         m1 = mass1[ind]
         m2 = mass2[ind]
         c1 = comp1[ind]
@@ -388,7 +388,7 @@ def map_to_dynamical_ejecta(
         if np.isscalar(v_ej) is True:
             ind = []
         else:
-            ind = np.argwhere(np.isnan(v_ej))
+            ind = np.isnan(v_ej)
             m1 = mass1[ind]
             m2 = mass2[ind]
             c1 = comp1[ind]
@@ -434,7 +434,7 @@ def compute_ye_at_viewing_angle(inclination, EOS, Ye=None):
     if Ye is None:
         theta_obs = inclination
     else:
-        ind = np.argwhere(np.isnan(Ye))
+        ind = np.isnan(Ye)
         theta_obs = inclination[ind]
 
     if EOS == "bhblp":
