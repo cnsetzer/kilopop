@@ -66,7 +66,7 @@ class Setzer2022_population(object):
         (
             self.param1,
             self.param2,
-        ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(out_shape=(self.num_transients, 1))
+        ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(self.tov_mass, out_shape=(self.num_transients, 1))
 
         self.param3 = eos.compute_compactnesses_from_EOS(
             self.param1, self.EOS_mass_to_rad
@@ -128,7 +128,7 @@ class Setzer2022_population(object):
             (
                 self.param1,
                 self.param2,
-            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(out_shape=(self.num_transients, 1))
+            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(self.tov_mass, out_shape=(self.num_transients, 1))
 
             self.param3 = eos.compute_compactnesses_from_EOS(
                 self.param1, self.EOS_mass_to_rad
