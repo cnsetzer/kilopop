@@ -104,7 +104,6 @@ class Setzer2022_population(object):
             self.param6,
             self.grey_opacity_interp,
             self.opacity_data,
-            grey_opacity=self.param9,
         )
 
         m_upper=0.1
