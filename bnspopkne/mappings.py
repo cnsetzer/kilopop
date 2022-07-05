@@ -260,7 +260,10 @@ def map_kne_to_grey_opacity_via_gaussian_process(
         grey_opacity = kappa
     else:
         grey_opacity[ind] = kappa
-    return np.expand_dims(grey_opacity, axis=1)
+    if grey_opacity.ndim == 2:
+        return grey_opacity
+    else:
+        return np.expand_dims(grey_opacity, axis=1)
 
 
 def map_to_dynamical_ejecta(
