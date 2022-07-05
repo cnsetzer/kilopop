@@ -44,7 +44,7 @@ class em_transient(object):
         self.phase = None
         self.wave = None
         self.flux = None
-        self.put_in_universe(t, ra, dec, z)
+        _ = self.put_in_universe(t, ra, dec, z)
         super().__init__()
 
     def put_in_universe(
@@ -87,6 +87,7 @@ class em_transient(object):
         self.redshift()
         self.tmax = t + self.model.maxtime()
         self.extinct_model(r_v=3.1)
+        return self
 
     def redshift(self):
         """Redshift the source.
