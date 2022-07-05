@@ -74,7 +74,7 @@ class em_transient(object):
         self.dist_pc = self.dist_mpc * 1000000.0  # convert Mpc to pc
         self.peculiar_velocity(pec_vel)
         self.redshift()
-        self.tmax = t + self.model.maxtime()
+        self.tmax = self.t0 + self.model.maxtime()
         self.extinct_model(r_v=3.1)
         self.save_info(cosmo)
 
