@@ -65,7 +65,7 @@ def map_to_secular_ejecta(
     if disk_effs is None:
         disk_effs = np.random.uniform(0.1, 0.4, size=out_shape)
     else:
-        dind = np.isnan(disk_effs)
+        dind = np.argwhere(np.isnan(disk_effs))
         print(dind.shape, disk_effs.shape)
         disk_effs[dind] = np.random.uniform(0.1, 0.4, size=dind.shape)
 
