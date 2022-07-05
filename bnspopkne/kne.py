@@ -35,7 +35,7 @@ class em_transient(object):
 
     """
 
-    def __init__(self, t=0.0, ra=0.0, dec=0.0, z=0.001):
+    def __init__(self, z=0.001, cosmo=cosmos):
         """Init of the em_transient class wrapper."""
         source = TimeSeriesSource(self.phase, self.wave, self.flux)
         self.model = deepcopy(Model(source=source))
@@ -44,11 +44,10 @@ class em_transient(object):
         self.phase = None
         self.wave = None
         self.flux = None
-        _ = self.put_in_universe(t, ra, dec, z)
-        super().__init__()
+        self.put_in_universe(z, cosmo)
 
     def put_in_universe(
-        self, t, ra, dec, z, id=None, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1
+        self, z, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1
     ):
         """Place transient instance into the simulated Universe.
 
@@ -60,16 +59,6 @@ class em_transient(object):
         -----------------
 
         """
-        if id is None:
-            self.id = np.random.randint(0, high=2 ** 31)
-        else:
-            self.id = int(id)
-        self.t0 = t
-        t_1 = Time(t, format="mjd")
-        t_1.format = "gps"
-        self.t0_gps = t_1.value
-        self.ra = ra
-        self.dec = dec
         if z and not dl:
             self.z = z
             self.dist_mpc = cosmo.luminosity_distance(z).value
@@ -88,7 +77,6 @@ class em_transient(object):
         self.tmax = t + self.model.maxtime()
         self.extinct_model(r_v=3.1)
         self.save_info(cosmo)
-        return self
 
     def redshift(self):
         """Redshift the source.
@@ -202,14 +190,14 @@ class em_transient(object):
 class kilonova(em_transient, compact_binary_inspiral):
     """Base class for kilonova transients, groups relevant class methods and attributes."""
 
-    def __init__(self, t, ra, dec, z, sim_gw):
+    def __init__(self, z, cosmo, sim_gw):
         """Init class.
 
         Wrapper class to handle different kilonva models.
 
         """
         self.type = "kne"
-        em_transient.__init__(self, t, ra, dec, z)
+        em_transient.__init__(self, z, cosmo)
         if sim_gw is True:
             compact_binary_inspiral.__init__(self)
 
@@ -279,6 +267,12 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         EOS_path=None,
         kappa_grid_path=None,
         gp_hyperparameter_file=None,
+        t=0.0,
+        ra=0.0,
+        dec=0.0,
+        z=0.001,
+        id=None
+        cosmo=cosmos,
         spin1z=None,
         spin2z=None,
         transient_duration=25.0,
@@ -288,13 +282,19 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         dz_enhancement=1.0,
         thermalisation_eff=0.25,
         mapping_type="coughlin",
-        t=0.0,
-        ra=0.0,
-        dec=0.0,
-        z=0.001,
-        sim_gw=False,
+        sim_gw=True,
     ):
         """Init SAEE viewing-angle class."""
+        if id is None:
+            self.id = np.random.randint(0, high=2 ** 31)
+        else:
+            self.id = int(id)
+        self.t0 = t
+        t_1 = Time(t, format="mjd")
+        t_1.format = "gps"
+        self.t0_gps = t_1.value
+        self.ra = ra
+        self.dec = dec
         self.num_params = 12
         self.min_wave = min_wave
         self.max_wave = max_wave
@@ -397,7 +397,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
         self.draw_parameters()
         self.make_sed()
-        super().__init__(t, ra, dec, z, sim_gw)
+        super().__init__(z, cosmo, sim_gw)
 
     def set(self, **kwargs):
         """
