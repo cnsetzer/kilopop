@@ -64,9 +64,11 @@ def map_to_secular_ejecta(
 
     if disk_effs is None:
         disk_effs = np.random.uniform(0.1, 0.4, size=out_shape)
+        new_disk_effs = disk_effs
     else:
         dind = np.isnan(disk_effs)
-        disk_effs[dind] = np.random.uniform(0.1, 0.4, size=dind.sum())
+        new_disk_effs = np.random.uniform(0.1, 0.4, size=dind.sum())
+        disk_effs[dind] = new_disk_effs
 
     if mapping_type == "coughlin":
         a = -31.335
@@ -93,7 +95,7 @@ def map_to_secular_ejecta(
             if m_tot is None:
                 m_tot = np.add(mej_dyn, m_sec)
         else:
-            ind = np.isnan(m_sec[:, 0])[:, 0]
+            ind = np.isnan(m_sec)
             if mapping_type == "kruger":
                 m1 = mass1[ind]
                 c1 = comp1[ind]
@@ -136,13 +138,13 @@ def map_to_secular_ejecta(
                 if m_disk < 5 * 1.0e-4:
                     m_disk = 5 * 1.0e-4
 
-        new_m_sec = np.multiply(disk_effs, m_disk)
+        new_m_sec = np.multiply(new_disk_effs, m_disk)
         if m_sec is None:
             m_sec = new_m_sec
             m_tot = np.add(mej_dyn, new_m_sec)
         else:
             m_sec[ind] = new_m_sec
-            m_tot[ind] = np.add(mej_dyn, new_m_sec[ind])
+            m_tot[ind] = np.add(mej_dyn[ind], new_m_sec)
 
     else:
         pass
