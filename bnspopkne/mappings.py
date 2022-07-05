@@ -66,7 +66,7 @@ def map_to_secular_ejecta(
         disk_effs = np.random.uniform(0.1, 0.4, size=out_shape)
     else:
         dind = np.argwhere(np.isnan(disk_effs))
-        print(dind.shape, disk_effs.shape, dind[0,:])
+        print(dind.shape, disk_effs.shape, dind[1:20,:])
         disk_effs[dind] = np.random.uniform(0.1, 0.4, size=dind.shape)
 
     if mapping_type == "coughlin":
