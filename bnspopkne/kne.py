@@ -267,7 +267,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         EOS_path=None,
         kappa_grid_path=None,
         gp_hyperparameter_file=None,
-        t=0.0,
+        t=60000.0,
         ra=0.0,
         dec=0.0,
         z=0.001,

@@ -12,6 +12,7 @@ class Setzer2022_population(object):
                  kappa_grid_path=None,
                  num_samples=50000,
                  transient_duration=21.0,
+                 mapping_type="coughlin",
                  ):
         """Init SAEE viewing-angle class."""
         self.num_transients = num_samples
@@ -19,7 +20,7 @@ class Setzer2022_population(object):
         self.num_params = 12
         self.min_wave = 500
         self.max_wave = 1200
-        self.mapping_type = "coughlin"
+        self.mapping_type = mapping_type
         self.dz_enhancement = 1.0
         self.thermalisation_eff = 0.25
         self.consistency_check = True

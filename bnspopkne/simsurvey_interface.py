@@ -4,63 +4,68 @@ import os
 import sncosmo
 import simsurvey
 from astropy.cosmology import Planck18
+from bnspopkne.kne import saee_bns_emgw_with_viewing_angle as saeev
+from bnspopkne.population import Setzer2022_population as s2p
 
+
+class saee_bns_emgw_with_viewing_angle_simsurvey(saeev):
+    def __init__(self, **kwargs):
+        pass
+
+    def set(self, **kwargs):
+        super().__init__(kwargs)
 
 # Define the function that generates the lightcurve parameters
 # (Note how the value for mags is not in the typical range for SNe Ia.
-#  This will be fixed by passing new value
-def random_parameters(
+#  This will be fixed by passing new
+
+
+def Setzer2022_population_simsurvey(
     redshifts,
     model,
-    mag=(-18.0, 1.0),
-    r_v=2.0,
-    ebv_rate=0.11,
-    alpha=1.3,
-    cosmo=Planck18,
-    **kwargs
+    ra,
+    dec,
+    **kwargs,
 ):
     """
     """
-    out = {}
+    out =
+    spop = s2p(num_samples=len(redshifts), **kwargs)
+    for i in range(spop.num_params):
+        out[getattr(spop, f"param{i}_name")] = getattr(spop, f"param{i}")
 
-    amp = []
-    for z in redshifts:
-        mabs = np.random.normal(mag[0], mag[1])
-        model.set(z=z)
-        model.set_source_peakabsmag(mabs, "bessellb", "vega", cosmo=cosmo)
-        amp.append(model.get("amplitude"))
-
-    out["amplitude"] = np.array(amp)
-    out["hostr_v"] = r_v * np.ones(len(redshifts))
-    out["hostebv"] = np.random.exponential(ebv_rate, len(redshifts))
-
-    out["s"] = np.random.normal(1.0, 0.1, len(redshifts))
-    out["amplitude"] *= 10 ** (0.4 * alpha * (out["s"] - 1))
-
+    out['EOS'] = np.array(list(repeat(kwargs['EOS'], len(redshifts))))
+    out['EOS_path'] = np.array(list(repeat(kwargs['EOS_path'], len(redshifts))))
+    out['kappa_grid_path'] = np.array(list(repeat(kwargs['kappa_grid_path'], len(redshifts))))
+    out['gp_hyperparameter_file'] = np.array(list(repeat(kwargs['gp_hyperparameter_file'], len(redshifts))))
+    out['mapping_type'] = np.array(list(repeat(kwargs['mapping_type'], len(redshifts))))
+    out['cosmo'] = np.array(list(repeat(Planck18, len(redshifts))))
+    out['z'] = redshifts
+    out['ra'] = ra
+    out['dec'] = dec
     return out
 
 
+def simulate_simsurvey_population(zmin, zmax, rate, plan):
+    transientprop = {
+        "lcmodel": saee_bns_emgw_with_viewing_angle_simsurvey,
+        "lcsimul_func": Setzer2022_population_simsurvey,
+        "lcsimul_prop": {'EOS': 'sfho',
+                         'EOS_path': None,
+                         'gp_hyperparameter_file': None,
+                         'kappa_grid_path': None,
+                         'mapping_type': "coughlin",
+                         }}
 
-transientprop = {
-    "lcmodel": model,
-    "lcsimul_func": random_parameters,
-}
-
-tr = simsurvey.get_transient_generator(
-    (0.0, 0.05),
-    ratefunc=lambda z: 3e-5,
-    ra_range=(0, 360),
-    dec_range=(-30, 90),
-    mjd_range=(58178, 58543),
-    transientprop=transientprop,
-)
-
-plan = None  # Place holder to get simsurvey-like plan from OpSim
-
-
-survey = simsurvey.SimulSurvey(generator=tr, plan=plan)
-
-lcs = survey.get_lightcurves(progress_bar=True)
-
-# The lightcurves can further be saved as a pickle file
-lcs.save("lcs.pkl")
+    tr = simsurvey.get_transient_generator(
+        (zmin, zmax),
+        ratefunc=lambda z: rate,
+        ra_range=(0.0, 360.0),
+        dec_range=(-90.0, 15.0),
+        mjd_range=(58178, 58543),
+        transientprop=transientprop,
+    )
+    survey = simsurvey.SimulSurvey(generator=tr, plan=plan)
+    lcs = survey.get_lightcurves(progress_bar=True)
+    # The lightcurves can further be saved as a pickle file
+    lcs.save("lcs.pkl")
