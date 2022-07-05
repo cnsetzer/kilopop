@@ -48,7 +48,7 @@ class em_transient(object):
         super().__init__()
 
     def put_in_universe(
-        self, t, ra, dec, z, pec_vel=None, dl=None, cosmo=cosmos, r_v=3.1, id=None,
+        self, t, ra, dec, z, id=None, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1
     ):
         """Place transient instance into the simulated Universe.
 
