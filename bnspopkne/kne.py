@@ -283,6 +283,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         thermalisation_eff=0.25,
         mapping_type="coughlin",
         sim_gw=True,
+        **kwargs,
     ):
         """Init SAEE viewing-angle class."""
         if id is None:

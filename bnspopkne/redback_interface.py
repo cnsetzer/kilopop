@@ -1,7 +1,8 @@
+from astropy import units as u
 from kne import saee_bns_emgw_with_viewing_angle as saee_pop_view
 
 
-def redback_S22_BNS_popkNe(time, mass1, mass2, inclination, **kwargs):
+def redback_S22_BNS_popkNe(time, wavelengths: np.ndarray, output_unit:astropy.units.UnitBase = u.erg / (u.cm ** 2 * u.s * u.Angstrom), **kwargs):
     """
     Wrapper for the model to interface with redback fitting software.
 
@@ -23,6 +24,6 @@ def redback_S22_BNS_popkNe(time, mass1, mass2, inclination, **kwargs):
             Dictionary of other optional model parameters to be passed to the
             transient generator.
     """
-    kne = saee_pop_view(mass1, mass2, inclination, kwargs)
-    flux_density = kne.model.flux(time)
-    return flux_density
+    kne = saee_pop_view(kwargs)
+    flux_density = kne.model.flux(time, wavelengths)*u.erg / (u.cm ** 2 * u.s * u.Angstrom)
+    return flux_density.to(output_unit).value

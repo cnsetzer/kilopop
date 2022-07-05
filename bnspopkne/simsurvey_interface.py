@@ -3,7 +3,7 @@ import numpy as np
 import os
 import sncosmo
 import simsurvey
-from astropy.cosmology import Planck15
+from astropy.cosmology import Planck18
 
 
 # Define the function that generates the lightcurve parameters
@@ -16,7 +16,7 @@ def random_parameters(
     r_v=2.0,
     ebv_rate=0.11,
     alpha=1.3,
-    cosmo=Planck15,
+    cosmo=Planck18,
     **kwargs
 ):
     """
@@ -40,10 +40,10 @@ def random_parameters(
     return out
 
 
+
 transientprop = {
     "lcmodel": model,
     "lcsimul_func": random_parameters,
-    "lcsimul_prop": {"mag": (-19.3, 0.1)},
 }
 
 tr = simsurvey.get_transient_generator(
