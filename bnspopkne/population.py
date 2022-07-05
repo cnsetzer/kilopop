@@ -106,8 +106,6 @@ class Setzer2022_population(object):
             self.opacity_data,
         )
 
-        for i in range(12):
-            print(getattr(self, f"param{i+1}").shape)
         m_upper=0.1
         m_lower=0.001
         v_upper=0.4
@@ -125,10 +123,10 @@ class Setzer2022_population(object):
         all_inds = np.union1d(minds, vinds)
 
         while all_inds.shape[0] > 0:
+            print(f"Remaining replacements {all_inds.shape[0]}.")
             print("Replace")
             for i in range(self.num_params):
                 getattr(self, "param{}".format(i + 1))[all_inds] = None
-                print(getattr(self, f"param{i+1}").shape)
             (
                 self.param1,
                 self.param2,
