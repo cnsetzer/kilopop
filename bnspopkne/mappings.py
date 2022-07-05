@@ -216,9 +216,7 @@ def map_kne_to_grey_opacity_via_gaussian_process(
         v_ej_pred = v_ej
         Y_e_pred = Y_e
     else:
-        print('Debug 1',grey_opacity.shape)
         ind = np.isnan(grey_opacity)
-        print('Debug 2',ind.shape, m_tot.shape)
         m_ej_pred = m_tot[ind]
         v_ej_pred = v_ej[ind]
         Y_e_pred = Y_e[ind]

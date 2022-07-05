@@ -75,7 +75,7 @@ class Setzer2022_population(object):
             self.param2, self.EOS_mass_to_rad
         )
 
-        self.param5 = draw_viewing_angle(inclinations=self.param5, out_shape=(self.num_transients, 1))
+        self.param5 = draw_viewing_angle(out_shape=(self.num_transients, 1))
 
         self.param6 = mappings.compute_ye_at_viewing_angle(
                 self.param5, self.EOS_name
@@ -124,13 +124,12 @@ class Setzer2022_population(object):
 
         while all_inds.shape[0] > 0:
             print(f"Remaining replacements {all_inds.shape[0]}.")
-            print("Replace")
             for i in range(self.num_params):
                 getattr(self, "param{}".format(i + 1))[all_inds] = None
             (
                 self.param1,
                 self.param2,
-            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(self.tov_mass, out_shape=(self.num_transients, 1))
+            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(self.tov_mass, mass1=self.param1, mass2=self.param2)
 
             self.param3 = eos.compute_compactnesses_from_EOS(
                 self.param1, self.EOS_mass_to_rad
@@ -139,10 +138,10 @@ class Setzer2022_population(object):
                 self.param2, self.EOS_mass_to_rad
             )
 
-            self.param5 = draw_viewing_angle(inclinations=self.param5, out_shape=(self.num_transients, 1))
+            self.param5 = draw_viewing_angle(inclinations=self.param5)
 
             self.param6 = mappings.compute_ye_at_viewing_angle(
-                    self.param5, self.EOS_name
+                    self.param5, self.EOS_name, Ye=self.param6
                 )
 
             self.param7, self.param8 = mappings.map_to_dynamical_ejecta(
@@ -151,6 +150,8 @@ class Setzer2022_population(object):
                 self.param2,
                 self.param4,
                 self.EOS_mass_to_bary_mass,
+                mej_dyn=self.param7,
+                v_ej=self.param8,
             )
             self.param10, self.param11, self.param12 = mappings.map_to_secular_ejecta(
                 self.param1,
@@ -159,7 +160,9 @@ class Setzer2022_population(object):
                 self.param4,
                 self.param7,
                 self.tov_mass,
-                out_shape=(self.num_transients, 1),
+                disk_effs=self.param12,
+                m_sec=self.param10,
+                m_tot=self.param11,
             )
 
             self.param9 = mappings.map_kne_to_grey_opacity_via_gaussian_process(
