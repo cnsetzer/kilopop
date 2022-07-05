@@ -301,7 +301,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.mapping_type = str(mapping_type)
         self.dz_enhancement = float(dz_enhancement)
         self.thermalisation_eff = float(thermalisation_eff)
-        self.consistency_check = bool(consistency_check)
+        self.consistency_check = consistency_check
         self.subtype = "Semi-analytic eigenmode expansion with viewing angle."
 
         # Handle setup of EOS dependent mapping objects
@@ -349,7 +349,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             self.__class__.grey_opacity_interp = gp
             self.__class__.opacity_data = num_data
 
-        self.transient_duration = transient_duration
+        self.transient_duration = float(transient_duration)
         self.EOS_name = self.__class__.EOS_name
 
         # Instantiate parameter values as none to be filled in later
@@ -397,7 +397,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
         self.draw_parameters()
         self.make_sed()
-        super().__init__(z, cosmo, sim_gw)
+        super().__init__(float(z), cosmo, sim_gw)
 
     def set(self, **kwargs):
         """
