@@ -271,7 +271,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         ra=0.0,
         dec=0.0,
         z=0.001,
-        id=None
+        id=None,
         cosmo=cosmos,
         spin1z=None,
         spin2z=None,
