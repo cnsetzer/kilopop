@@ -287,7 +287,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         """Init SAEE viewing-angle class."""
         if id is None:
             self.id = np.random.randint(0, high=2 ** 31)
-        else
+        else:
             self.id = int(float(id))
         self.t0 = float(t)
         t_1 = Time(t, format="mjd")
