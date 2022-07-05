@@ -87,6 +87,7 @@ class em_transient(object):
         self.redshift()
         self.tmax = t + self.model.maxtime()
         self.extinct_model(r_v=3.1)
+        self.save_info(cosmo)
         return self
 
     def redshift(self):
@@ -153,7 +154,49 @@ class em_transient(object):
                 (1 + (self.peculiar_vel / speed_of_light_kms))
                 / ((1 - (self.peculiar_vel / speed_of_light_kms)))
             )
-        ) - 1.0
+        ) - 1.
+
+    def save_info(self, cosmo):
+        lsst_bands = ["lsstu", "lsstg", "lsstr", "lssti", "lsstz", "lssty"]
+        times = np.linspace(0.0, self.model.maxtime(), 1001)
+        for band in lsst_bands:
+            setattr(
+                self,
+                f"peak_{band}",
+                self.extincted_model.source_peakmag(band, "ab", sampling=0.1),
+            )
+            setattr(
+                self,
+                f"peak_abs_{band}",
+                self.model.source_peakabsmag(band, "ab", sampling=0.1, cosmo=cosmo),
+            )
+            peak_mag = getattr(self, f"peak_{band}")
+            lc_mags = self.model.bandmag(band, "ab", time=times)
+
+            one_mag_inds = np.nonzero(lc_mags <= peak_mag + 1)
+            one_mag_total_time = times[one_mag_inds][-1] - times[one_mag_inds][0]
+            peak_time_index = np.argmin(lc_mags)
+            peak_time = times[peak_time_index]
+            day1_ind = np.argmin(abs(times - peak_time - 1))
+            day2_ind = np.argmin(abs(times - peak_time - 2))
+            day3_ind = np.argmin(abs(times - peak_time - 3))
+            day4_ind = np.argmin(abs(times - peak_time - 4))
+            day5_ind = np.argmin(abs(times - peak_time - 5))
+            full_ind = -1
+            dmdt_1 = -(peak_mag - lc_mags[day1_ind]) / 1.0
+            dmdt_2 = -(peak_mag - lc_mags[day2_ind]) / 2.0
+            dmdt_3 = -(peak_mag - lc_mags[day3_ind]) / 3.0
+            dmdt_4 = -(peak_mag - lc_mags[day4_ind]) / 4.0
+            dmdt_5 = -(peak_mag - lc_mags[day5_ind]) / 5.0
+            dmdt_full = -(peak_mag - lc_mags[full_ind]) / (times[full_ind] - peak_time)
+            setattr(self, f"peak_delay_from_merger_{band}", peak_time)
+            setattr(self, f"onemag_peak_duration_{band}", one_mag_total_time)
+            setattr(self, f"oneday_postpeak_dmdt_{band}", dmdt_1)
+            setattr(self, f"twoday_postpeak_dmdt_{band}", dmdt_2)
+            setattr(self, f"threeday_postpeak_dmdt_{band}", dmdt_3)
+            setattr(self, f"fourday_postpeak_dmdt_{band}", dmdt_4)
+            setattr(self, f"fiveday_postpeak_dmdt_{band}", dmdt_5)
+            setattr(self, f"full_postpeak_dmdt_{band}", dmdt_full)
 
 
 class kilonova(em_transient, compact_binary_inspiral):
