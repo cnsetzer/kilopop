@@ -287,21 +287,21 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         """Init SAEE viewing-angle class."""
         if id is None:
             self.id = np.random.randint(0, high=2 ** 31)
-        else:
-            self.id = int(id)
-        self.t0 = t
+        else
+            self.id = int(float(id))
+        self.t0 = float(t)
         t_1 = Time(t, format="mjd")
         t_1.format = "gps"
         self.t0_gps = t_1.value
-        self.ra = ra
-        self.dec = dec
+        self.ra = float(ra)
+        self.dec = float(dec)
         self.num_params = 12
-        self.min_wave = min_wave
-        self.max_wave = max_wave
-        self.mapping_type = mapping_type
-        self.dz_enhancement = dz_enhancement
-        self.thermalisation_eff = thermalisation_eff
-        self.consistency_check = consistency_check
+        self.min_wave = float(min_wave)
+        self.max_wave = float(max_wave)
+        self.mapping_type = str(mapping_type)
+        self.dz_enhancement = float(dz_enhancement)
+        self.thermalisation_eff = float(thermalisation_eff)
+        self.consistency_check = bool(consistency_check)
         self.subtype = "Semi-analytic eigenmode expansion with viewing angle."
 
         # Handle setup of EOS dependent mapping objects
