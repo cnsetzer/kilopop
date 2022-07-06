@@ -400,13 +400,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.make_sed()
         super().__init__(float(z), cosmo, sim_gw)
 
-    def set(self, **kwargs):
-        """
-
-        """
-        self.__init__(kwargs)
-        self.model.set(kwargs)
-
     def draw_parameters(self):
         """Draw parameters not populated by the user.
 

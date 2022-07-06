@@ -9,12 +9,20 @@ from bnspopkne.population import Setzer2022_population as s2p
 import opsimsummary as oss
 
 
-class saee_bns_emgw_with_viewing_angle_simsurvey(saeev):
-    def __init__(self, **kwargs):
-        pass
+class saee_bns_emgw_with_viewing_angle_simsurvey(sncosmo.Source):
 
-    def set(self, **kwargs):
-        super().__init__(kwargs)
+    _param_names = ['amplitude']
+    param_names_latex = ['A']
+
+    def __init__(self, phase, wave, **kwargs):
+        self._phase = phase
+        self._wave = wave
+
+        self._parameters = np.array
+
+        self.model_wrapper = saeev()
+
+    def _flux(self, phase, wave):
 
 # Define the function that generates the lightcurve parameters
 # (Note how the value for mags is not in the typical range for SNe Ia.
@@ -82,5 +90,5 @@ def simsurvey_plan_from_oss(cadence_path, cadence_flags, version):
     plan.rename({'_ra':'ra','_dec':'dec', 'expMJD':'time', 'filter':'band', 'fiveSigmaDepth':'skynoise'})
     plan['ra'] = np.rad2deg(plan['ra'])
     plan['dec'] = np.rad2deg(plan['dec'])
-    plan['skynoise'] =
+    plan['skynoise'] = None
     return plan
