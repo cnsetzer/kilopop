@@ -6,6 +6,7 @@ import simsurvey
 from astropy.cosmology import Planck18
 from bnspopkne.kne import saee_bns_emgw_with_viewing_angle as saeev
 from bnspopkne.population import Setzer2022_population as s2p
+import opsimsummary as oss
 
 
 class saee_bns_emgw_with_viewing_angle_simsurvey(saeev):
@@ -20,7 +21,7 @@ class saee_bns_emgw_with_viewing_angle_simsurvey(saeev):
 #  This will be fixed by passing new
 
 
-def Setzer2022_population_simsurvey(
+def generate_Setzer2022_population_simsurvey(
     redshifts,
     model,
     ra,
@@ -49,7 +50,7 @@ def Setzer2022_population_simsurvey(
 def simulate_simsurvey_population(zmin, zmax, rate, plan):
     transientprop = {
         "lcmodel": saee_bns_emgw_with_viewing_angle_simsurvey,
-        "lcsimul_func": Setzer2022_population_simsurvey,
+        "lcsimul_func": generate_Setzer2022_population_simsurvey,
         "lcsimul_prop": {'EOS': 'sfho',
                          'EOS_path': None,
                          'gp_hyperparameter_file': None,
@@ -68,4 +69,18 @@ def simulate_simsurvey_population(zmin, zmax, rate, plan):
     survey = simsurvey.SimulSurvey(generator=tr, plan=plan)
     lcs = survey.get_lightcurves(progress_bar=True)
     # The lightcurves can further be saved as a pickle file
-    lcs.save("lcs.pkl")
+    return lcs
+
+
+def simsurvey_plan_from_oss(cadence_path, cadence_flags, version):
+    cadence = oss.OpSimOutput.fromOpSimDB(
+            path,
+            subset=flag,
+            opsimversion=vers,
+        ).summary
+    plan = cadence[['_ra', '_dec', 'expMJD', 'filter', 'fiveSigmaDepth']]
+    plan.rename({'_ra':'ra','_dec':'dec', 'expMJD':'time', 'filter':'band', 'fiveSigmaDepth':'skynoise'})
+    plan['ra'] =
+    plan['dec'] =
+    plan['skynoise'] =
+    return plan
