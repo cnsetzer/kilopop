@@ -47,7 +47,7 @@ def generate_Setzer2022_population_simsurvey(
     return out
 
 
-def simulate_simsurvey_population(zmin, zmax, rate, plan):
+def simulate_simsurvey_population(zmin, zmax, rate, plan, t_duration):
     transientprop = {
         "lcmodel": saee_bns_emgw_with_viewing_angle_simsurvey,
         "lcsimul_func": generate_Setzer2022_population_simsurvey,
@@ -61,12 +61,12 @@ def simulate_simsurvey_population(zmin, zmax, rate, plan):
     tr = simsurvey.get_transient_generator(
         (zmin, zmax),
         ratefunc=lambda z: rate,
-        ra_range=(0.0, 360.0),
-        dec_range=(-90.0, 15.0),
-        mjd_range=(58178, 58543),
+        ra_range=(max([0.0, plan.ra.min()-1.75]), min([360.0, plan.ra.max()+1.75])),
+        dec_range=(max([-90.0, plan.dec.min()-1.75]), min([90.0, plan.dec.max()+1.75])),
+        mjd_range=(plan.time.min()-(t_duration*(1+zmax)), plan.time.max()),
         transientprop=transientprop,
     )
-    survey = simsurvey.SimulSurvey(generator=tr, plan=plan)
+    survey = simsurvey.SimulSurvey(generator=tr, plan=plan, width=3.5, height=3.5)
     lcs = survey.get_lightcurves(progress_bar=True)
     # The lightcurves can further be saved as a pickle file
     return lcs
@@ -80,7 +80,7 @@ def simsurvey_plan_from_oss(cadence_path, cadence_flags, version):
         ).summary
     plan = cadence[['_ra', '_dec', 'expMJD', 'filter', 'fiveSigmaDepth']]
     plan.rename({'_ra':'ra','_dec':'dec', 'expMJD':'time', 'filter':'band', 'fiveSigmaDepth':'skynoise'})
-    plan['ra'] =
-    plan['dec'] =
+    plan['ra'] = np.rad2deg(plan['ra'])
+    plan['dec'] = np.rad2deg(plan['dec'])
     plan['skynoise'] =
     return plan
