@@ -46,9 +46,7 @@ class em_transient(object):
         self.flux = None
         self.put_in_universe(z, cosmo)
 
-    def put_in_universe(
-        self, z, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1
-    ):
+    def put_in_universe(self, z, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1):
         """Place transient instance into the simulated Universe.
 
         It sets spacetime location, ra, dec, t0, redshift, and properties of the
@@ -76,7 +74,8 @@ class em_transient(object):
         self.redshift()
         self.tmax = self.t0 + self.model.maxtime()
         self.extinct_model(r_v=3.1)
-        self.save_info(cosmo)
+        if self.save is True:
+            self.save_info(cosmo)
 
     def redshift(self):
         """Redshift the source.
@@ -142,9 +141,12 @@ class em_transient(object):
                 (1 + (self.peculiar_vel / speed_of_light_kms))
                 / ((1 - (self.peculiar_vel / speed_of_light_kms)))
             )
-        ) - 1.
+        ) - 1.0
 
     def save_info(self, cosmo):
+        """
+        Basic basic docstring.
+        """
         lsst_bands = ["lsstu", "lsstg", "lsstr", "lssti", "lsstz", "lssty"]
         times = np.linspace(0.0, self.model.maxtime(), 1001)
         for band in lsst_bands:
@@ -283,6 +285,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         thermalisation_eff=0.25,
         mapping_type="coughlin",
         sim_gw=True,
+        save=True,
         **kwargs,
     ):
         """Init SAEE viewing-angle class."""
@@ -304,6 +307,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.thermalisation_eff = float(thermalisation_eff)
         self.consistency_check = consistency_check
         self.subtype = "Semi-analytic eigenmode expansion with viewing angle."
+        self.save = save
 
         # Handle setup of EOS dependent mapping objects
         if not self.__class__.EOS_name and EOS:
@@ -435,7 +439,9 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             (
                 self.param1,
                 self.param2,
-            ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(self.__class__.tov_mass)
+            ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
+                self.__class__.tov_mass
+            )
 
         if None in (self.param3, self.param4):
             self.param3 = eos.compute_compactnesses_from_EOS(
@@ -557,7 +563,9 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             (
                 self.param1,
                 self.param2,
-            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(self.tov_mass, mass1=self.param1, mass2=self.param2)
+            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(
+                self.tov_mass, mass1=self.param1, mass2=self.param2
+            )
 
             self.param3 = eos.compute_compactnesses_from_EOS(
                 self.param1, self.EOS_mass_to_rad
@@ -569,8 +577,8 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             self.param5 = draw_viewing_angle(inclinations=self.param5)
 
             self.param6 = mappings.compute_ye_at_viewing_angle(
-                    self.param5, self.EOS_name, Ye=self.param6
-                )
+                self.param5, self.EOS_name, Ye=self.param6
+            )
 
             self.param7, self.param8 = mappings.map_to_dynamical_ejecta(
                 self.param1,
@@ -610,6 +618,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             minds = np.union1d(ind6, ind2)
             vinds = np.union1d(ind3, ind4)
             all_inds = np.union1d(minds, vinds)
+
 
 ###############################################################################
 
