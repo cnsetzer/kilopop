@@ -66,9 +66,12 @@ def map_to_secular_ejecta(
         disk_effs = np.random.uniform(0.1, 0.4, size=out_shape)
         new_disk_effs = disk_effs
     else:
-        dind = np.isnan(disk_effs)
-        new_disk_effs = np.random.uniform(0.1, 0.4, size=dind.sum())
-        disk_effs[dind] = new_disk_effs
+        if not np.isscalar(disk_effs):
+            dind = np.isnan(disk_effs)
+            new_disk_effs = np.random.uniform(0.1, 0.4, size=dind.sum())
+            disk_effs[dind] = new_disk_effs
+        else:
+            new_disk_effs = disk_effs
 
     if mapping_type == "coughlin":
         a = -31.335
@@ -271,7 +274,7 @@ def map_to_dynamical_ejecta(
     comp1,
     mass2,
     comp2,
-    bary_mass_mapping,
+    bary_mass_mapping=None,
     mej_dyn=None,
     v_ej=None,
     mapping_type="coughlin",
