@@ -563,7 +563,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             (
                 self.param1,
                 self.param2,
-            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(
+            ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
                 self.tov_mass, mass1=self.param1, mass2=self.param2
             )
 
@@ -574,7 +574,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
                 self.param2, self.EOS_mass_to_rad
             )
 
-            self.param5 = draw_viewing_angle(inclinations=self.param5)
+            self.param5 = population.draw_viewing_angle(inclinations=self.param5)
 
             self.param6 = mappings.compute_ye_at_viewing_angle(
                 self.param5, self.EOS_name, Ye=self.param6
