@@ -82,16 +82,30 @@ def redback_S22_BNS_popkNe(time, redshift, **kwargs):
         return redback_flux.to(u.ABmag).value
 
 
-def redback_S22_BNS_popkNe_streamlined(time, redshift, **kwargs):
-    # convert shapes
-    frequencies = kwargs["frequency"]
+def redback_S22_BNS_popkNe_streamlined(time, redshift, m1, m2, theta_obs, disk_eff, peculiar_velocity, **kwargs):
+    """
+    Streamlines the minimal necessary componenets needed to simulate the
+    Setzer2022 et al. greybody population kilonova.
+
+    :param time: observer frame time in days (observer-frame phase of the transient).
+    :param redshift: redshift
+    :param m1: The source-frame mass of the primary neutron star.
+    :param m2: The source-frame mass of the secondary neutron star.
+    :param theta_obs: The observer viewing angle of the kilonva.
+    :param disk_eff: The disk unbinding efficiency for the secular ejecta.
+    :param kwargs: output_format
+                    frequency
+    :return flux_density: can be in units of mJy or AB mag.
+    """
     m1 = kwargs["m1"]
     m2 = kwargs["m2"]
     theta_obs = kwargs["theta_obs"]
     disk_eff = kwargs["disk_eff"]
+    peculiar_velocity = kwargs["peculiar_velocity"]
+
+    frequencies = kwargs["frequency"]
     ra = kwargs["ra"]
     dec = kwargs["dec"]
-    peculiar_velocity = kwargs["peculiar_velocity"]
     tov_mass = kwargs["tov_mass"]
     EOS_mass_to_rad = kwargs["EOS_mass_to_rad"]
     EOS_name = kwargs["EOS_name"]
