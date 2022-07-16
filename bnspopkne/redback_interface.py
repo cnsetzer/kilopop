@@ -82,7 +82,9 @@ def redback_S22_BNS_popkNe(time, redshift, **kwargs):
         return redback_flux.to(u.ABmag).value
 
 
-def redback_S22_BNS_popkNe_streamlined(time, redshift, m1, m2, theta_obs, disk_eff, peculiar_velocity, **kwargs):
+def redback_S22_BNS_popkNe_streamlined(
+    time, redshift, m1, m2, theta_obs, disk_eff, peculiar_velocity, **kwargs
+):
     """
     Streamlines the minimal necessary componenets needed to simulate the
     Setzer2022 et al. greybody population kilonova.
@@ -97,11 +99,11 @@ def redback_S22_BNS_popkNe_streamlined(time, redshift, m1, m2, theta_obs, disk_e
                     frequency
     :return flux_density: can be in units of mJy or AB mag.
     """
-    m1 = kwargs["m1"]
-    m2 = kwargs["m2"]
-    theta_obs = kwargs["theta_obs"]
-    disk_eff = kwargs["disk_eff"]
-    peculiar_velocity = kwargs["peculiar_velocity"]
+    # m1 = kwargs["m1"]
+    # m2 = kwargs["m2"]
+    # theta_obs = kwargs["theta_obs"]
+    # disk_eff = kwargs["disk_eff"]
+    # peculiar_velocity = kwargs["peculiar_velocity"]
 
     frequencies = kwargs["frequency"]
     ra = kwargs["ra"]
