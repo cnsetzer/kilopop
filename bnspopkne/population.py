@@ -5,18 +5,19 @@ from bnspopkne import mappings
 
 
 class Setzer2022_population(object):
-    def __init__(self,
-                 EOS='sfho',
-                 EOS_path=None,
-                 gp_hyperparameter_file=None,
-                 kappa_grid_path=None,
-                 num_samples=50000,
-                 transient_duration=21.0,
-                 mapping_type="coughlin",
-                 ):
+    def __init__(
+        self,
+        EOS="sfho",
+        EOS_path=None,
+        gp_hyperparameter_file=None,
+        kappa_grid_path=None,
+        num_samples=50000,
+        transient_duration=21.0,
+        mapping_type="coughlin",
+    ):
         """Init SAEE viewing-angle class."""
         self.num_transients = num_samples
-        self.pre_dist_params = True # relic flag for use with Astrotog software
+        self.pre_dist_params = True  # relic flag for use with Astrotog software
         self.num_params = 12
         self.min_wave = 500
         self.max_wave = 1200
@@ -30,9 +31,7 @@ class Setzer2022_population(object):
         self.EOS_mass_to_rad = f1
         f2 = eos.get_bary_mass_from_EOS(E1)
         self.EOS_mass_to_bary_mass = f2
-        self.threshold_mass = eos.calculate_threshold_mass(
-            self.tov_mass, f1
-        )
+        self.threshold_mass = eos.calculate_threshold_mass(self.tov_mass, f1)
         if kappa_grid_path is None:
             raise Exception(
                 "You must specify path to opacity data to construct the Gaussian process object."
@@ -64,10 +63,9 @@ class Setzer2022_population(object):
         for i in range(self.num_params):
             setattr(self, "param{}".format(i + 1), None)
 
-        (
-            self.param1,
-            self.param2,
-        ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(self.tov_mass, out_shape=(self.num_transients, 1))
+        (self.param1, self.param2,) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(
+            self.tov_mass, out_shape=(self.num_transients, 1)
+        )
 
         self.param3 = eos.compute_compactnesses_from_EOS(
             self.param1, self.EOS_mass_to_rad
@@ -78,9 +76,7 @@ class Setzer2022_population(object):
 
         self.param5 = draw_viewing_angle(out_shape=(self.num_transients, 1))
 
-        self.param6 = mappings.compute_ye_at_viewing_angle(
-                self.param5, self.EOS_name
-            )
+        self.param6 = mappings.compute_ye_at_viewing_angle(self.param5, self.EOS_name)
 
         self.param7, self.param8 = mappings.map_to_dynamical_ejecta(
             self.param1,
@@ -107,11 +103,11 @@ class Setzer2022_population(object):
             self.opacity_data,
         )
 
-        m_upper=0.1
-        m_lower=0.001
-        v_upper=0.4
-        v_lower=0.05
-        kappa_lower=0.1
+        m_upper = 0.1
+        m_lower = 0.001
+        v_upper = 0.4
+        v_lower = 0.05
+        kappa_lower = 0.1
 
         ind1 = np.argwhere(self.param11 > m_upper)
         ind2 = np.argwhere(self.param11 < m_lower)
@@ -130,7 +126,9 @@ class Setzer2022_population(object):
             (
                 self.param1,
                 self.param2,
-            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(self.tov_mass, mass1=self.param1, mass2=self.param2)
+            ) = draw_masses_from_EOS_bounds_with_mass_ratio_cut(
+                self.tov_mass, mass1=self.param1, mass2=self.param2
+            )
 
             self.param3 = eos.compute_compactnesses_from_EOS(
                 self.param1, self.EOS_mass_to_rad
@@ -142,8 +140,8 @@ class Setzer2022_population(object):
             self.param5 = draw_viewing_angle(inclinations=self.param5)
 
             self.param6 = mappings.compute_ye_at_viewing_angle(
-                    self.param5, self.EOS_name, Ye=self.param6
-                )
+                self.param5, self.EOS_name, Ye=self.param6
+            )
 
             self.param7, self.param8 = mappings.map_to_dynamical_ejecta(
                 self.param1,
@@ -214,6 +212,8 @@ def draw_viewing_angle(inclinations=None, out_shape=1):
         o_shape = inclinations[ind].shape
 
     theta_obs = np.arccos(2 * np.random.random_sample(size=o_shape) - 1)  # in radians
+    if o_shape == 1:
+        theta_obs = float(theta_obs)
     if inclinations is None:
         inclinations = theta_obs
     else:
@@ -236,6 +236,8 @@ def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, mass=None, out_shape=1):
     if mass is None:
         ind = np.array([1])
         o_shape = out_shape
+    elif np.isscalar(mass):
+        return mass
     else:
         ind = np.isnan(mass)
         o_shape = mass[ind].shape
@@ -249,7 +251,9 @@ def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, mass=None, out_shape=1):
     return mass
 
 
-def draw_masses_from_EOS_bounds_with_mass_ratio_cut(max_mass, m_low=1.0, mass_ratio_cut=2.0 / 3.0, mass1=None, mass2=None, out_shape=1):
+def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
+    max_mass, m_low=1.0, mass_ratio_cut=2.0 / 3.0, mass1=None, mass2=None, out_shape=1
+):
     """
     Draw neutron star component mass in the source frame give constraints.
 
@@ -312,5 +316,4 @@ def draw_masses_from_EOS_bounds_with_mass_ratio_cut(max_mass, m_low=1.0, mass_ra
             ind4 = np.argwhere(mass_q < mass_ratio_cut)
             # combine indicies into single set to resample
             ridx_1 = np.union1d(ind3, ind4)
-
     return m1, m2

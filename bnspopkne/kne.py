@@ -290,7 +290,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
     ):
         """Init SAEE viewing-angle class."""
         if id is None:
-            self.id = np.random.randint(0, high=2 ** 31)
+            self.id = np.random.randint(0, high=2**31)
         else:
             self.id = int(float(id))
         self.t0 = float(t)
@@ -535,7 +535,13 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         )
 
     def check_kne_priors(
-        self, m_upper=0.1, m_lower=0.001, v_upper=0.4, v_lower=0.05, kappa_lower=0.1
+        self,
+        m_upper=0.1,
+        m_lower=0.001,
+        v_upper=0.4,
+        v_lower=0.05,
+        kappa_lower=0.1,
+        max_iter=10000,
     ):
         """Check consistency of parameters with model boundaries.
 
@@ -546,20 +552,20 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         cannot be ultra-relativistic. These limits are quite loose, but seem
         reasonable.
         """
-        ind1 = np.argwhere(self.param11 > m_upper)
-        ind2 = np.argwhere(self.param11 < m_lower)
-        ind3 = np.argwhere(self.param8 > v_upper)
-        ind4 = np.argwhere(self.param8 < v_lower)
-        ind5 = np.argwhere(self.param9 < kappa_lower)
-        ind6 = np.union1d(ind1, ind5)
-        minds = np.union1d(ind6, ind2)
-        vinds = np.union1d(ind3, ind4)
-        all_inds = np.union1d(minds, vinds)
+        self.param11 = (
+            None if self.param11 > m_upper or self.param11 < m_lower else self.param11
+        )
+        self.param8 = (
+            None if self.param8 > v_upper or self.param8 < v_lower else self.param8
+        )
+        self.param9 = None if self.param9 < kappa_lower else self.param9
 
-        while all_inds.shape[0] > 0:
-            print(f"Remaining replacements {all_inds.shape[0]}.")
-            for i in range(self.num_params):
-                getattr(self, "param{}".format(i + 1))[all_inds] = None
+        it = 0
+        while None in (self.param11, self.param8, self.param9):
+            self.param12 = None
+            if it > max_iter:
+                for i in range(self.num_params):
+                    setattr(self, "param{}".format(i + 1), None)
             (
                 self.param1,
                 self.param2,
@@ -609,15 +615,12 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
                 self.opacity_data,
                 grey_opacity=self.param9,
             )
-            ind1 = np.argwhere(self.param11 > m_upper)
-            ind2 = np.argwhere(self.param11 < m_lower)
-            ind3 = np.argwhere(self.param8 > v_upper)
-            ind4 = np.argwhere(self.param8 < v_lower)
-            ind5 = np.argwhere(self.param9 < kappa_lower)
-            ind6 = np.union1d(ind1, ind5)
-            minds = np.union1d(ind6, ind2)
-            vinds = np.union1d(ind3, ind4)
-            all_inds = np.union1d(minds, vinds)
+            self.param11 = None if self.param11 > m_upper else self.param11
+            self.param11 = None if self.param11 < m_lower else self.param11
+            self.param8 = None if self.param8 > v_upper else self.param8
+            self.param8 = None if self.param8 < v_lower else self.param8
+            self.param9 = None if self.param9 < kappa_lower else self.param9
+            it += 1
 
 
 ###############################################################################

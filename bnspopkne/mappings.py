@@ -61,6 +61,8 @@ def map_to_secular_ejecta(
     m_tot: scalar or ndarray
         The total ejecta mass, i.e., dynamic and secular in solar masses.
     """
+    if not np.isscalar(mass1):
+        out_shape = mass1.shape
 
     if disk_effs is None:
         disk_effs = np.random.uniform(0.1, 0.4, size=out_shape)
@@ -151,6 +153,10 @@ def map_to_secular_ejecta(
 
     else:
         pass
+    if np.isscalar(mass1):
+        m_sec = float(m_sec)
+        m_tot = float(m_tot)
+        disk_effs = float(disk_effs)
     return m_sec, m_tot, disk_effs
 
 
@@ -265,6 +271,8 @@ def map_kne_to_grey_opacity_via_gaussian_process(
         grey_opacity[ind] = kappa
     if grey_opacity.ndim == 2:
         return grey_opacity
+    elif np.isscalar(m_ej_pred):
+        return float(grey_opacity)
     else:
         return np.expand_dims(grey_opacity, axis=1)
 

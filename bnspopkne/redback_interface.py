@@ -51,15 +51,6 @@ def redback_S22_BNS_popkNe(time, redshift, **kwargs):
     kne = saee_pop_view(
         min_wave=wavelengths.min() - 500.0,  # do better kcorrection but for now do this
         max_wave=wavelengths.max(),
-        sim_gw=False,
-        EOS="sfho",
-        EOS_path="/cfs/data/chse9649/input_data/kne_data/eos_data/",
-        kappa_grid_path="/cfs/data/chse9649/input_data/kne_data/opacity_data/Setzer2022_popkNe_opacities.csv",
-        gp_hyperparameter_file="/cfs/data/chse9649/input_data/kne_data/opacity_data/Setzer2022_popkNe_GP_hyperparam.npy",
-        # EOS_path="/Users/cnsetzer/Documents/Project1_kNe/kne_modeling/eos_data/",
-        # kappa_grid_path="Setzer2022_popkNe_opacities.csv",
-        save=False,
-        consistency_check=False,
         **kwargs,
     )
     flux_density_rb_form = []
@@ -153,7 +144,6 @@ def redback_S22_BNS_popkNe_streamlined(
     KNE_parameters.append(False)  # Read heating rates variable
     KNE_parameters.append("dummy string")  # Heating rates file
     _, _, flux = mw(KNE_parameters, times=t_k, wavelengths=wavelengths_k)
-
     dist_mpc = cosmo.luminosity_distance(redshift).value
     dist_pc = dist_mpc * 1000000.0  # convert Mpc to pc
 
@@ -178,9 +168,11 @@ def redback_S22_BNS_popkNe_streamlined(
     redback_flux = (
         np.asarray(flux_density_rb_form) * u.erg / (u.cm ** 2 * u.s * u.Angstrom)
     )
+
     if kwargs["output_format"] == "flux_density":
-        return redback_flux.to(
+        output_flux = redback_flux.to(
             u.mJy, equivalencies=u.spectral_density(wavelengths * u.Angstrom)
         ).value
+        return output_flux
     elif kwargs["output_format"] == "magnitude":
         return redback_flux.to(u.ABmag).value
