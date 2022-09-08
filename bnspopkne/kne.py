@@ -46,7 +46,7 @@ class em_transient(object):
         self.flux = None
         self.put_in_universe(z, cosmo)
 
-    def put_in_universe(self, z, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1):
+    def put_in_universe(self, z=None, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1):
         """Place transient instance into the simulated Universe.
 
         It sets spacetime location, ra, dec, t0, redshift, and properties of the
