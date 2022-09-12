@@ -1,4 +1,5 @@
-"""This is a sample docstring for module."""
+"""Module with classes and methods for constructing individual kilonovae
+ instances."""
 import warnings
 from copy import deepcopy
 import numpy as np
@@ -18,6 +19,7 @@ from bnspopkne import mappings
 from bnspopkne import population
 from scipy.integrate import quadrature
 
+# Filter warnings from Numpy
 warnings.filterwarnings("ignore", message="ERFA function")
 
 # Set global module constants.
@@ -28,23 +30,24 @@ sfdmap = sfd()
 
 class em_transient(object):
     """
-    Base class for transient instances.
+    Base class for optical transient instances.
 
     This groups class methods that should be common to all transient models.
     These include assign the transient a peculiar velocity, redshifting, etc.
 
     """
 
-    def __init__(self, z=0.001, cosmo=cosmos):
+    def __init__(self, z=None, cosmo=cosmos):
         """Init of the em_transient class wrapper."""
-        source = TimeSeriesSource(self.phase, self.wave, self.flux)
-        self.model = deepcopy(Model(source=source))
-        # Use deepcopy to make sure full class is saved as attribute of new class
-        # after setting model empty phase, wave, flux attributes
+        source = TimeSeriesSource(self.phase, self.wave, self.flux, name='SAEE kilonova', version='1.0')
+        self.model = Model(source=source)  # add dust effect here.
+        # Use deepcopy to make sure full class is saved as attribute of new
+        # class after setting model empty phase, wave, flux attributes
         self.phase = None
         self.wave = None
         self.flux = None
-        self.put_in_universe(z, cosmo)
+        if z is not None:
+            self.put_in_universe(z, cosmo)
 
     def put_in_universe(self, z=None, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1):
         """Place transient instance into the simulated Universe.
@@ -70,10 +73,10 @@ class em_transient(object):
             raise ValueError
 
         self.dist_pc = self.dist_mpc * 1000000.0  # convert Mpc to pc
-        self.peculiar_velocity(pec_vel)
+        # self.peculiar_velocity(pec_vel)
         self.redshift()
         self.tmax = self.t0 + self.model.maxtime()
-        self.extinct_model(r_v=3.1)
+        # self.extinct_model(r_v=3.1)
         if self.save is True:
             self.save_info(cosmo)
 
@@ -83,65 +86,57 @@ class em_transient(object):
         Wrapper function to redshift the spectrum of the transient instance,
         and scale the flux according to the luminosity distance.
 
-        Input Parameters:
-        -----------------
-            cosmo: Astropy.cosmology instance
-                Class instance of a cosmology that groups the functions needed
-                to compute cosmological quantities.
-
-        Output:
+        Returns:
         -------
             self: modified self class instance
         """
-        self.model.set(z=self.obs_z)
         # Note that it is necessary to scale the amplitude relative to the 10pc
         # (i.e. 10^2 in the following eqn.) placement of the SED currently
-        # lumdist = self.dist_mpc * 1e6  # in pc
-        # amp = np.power(10.0 / lumdist, 2)
-        # self.model.set(amplitude=amp)
+        amp = np.power(10.0 / self.dist_pc, 2)
+        self.model.update({'z': self.obs_z, 'amplitude': amp})
 
         # Current working around for issue with amplitude...
-        mapp = 5.0 * np.log10(self.dist_pc / 10.0) + self.model.source_peakmag(
-            "lsstz", "ab", sampling=0.05
-        )
-        self.model.set_source_peakmag(m=mapp, band="lsstz", magsys="ab", sampling=0.05)
+        # mapp = 5.0 * np.log10(self.dist_pc / 10.0) + self.model.source_peakmag(
+        #     "lsstz", "ab", sampling=0.05
+        # )
+        # self.model.set_source_peakmag(m=mapp, band="lsstz", magsys="ab", sampling=0.05)
 
-    def extinct_model(self, r_v=3.1):
-        """Apply dust extinction to transient."""
-        phases = np.linspace(self.model.mintime(), self.model.maxtime(), num=1000)
-        waves = np.linspace(self.model.minwave(), self.model.maxwave(), num=2000)
-        unreddend_fluxes = self.model.flux(phases, waves)
-        reddend_fluxes = np.empty_like(unreddend_fluxes)
-        uncorr_ebv = sfdmap.ebv(self.ra, self.dec, frame="icrs", unit="radian")
-        for i, phase in enumerate(phases):
-            reddend_fluxes[i, :] = apply(
-                F99(waves, r_v * uncorr_ebv, r_v=r_v), unreddend_fluxes[i, :]
-            )
+    # def extinct_model(self, r_v=3.1):
+    #     """Apply dust extinction to transient."""
+    #     phases = np.linspace(self.model.mintime(), self.model.maxtime(), num=1000)
+    #     waves = np.linspace(self.model.minwave(), self.model.maxwave(), num=2000)
+    #     unreddend_fluxes = self.model.flux(phases, waves)
+    #     reddend_fluxes = np.empty_like(unreddend_fluxes)
+    #     uncorr_ebv = sfdmap.ebv(self.ra, self.dec, frame="icrs", unit="radian")
+    #     for i, phase in enumerate(phases):
+    #         reddend_fluxes[i, :] = apply(
+    #             F99(waves, r_v * uncorr_ebv, r_v=r_v), unreddend_fluxes[i, :]
+    #         )
+    #
+    #     source = TimeSeriesSource(phases, waves, reddend_fluxes)
+    #     self.extincted_model = deepcopy(Model(source=source))
 
-        source = TimeSeriesSource(phases, waves, reddend_fluxes)
-        self.extincted_model = deepcopy(Model(source=source))
-
-    def peculiar_velocity(self, pec_vel=None):
-        """Set peculiar velocity.
-
-        Draw from Gaussian peculiar velocity distribution with width 300km/s
-        Reference: Hui and Greene (2006) Also, use transient id to set seed for
-        setting the peculiar velocity, this is for reproducibility.
-        """
-        state = np.random.get_state()
-        np.random.seed(seed=self.id)
-        if pec_vel is None:
-            # Apply typical peculiar_velocity type correction
-            self.peculiar_vel = np.random.normal(loc=0, scale=300)
-        else:
-            self.peculiar_vel = pec_vel
-        np.random.set_state(state)
-        self.obs_z = (1 + self.z) * (
-            np.sqrt(
-                (1 + (self.peculiar_vel / speed_of_light_kms))
-                / ((1 - (self.peculiar_vel / speed_of_light_kms)))
-            )
-        ) - 1.0
+    # def peculiar_velocity(self, pec_vel=None):
+    #     """Set peculiar velocity.
+    #
+    #     Draw from Gaussian peculiar velocity distribution with width 300km/s
+    #     Reference: Hui and Greene (2006) Also, use transient id to set seed for
+    #     setting the peculiar velocity, this is for reproducibility.
+    #     """
+    #     state = np.random.get_state()
+    #     np.random.seed(seed=self.id)
+    #     if pec_vel is None:
+    #         # Apply typical peculiar_velocity type correction
+    #         self.peculiar_vel = np.random.normal(loc=0, scale=300)
+    #     else:
+    #         self.peculiar_vel = pec_vel
+    #     np.random.set_state(state)
+    #     self.obs_z = (1 + self.z) * (
+    #         np.sqrt(
+    #             (1 + (self.peculiar_vel / speed_of_light_kms))
+    #             / ((1 - (self.peculiar_vel / speed_of_light_kms)))
+    #         )
+    #     ) - 1.0
 
     def save_info(self, cosmo):
         """
@@ -167,26 +162,8 @@ class em_transient(object):
             one_mag_total_time = times[one_mag_inds][-1] - times[one_mag_inds][0]
             peak_time_index = np.argmin(lc_mags)
             peak_time = times[peak_time_index]
-            day1_ind = np.argmin(abs(times - peak_time - 1))
-            day2_ind = np.argmin(abs(times - peak_time - 2))
-            day3_ind = np.argmin(abs(times - peak_time - 3))
-            day4_ind = np.argmin(abs(times - peak_time - 4))
-            day5_ind = np.argmin(abs(times - peak_time - 5))
-            full_ind = -1
-            dmdt_1 = -(peak_mag - lc_mags[day1_ind]) / 1.0
-            dmdt_2 = -(peak_mag - lc_mags[day2_ind]) / 2.0
-            dmdt_3 = -(peak_mag - lc_mags[day3_ind]) / 3.0
-            dmdt_4 = -(peak_mag - lc_mags[day4_ind]) / 4.0
-            dmdt_5 = -(peak_mag - lc_mags[day5_ind]) / 5.0
-            dmdt_full = -(peak_mag - lc_mags[full_ind]) / (times[full_ind] - peak_time)
             setattr(self, f"peak_delay_from_merger_{band}", peak_time)
             setattr(self, f"onemag_peak_duration_{band}", one_mag_total_time)
-            setattr(self, f"oneday_postpeak_dmdt_{band}", dmdt_1)
-            setattr(self, f"twoday_postpeak_dmdt_{band}", dmdt_2)
-            setattr(self, f"threeday_postpeak_dmdt_{band}", dmdt_3)
-            setattr(self, f"fourday_postpeak_dmdt_{band}", dmdt_4)
-            setattr(self, f"fiveday_postpeak_dmdt_{band}", dmdt_5)
-            setattr(self, f"full_postpeak_dmdt_{band}", dmdt_full)
 
 
 class kilonova(em_transient, compact_binary_inspiral):
@@ -240,7 +217,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
     Returns (Implicitly):
     ---------------------
-        instance of the class
+        Kilonova instance of the class
     """
 
     EOS_name = None
@@ -513,11 +490,11 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         """
         if KNE_parameters is None:
             KNE_parameters = []
-            KNE_parameters.append(600.0 / 86400.0)  # starting time [days] 10 minutes
-            KNE_parameters.append(self.transient_duration)  # ending time
+            KNE_parameters.append(600.0 / 86400.0)  # starting time [days] (10 minutes)
+            KNE_parameters.append(self.transient_duration)  # ending time [days]
             KNE_parameters.append(self.param11)  # total ejecta mass
             KNE_parameters.append(self.param8)  # median ejecta velocity
-            KNE_parameters.append(1.3)  # nuclear heating rate exponent
+            KNE_parameters.append(1.3)  # heating rate exponent (not used)
             KNE_parameters.append(self.thermalisation_eff)  # thermalization factor
             KNE_parameters.append(self.dz_enhancement)  # DZ enhancement
             KNE_parameters.append(self.param9)  # The grey opacity
@@ -529,7 +506,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
                 True
             )  # Flag to use numerical fit nuclear heating rates
             KNE_parameters.append(False)  # Read heating rates variable
-            KNE_parameters.append("dummy string")  # Heating rates file
+            KNE_parameters.append("placeholder string")  # Heating rates file
         self.phase, self.wave, self.flux = mw(
             KNE_parameters, self.min_wave, self.max_wave
         )

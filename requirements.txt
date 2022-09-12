@@ -15,7 +15,3 @@ dependencies:
     - pycbc
     - sfdmap
     - mpi4py
-
-# Other dependencies need to be installed separately
-# Cadence/LSSTMetrics from rbiswas4@github.com
-# OpSimSummary from rbiswas4@github.com

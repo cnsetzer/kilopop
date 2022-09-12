@@ -1,4 +1,5 @@
-"""Public module docstring placeholder."""
+"""Module handling aspects of the GW inspiral signal associated with each
+ transient."""
 
 from copy import deepcopy
 from pycbc.waveform import get_td_waveform
@@ -8,15 +9,7 @@ class compact_binary_inspiral(object):
     """Basic binary inspiral class for GW signal."""
 
     def __init__(self, appx="TaylorF2", dt=1.0 / 2048.0, f_low=25.0, **kwargs):
-        """Init binary inspiral class."""
-        self.appx = appx
-        self.dt = dt
-        self.f_low = f_low
-        self.simulate_inspiral_merger()
-        super().__init__()
-
-    def simulate_inspiral_merger(self):
-        """Calculate the inspiral signal from the BNS merger.
+        """Init binary inspiral class.
 
         Parameters:
         -----------
@@ -34,8 +27,12 @@ class compact_binary_inspiral(object):
             self.gw_signal_cross: Pycbc TimeSeries object
                 The cross polarization of the (2,2) mode gravitational wave.
         """
+        self.appx = appx
+        self.dt = dt
+        self.f_low = f_low
+        # conversion from gps seconds to years
         gps_sec_year = 31536000.0
-
+        # assume zero polarization and non-spinning
         self.polarization = 0.0
         wave_p, wave_c = get_td_waveform(
             approximant=self.appx,
@@ -61,7 +58,8 @@ class compact_binary_inspiral(object):
         ringing_crop = wave_p.start_time + wave_p.duration
         wave_p = wave_p.crop(0, ringing_crop)
         wave_c = wave_c.crop(0, ringing_crop)
-        # Copy the unshifted waveform to save it as the template for matched-filtering
+        # Copy the unshifted waveform to save it as the template for
+        # matched-filtering
         self.mf_template = deepcopy(wave_p)
         # Shift merger time to 'time of explosion from detected sources'
         wave_p.start_time += gps_time_mod_year
