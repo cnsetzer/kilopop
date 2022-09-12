@@ -277,15 +277,85 @@ def map_kne_to_grey_opacity_via_gaussian_process(
         return np.expand_dims(grey_opacity, axis=1)
 
 
+def compute_equation_4(m1, m2, c1, c2):
+    """
+    Equation 4 in Setzer et al. 2022.
+
+    Coughlin M. W., Dietrich T., Margalit B., Metzger B. D., 2019,
+    MNRAS: Letters, 489, L91
+
+    Parameters:
+    -----------
+        m1: float
+            The mass of the primary (more massive) neutron star.
+        m2: float
+            The mass of the secondary (less massive) neutron star.
+        c1: float
+            The compactness of the primary (more massive) neutron star.
+        c2: float
+            The compactness of the secondary (less massive) neutron star.
+    Returns:
+    --------
+        dynamical_ejecta_mass: float
+            The dynamical ejecta mass from the fit.
+    """
+    a = -0.0719
+    b = 0.2116
+    d = -2.42
+    n = -2.905
+    dynamical_ejecta_mass = np.power(
+        10.0,
+        (
+            ((a * (1.0 - 2.0 * c1) * m1) / (c1))
+            + b * m2 * np.power((m1 / m2), n)
+            + (d / 2.0)
+        )
+        + (
+            ((a * (1.0 - 2.0 * c2) * m2) / (c2))
+            + b * m1 * np.power((m2 / m1), n)
+            + (d / 2.0)
+        ),
+    )
+    return dynamical_ejecta_mass
+
+
+def compute_equation_5(m1, m2, c1, c2):
+    """
+    Equation 5 in Setzer et al. 2022.
+
+    Coughlin M. W., Dietrich T., Margalit B., Metzger B. D., 2019,
+    MNRAS: Letters, 489, L91
+
+    Parameters:
+    -----------
+        m1: float
+            The mass of the primary (more massive) neutron star.
+        m2: float
+            The mass of the secondary (less massive) neutron star.
+        c1: float
+            The compactness of the primary (more massive) neutron star.
+        c2: float
+            The compactness of the secondary (less massive) neutron star.
+    Returns:
+    --------
+        vej: float
+            The median ejecta velocity from the fit.
+    """
+    e = -0.3090
+    f = -1.879
+    g = 0.657
+    vej = ((e * m1 * (f * c1 + 1.0)) / (m2)) + (g / 2.0)
+    +(((e * m2 * (f * c2 + 1.0)) / (m1)) + (g / 2.0))
+    return vej
+
+
 def map_to_dynamical_ejecta(
     mass1,
     comp1,
     mass2,
     comp2,
-    bary_mass_mapping=None,
     mej_dyn=None,
     v_ej=None,
-    mapping_type="coughlin",
 ):
     """
     Wrapper for fit functions from various references: Coughlin et. al 2018 etc.
@@ -295,126 +365,18 @@ def map_to_dynamical_ejecta(
     -----------
 
 
-    mapping_type: string
-        The choice of reference work from which to use the relations mapping
-        between these sets of parameters.
 
-    Returns (Implicitly):
-    ---------------------
-        self.param7: float
-            The total ejecta mass of the kilonova dynamical ejecta.
+    Returns:
+    --------
+.       mej_dyn: float
+            Dynamical ejecta mass from the fit.
         v_ej: float
-            The mean ejecta velocity of the kilonova dynamical ejecta.
-
-
+            The median ejecta velocity of the kilonova dynamical ejecta.
     """
-    if mapping_type == "coughlin":
-        # Fit params from Coughlin et. al 2018
-        a = -0.0719
-        b = 0.2116
-        d = -2.42
-        n = -2.905
-        e = -0.3090
-        f = -1.879
-        g = 0.657
-
-    elif mapping_type == "radice":
-        alpha = -0.657
-        beta = 4.254
-        gamma = -32.61
-        delta = 5.205
-        n = -0.773
-        e = -0.287
-        f = -3.0
-        g = 0.494
-
-    elif mapping_type == "kruger":
-        a = -9.3335
-        b = 114.17
-        c = -337.56
-        n = 1.5465
-        e = -0.3090
-        f = -1.879
-        g = 0.657
-
     if mej_dyn is None:
-        ind = np.array([1, 1])
-        m1 = mass1
-        m2 = mass2
-        c1 = comp1
-        c2 = comp2
-    else:
-        ind = np.isnan(mej_dyn)
-        m1 = mass1[ind]
-        m2 = mass2[ind]
-        c1 = comp1[ind]
-        c2 = comp2[ind]
-    if len(ind) > 0:
-        if mapping_type == "coughlin":
-            mej = np.power(
-                10.0,
-                (
-                    ((a * (1.0 - 2.0 * c1) * m1) / (c1))
-                    + b * m2 * np.power((m1 / m2), n)
-                    + (d / 2.0)
-                )
-                + (
-                    ((a * (1.0 - 2.0 * c2) * m2) / (c2))
-                    + b * m1 * np.power((m2 / m1), n)
-                    + (d / 2.0)
-                ),
-            )
-        elif mapping_type == "radice":
-            bary_m1 = bary_mass_mapping(m1)
-            bary_m2 = bary_mass_mapping(m2)
-            mej = (1.0e-3) * (
-                (
-                    alhpa * np.power(m2 / m1, 1.0 / 3) * ((1.0 - 2.0 * c1) / c1)
-                    + beta * np.power(m2 / m1, n)
-                    + gamma * (1 - m1 / bary_m1)
-                )
-                * bary_m1
-                + (
-                    alhpa * np.power(m1 / m2, 1.0 / 3) * ((1.0 - 2.0 * c2) / c2)
-                    + beta * np.power(m1 / m2, n)
-                    + gamma * (1 - m2 / bary_m2)
-                )
-                * bary_m2
-                + delta
-            )
-        elif mapping_type == "kruger":
-            mej = (1.0e-3) * (
-                ((a / c1) + b * np.power(m2 / m1, n) + c * c1) * m1
-                + ((a / c2) + b * np.power(m1 / m2, n) + c * c2) * m2
-            )
-        if mej_dyn is None:
-            mej_dyn = mej
-        else:
-            mej_dyn[ind] = mej
-
+        mej_dyn = compute_equation_4(mass1, mass2, comp1, comp2)
     if v_ej is None:
-        ind = np.array([1, 1])
-        m1 = mass1
-        m2 = mass2
-        c1 = comp1
-        c2 = comp2
-    else:
-        if np.isscalar(v_ej) is True:
-            ind = []
-        else:
-            ind = np.isnan(v_ej)
-            m1 = mass1[ind]
-            m2 = mass2[ind]
-            c1 = comp1[ind]
-            c2 = comp2[ind]
-    if len(ind) > 0:
-        vej = ((e * m1 * (f * c1 + 1.0)) / (m2)) + (g / 2.0)
-        +(((e * m2 * (f * c2 + 1.0)) / (m1)) + (g / 2.0))
-        if v_ej is None:
-            v_ej = vej
-        else:
-            v_ej[ind] = vej
-
+        v_ej = compute_equation_5(mass1, mass2, comp1, comp2)
     return mej_dyn, v_ej
 
 

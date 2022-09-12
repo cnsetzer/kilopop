@@ -1,7 +1,6 @@
 """Module with classes and methods for constructing individual kilonovae
  instances."""
 import warnings
-from copy import deepcopy
 import numpy as np
 from astropy.constants import c as speed_of_light_ms
 import astropy.units as units
@@ -9,10 +8,7 @@ from astropy.time import Time
 from sncosmo import TimeSeriesSource, Model
 from astropy.cosmology import Planck18 as cosmos
 from astropy.cosmology import z_at_value
-from sfdmap import SFDMap as sfd
-from extinction import fitzpatrick99 as F99
-from extinction import apply
-from .macronovae_wrapper import make_rosswog_seds as mw
+from bnspopkne.macronovae_wrapper import make_rosswog_seds as mw
 from bnspopkne.inspiral import compact_binary_inspiral
 from bnspopkne import equation_of_state as eos
 from bnspopkne import mappings
@@ -24,8 +20,6 @@ warnings.filterwarnings("ignore", message="ERFA function")
 
 # Set global module constants.
 speed_of_light_kms = speed_of_light_ms.to("km/s").value  # Convert m/s to km/s
-# Initialze sfdmap for dust corrections
-sfdmap = sfd()
 
 
 class em_transient(object):
@@ -37,19 +31,17 @@ class em_transient(object):
 
     """
 
-    def __init__(self, z=None, cosmo=cosmos):
+    def __init__(self, z=None, cosmo=cosmos, dl=None):
         """Init of the em_transient class wrapper."""
         source = TimeSeriesSource(self.phase, self.wave, self.flux, name='SAEE kilonova', version='1.0')
         self.model = Model(source=source)  # add dust effect here.
-        # Use deepcopy to make sure full class is saved as attribute of new
-        # class after setting model empty phase, wave, flux attributes
         self.phase = None
         self.wave = None
         self.flux = None
         if z is not None:
-            self.put_in_universe(z, cosmo)
+            self.put_in_universe(z, cosmo, dl)
 
-    def put_in_universe(self, z=None, cosmo=cosmos, pec_vel=None, dl=None, r_v=3.1):
+    def put_in_universe(self, z=None, cosmo=cosmos, dl=None):
         """Place transient instance into the simulated Universe.
 
         It sets spacetime location, ra, dec, t0, redshift, and properties of the
@@ -73,12 +65,8 @@ class em_transient(object):
             raise ValueError
 
         self.dist_pc = self.dist_mpc * 1000000.0  # convert Mpc to pc
-        # self.peculiar_velocity(pec_vel)
         self.redshift()
         self.tmax = self.t0 + self.model.maxtime()
-        # self.extinct_model(r_v=3.1)
-        if self.save is True:
-            self.save_info(cosmo)
 
     def redshift(self):
         """Redshift the source.
@@ -93,77 +81,13 @@ class em_transient(object):
         # Note that it is necessary to scale the amplitude relative to the 10pc
         # (i.e. 10^2 in the following eqn.) placement of the SED currently
         amp = np.power(10.0 / self.dist_pc, 2)
-        self.model.update({'z': self.obs_z, 'amplitude': amp})
+        self.model.update({'z': self.z, 'amplitude': amp})
 
         # Current working around for issue with amplitude...
         # mapp = 5.0 * np.log10(self.dist_pc / 10.0) + self.model.source_peakmag(
         #     "lsstz", "ab", sampling=0.05
         # )
         # self.model.set_source_peakmag(m=mapp, band="lsstz", magsys="ab", sampling=0.05)
-
-    # def extinct_model(self, r_v=3.1):
-    #     """Apply dust extinction to transient."""
-    #     phases = np.linspace(self.model.mintime(), self.model.maxtime(), num=1000)
-    #     waves = np.linspace(self.model.minwave(), self.model.maxwave(), num=2000)
-    #     unreddend_fluxes = self.model.flux(phases, waves)
-    #     reddend_fluxes = np.empty_like(unreddend_fluxes)
-    #     uncorr_ebv = sfdmap.ebv(self.ra, self.dec, frame="icrs", unit="radian")
-    #     for i, phase in enumerate(phases):
-    #         reddend_fluxes[i, :] = apply(
-    #             F99(waves, r_v * uncorr_ebv, r_v=r_v), unreddend_fluxes[i, :]
-    #         )
-    #
-    #     source = TimeSeriesSource(phases, waves, reddend_fluxes)
-    #     self.extincted_model = deepcopy(Model(source=source))
-
-    # def peculiar_velocity(self, pec_vel=None):
-    #     """Set peculiar velocity.
-    #
-    #     Draw from Gaussian peculiar velocity distribution with width 300km/s
-    #     Reference: Hui and Greene (2006) Also, use transient id to set seed for
-    #     setting the peculiar velocity, this is for reproducibility.
-    #     """
-    #     state = np.random.get_state()
-    #     np.random.seed(seed=self.id)
-    #     if pec_vel is None:
-    #         # Apply typical peculiar_velocity type correction
-    #         self.peculiar_vel = np.random.normal(loc=0, scale=300)
-    #     else:
-    #         self.peculiar_vel = pec_vel
-    #     np.random.set_state(state)
-    #     self.obs_z = (1 + self.z) * (
-    #         np.sqrt(
-    #             (1 + (self.peculiar_vel / speed_of_light_kms))
-    #             / ((1 - (self.peculiar_vel / speed_of_light_kms)))
-    #         )
-    #     ) - 1.0
-
-    def save_info(self, cosmo):
-        """
-        Basic basic docstring.
-        """
-        lsst_bands = ["lsstu", "lsstg", "lsstr", "lssti", "lsstz", "lssty"]
-        times = np.linspace(0.0, self.model.maxtime(), 1001)
-        for band in lsst_bands:
-            setattr(
-                self,
-                f"peak_{band}",
-                self.extincted_model.source_peakmag(band, "ab", sampling=0.1),
-            )
-            setattr(
-                self,
-                f"peak_abs_{band}",
-                self.model.source_peakabsmag(band, "ab", sampling=0.1, cosmo=cosmo),
-            )
-            peak_mag = getattr(self, f"peak_{band}")
-            lc_mags = self.model.bandmag(band, "ab", time=times)
-
-            one_mag_inds = np.nonzero(lc_mags <= peak_mag + 1)
-            one_mag_total_time = times[one_mag_inds][-1] - times[one_mag_inds][0]
-            peak_time_index = np.argmin(lc_mags)
-            peak_time = times[peak_time_index]
-            setattr(self, f"peak_delay_from_merger_{band}", peak_time)
-            setattr(self, f"onemag_peak_duration_{band}", one_mag_total_time)
 
 
 class kilonova(em_transient, compact_binary_inspiral):
@@ -188,28 +112,28 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
     Parameters:
     -----------
-        m1: float
+        mass1: float
             The gravitational mass of the first neutron star.
-        m2: float
+        mass2: float
             The gravitational mass of the second neutron star.
-        c1: float
+        compactness1: float
             The stellar compactness of the first neutron star.
-        c2: float
+        compactness2: float
             The stellar compactness of the second neutron star.
-        theta_obs: float
+        viewing_angle: float
             The viewing angle of the observer with respect to the merger.
-        Y_e: float
+        electron_fraction: float
             The electron fraction along the line of sight of the observer.
-        m_ej_dyn: float
+        dynamical_ejecta_mass: float
             The dynamic ejecta mass of the expanding kilonova material.
         vej: float
             The mean ejecta velocity of the expanding kilonova material.
-        kappa: float
+        grey_opacity: float
             The grey opacity of the material along the line of sight of the
             observer.
-        m_ej_sec: float
+        secular_ejecta_mass: float
             The secular ejecta mass of the expanding kilonova material.
-        m_ej_total: float
+        total_ejecta_mass: float
             The total ejecta mass of the expanding kilonova material.
         EOS: str
             The name of the equation of state of the neutron star matter.
@@ -230,17 +154,17 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
     def __init__(
         self,
-        m1=None,
-        m2=None,
-        c1=None,
-        c2=None,
-        theta_obs=None,
-        Y_e=None,
-        m_ej_dyn=None,
-        v_ej=None,
-        kappa=None,
-        m_ej_sec=None,
-        m_ej_total=None,
+        mass1=None,
+        mass2=None,
+        compactness1=None,
+        compactness2=None,
+        viewing_angle=None,
+        electron_fraction=None,
+        dynamical_ejecta_mass=None,
+        median_ejecta_velocity=None,
+        grey_opacity=None,
+        secular_ejecta_mass=None,
+        total_ejecta_mass=None,
         disk_eff=None,
         EOS=None,
         EOS_path=None,
@@ -262,7 +186,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         thermalisation_eff=0.25,
         mapping_type="coughlin",
         sim_gw=True,
-        save=True,
         **kwargs,
     ):
         """Init SAEE viewing-angle class."""
@@ -284,7 +207,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.thermalisation_eff = float(thermalisation_eff)
         self.consistency_check = consistency_check
         self.subtype = "Semi-analytic eigenmode expansion with viewing angle."
-        self.save = save
 
         # Handle setup of EOS dependent mapping objects
         if not self.__class__.EOS_name and EOS:
@@ -336,44 +258,44 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
 
         # Instantiate parameter values as none to be filled in later
         # Set the parameter names
-        self.param1_name = "m1"
-        self.param2_name = "m2"
-        self.param3_name = "c1"
-        self.param4_name = "c2"
-        self.param5_name = "theta_obs"
-        self.param6_name = "Y_e"
-        self.param7_name = "m_ej_dynamic"
-        self.param8_name = "v_ej"
-        self.param9_name = "kappa"
-        self.param10_name = "m_ej_sec"
-        self.param11_name = "m_ej_total"
+        self.param1_name = "mass1"
+        self.param2_name = "mass2"
+        self.param3_name = "compactness1"
+        self.param4_name = "compactness2"
+        self.param5_name = "viewing_angle"
+        self.param6_name = "electron_fraction"
+        self.param7_name = "dynamical_ejecta_mass"
+        self.param8_name = "median_ejecta_velocity"
+        self.param9_name = "grey_opacity"
+        self.param10_name = "secular_ejecta_mass"
+        self.param11_name = "total_ejecta_mass"
         self.param12_name = "disk_eff"
 
         for i in range(self.num_params):
             setattr(self, "param{}".format(i + 1), None)
 
-        if m1 is not None:
-            self.param1 = float(m1)
-        if m2 is not None:
-            self.param2 = float(m2)
-        if c1 is not None:
-            self.param3 = float(c1)
-        if c2 is not None:
-            self.param4 = float(c2)
-        if theta_obs is not None:
-            self.param5 = float(theta_obs)
-        if Y_e is not None:
-            self.param6 = float(Y_e)
-        if m_ej_dyn is not None:
-            self.param7 = float(m_ej_dyn)
-        if v_ej is not None:
-            self.param8 = float(v_ej)
-        if kappa is not None:
-            self.param9 = float(kappa)
-        if m_ej_sec is not None:
-            self.param10 = float(m_ej_sec)
-        if m_ej_total is not None:
-            self.param11 = float(m_ej_total)
+        if mass1 is not None:
+            self.param1 = float(mass1)
+        if mass2 is not None:
+            self.param2 = float(mass2)
+        if compactness1 is not None:
+            self.param3 = float(compactness1)
+        if compactness2 is not None:
+            self.param4 = float(compactness2)
+        if viewing_angle is not None:
+            self.param5 = float(viewing_angle)
+        if electron_fraction is not None:
+            self.param6 = float(electron_fraction)
+        if dynamical_ejecta_mass is not None:
+            self.param7 = float(dynamical_ejecta_mass)
+        if median_ejecta_velocity is not None:
+            self.param8 = float(median_ejecta_velocity)
+        if grey_opacity is not None:
+            self.param9 = float(grey_opacity)
+        if secular_ejecta_mass is not None:
+            self.param10 = float(secular_ejecta_mass)
+        if total_ejecta_mass is not None:
+            self.param11 = float(total_ejecta_mass)
         if disk_eff is not None:
             self.param12 = float(disk_eff)
 
@@ -517,7 +439,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         m_lower=0.001,
         v_upper=0.4,
         v_lower=0.05,
-        kappa_lower=0.1,
+        opacity_lower_bound=0.1,
         max_iter=10000,
     ):
         """Check consistency of parameters with model boundaries.
@@ -535,7 +457,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.param8 = (
             None if self.param8 > v_upper or self.param8 < v_lower else self.param8
         )
-        self.param9 = None if self.param9 < kappa_lower else self.param9
+        self.param9 = None if self.param9 < opacity_lower_bound else self.param9
 
         it = 0
         while None in (self.param11, self.param8, self.param9):
@@ -570,7 +492,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
                 self.param4,
                 self.EOS_mass_to_bary_mass,
                 mej_dyn=self.param7,
-                v_ej=self.param8,
+                median_ejecta_velocity=self.param8,
             )
             self.param10, self.param11, self.param12 = mappings.map_to_secular_ejecta(
                 self.param1,
@@ -596,69 +518,5 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             self.param11 = None if self.param11 < m_lower else self.param11
             self.param8 = None if self.param8 > v_upper else self.param8
             self.param8 = None if self.param8 < v_lower else self.param8
-            self.param9 = None if self.param9 < kappa_lower else self.param9
+            self.param9 = None if self.param9 < opacity_lower_bound else self.param9
             it += 1
-
-
-###############################################################################
-
-# The following functions are for future iterations and are in progress.
-
-###############################################################################
-
-
-def compute_ye_band_factors(self, n_phi=101):
-    inclination = self.param5
-    phi_grid = (
-        np.sort(
-            np.arccos(
-                2.0 * np.linspace(start=0.0, stop=1.0, num=n_phi, endpoint=True) - 1.0
-            )
-        )
-        + inclination
-        - np.pi / 2.0
-    )
-    ye = mappings.compute_ye_at_viewing_angle(phi_grid, EOS=self.__class__.EOS_name)
-    factor = []
-    for i, phi in enumerate(phi_grid):
-        if i == 0:
-            phi_min = phi
-            phi_max = phi + (phi_grid[1] - phi) / 2.0
-        elif i == n_phi - 1:
-            phi_min = phi - (phi - phi_grid[i - 1]) / 2.0
-            phi_max = phi
-        else:
-            phi_min = phi - (phi - phi_grid[i - 1]) / 2.0
-            phi_max = phi + (phi_grid[i + 1] - phi) / 2.0
-
-        F_raw, err = quadrature(compute_fphi, phi_min, phi_max, (inclination))
-        F = F_raw / np.pi
-        factor.append(F)
-    fac_array = np.asarray(factor)
-    return ye, fac_array
-
-
-def compute_fphi(phi, inclination):
-    if inclination == np.pi / 2.0:
-        theta_min = -np.pi / 2.0
-        theta_max = np.pi / 2.0
-    elif inclination < np.pi / 2.0 and phi < np.pi / 2.0 - inclination:
-        theta_min = -np.pi
-        theta_max = np.pi
-    elif inclination > np.pi / 2.0 and phi > 3.0 * np.pi / 2.0 - inclination:
-        theta_min = -np.pi
-        theta_max = np.pi
-    else:
-        targ1 = np.arccos(np.cos(phi) / np.sin(inclination))
-        targ2 = -np.arccos(np.cos(phi) / np.sin(inclination))
-        x1 = np.cos(targ1) * np.cos(inclination)
-        x2 = np.cos(targ2) * np.cos(inclination)
-        y1 = np.sin(targ1)
-        y2 = np.sin(targ2)
-        theta1 = np.arctan2(y1, x1)
-        theta2 = np.arctan2(y2, x2)
-        theta_min = np.min([theta1, theta2])
-        theta_max = np.max([theta1, theta2])
-    return np.sin(inclination) * np.sin(phi) * np.sin(phi) * (
-        np.sin(theta_max) - np.sin(theta_min)
-    ) + (theta_max - theta_min) * np.cos(inclination) * np.cos(phi)
