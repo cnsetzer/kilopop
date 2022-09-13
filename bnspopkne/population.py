@@ -1,10 +1,11 @@
 """Public module for drawing population intrinsic parameters."""
 import numpy as np
 from bnspopkne import equation_of_state as eos
+from bnspopkne.kne import Setzer2022_kilonova
 from bnspopkne import mappings
 
 
-class Setzer2022_population(object):
+class Setzer2022_population_parameter_distribution(object):
     """
     Class to construct population from Setzer et al. 2022.
 
@@ -46,7 +47,7 @@ class Setzer2022_population(object):
             setattr(self, "param{}".format(i + 1), np.empty(self.population_size))
 
         for i in range(self.population_size):
-            kilonova = saee_bns_emgw_with_viewing_angle(only_draw_parameters=True)
+            kilonova = Setzer2022_kilonova(only_draw_parameters=True)
             for k in range(self.number_of_parameters):
                 setattr(self, f"param{k + 1}"[i], getattr(kilonova, f"param{k + 1}"))
 

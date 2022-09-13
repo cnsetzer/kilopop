@@ -5,9 +5,7 @@ import numpy as np
 import astropy.units as units
 from astropy.time import Time
 from sncosmo import TimeSeriesSource, Model
-from astropy.cosmology import z_at_value, Planck18
 from bnspopkne.macronovae_wrapper import create_SAEE_SEDs
-from bnspopkne.inspiral import compact_binary_inspiral
 from bnspopkne import equation_of_state as eos
 from bnspopkne import mappings
 from bnspopkne import population
@@ -16,89 +14,7 @@ from bnspopkne import population
 warnings.filterwarnings("ignore", message="ERFA function")
 
 
-class em_transient(object):
-    """
-    Base class for optical transient instances.
-
-    This groups class methods that should be common to all transient models.
-    These include assign the transient a peculiar velocity, redshifting, etc.
-
-    """
-
-    def __init__(self, z=None, cosmo=None, dl=None):
-        """Init of the em_transient class wrapper."""
-        source = TimeSeriesSource(self.phase, self.wave, self.flux, name='SAEE kilonova', version='1.0')
-        self.model = Model(source=source)  # add dust effect here.
-        self.phase = None
-        self.wave = None
-        self.flux = None
-        if z is not None or dl is not None:
-            self.put_in_universe(z, cosmo, dl)
-        else:
-            self.z = 0.0
-            self.dist_mpc = 1.0e-5
-        self.tmax = self.observer_merger_time + self.model.maxtime()
-
-    def put_in_universe(self, z=None, cosmo=Planck18, dl=None):
-        """Place transient instance into the simulated Universe.
-
-        Set properties related to assumed cosmology, i.e., redshift, and
-        luminosity distance.
-
-        Input parameters:
-        -----------------
-
-        """
-        if z and not dl:
-            self.z = z
-            self.dist_mpc = cosmo.luminosity_distance(z).value
-        elif dl and not z:
-            self.dist_mpc = dl
-            self.z = z_at_value(cosmo.luminosity_distance, dl * units.Mpc).value
-        elif z and dl:
-            self.dist_mpc = dl
-            self.z = z
-        self.dist_pc = self.dist_mpc * 1000000.0  # convert Mpc to pc
-        self.redshift()
-
-    def redshift(self):
-        """Redshift the source.
-
-        Wrapper function to redshift the spectrum of the transient instance,
-        and scale the flux according to the luminosity distance.
-
-        Returns:
-        -------
-            self: modified self class instance
-        """
-        # Note that it is necessary to scale the amplitude relative to the 10pc
-        # (i.e. 10^2 in the following eqn.) placement of the SED currently
-        amp = np.power(10.0 / self.dist_pc, 2)
-        self.model.update({'z': self.z, 'amplitude': amp})
-
-        # Current working around for issue with amplitude...
-        # mapp = 5.0 * np.log10(self.dist_pc / 10.0) + self.model.source_peakmag(
-        #     "lsstz", "ab", sampling=0.05
-        # )
-        # self.model.set_source_peakmag(m=mapp, band="lsstz", magsys="ab", sampling=0.05)
-
-
-class kilonova(em_transient, compact_binary_inspiral):
-    """Base class for kilonova transients, groups relevant class methods and attributes."""
-
-    def __init__(self, z, cosmo, sim_gw):
-        """Init class.
-
-        Wrapper class to handle different kilonva models.
-
-        """
-        self.type = "kne"
-        em_transient.__init__(self, z, cosmo)
-        if sim_gw is True:
-            compact_binary_inspiral.__init__(self)
-
-
-class saee_bns_emgw_with_viewing_angle(kilonova):
+class Setzer2022_kilonova(object):
     """
     Top-level class for kilonovae transients based on Rosswog, et. al 2017
     semi-analytic model for kilonovae spectral energy distributions.
@@ -161,13 +77,10 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         min_wave=500.0,
         max_wave=12000.0,
         merger_time=60000.0,
-        z=None,
         EOS_path="data_directory_placeholder",
         opacity_data_path="data_directory_placeholder",
         emulator_path="data_directory_placeholder",
-        cosmo=None,
         id=None,
-        sim_gw=False,
         only_draw_parameters=False,
         **kwargs,
     ):
@@ -176,11 +89,8 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             self.id = np.random.randint(0, high=2**31)
         else:
             self.id = int(float(id))
-        self.observer_merger_time = float(merger_time)
-        observer_merger_time_mjd = Time(merger_time, format="mjd")
-        observer_merger_time_mjd.format = "gps"
-        self.observer_merger_time_gps = observer_merger_time_mjd.value
-        self.num_params = 12
+        self.observer_frame_merger_time = float(merger_time)
+        self.number_of_parameters = 12
         self.min_wave = float(min_wave)
         self.max_wave = float(max_wave)
         self.transient_duration = float(transient_duration)
@@ -219,7 +129,7 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.param12_name = "disk_unbinding_efficiency"
 
         # initialize attributes
-        for i in range(self.num_params):
+        for i in range(self.number_of_parameters):
             setattr(self, "param{}".format(i + 1), None)
 
         # parse user-provided parameter values
@@ -255,7 +165,14 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
         self.draw_parameters()
         if not only_draw_parameters:
             self.create_spectral_timeseries()
-            super().__init__(float(z), cosmo, sim_gw)
+            source = TimeSeriesSource(self.phase, self.wave, self.flux, name='SAEE kilonova', version='1.0')
+            self.model = Model(source=source)  # add dust effect here.
+            self.phase = None
+            self.wave = None
+            self.flux = None
+            self.redshift = 0.0
+            self.dist_mpc = 1.0e-5
+            self.tmax = self.observer_frame_merger_time + self.model.maxtime()
 
     def draw_from_binary_population(self):
         if self.param1 is None and self.param2 is None:
