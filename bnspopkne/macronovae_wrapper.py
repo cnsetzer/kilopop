@@ -5,7 +5,7 @@ from astropy import units as u
 from astropy.constants import h, c, sigma_sb, k_B, pc
 
 
-def make_rosswog_seds(KNE_parameters,
+def create_SAEE_SEDs(KNE_parameters,
                       min_wave=500.0,
                       max_wave=12000.0,
                       phases=None,
@@ -117,15 +117,17 @@ def blam(lam, T):
 
     Parameters:
     -----------
-        lam: np.array
+        lam: nd.array
             Wavelengths in cm. Expected shape is (n_wave,).
-        T: np.array
-            Time-series of temperatures for model evoluation. Expected shape is (n_time,).
+        T: nd.array
+            Time-series of temperatures for model evoluation.
+            Expected shape is (n_time,).
 
     Returns:
     --------
-        Planck: np.array
-            The value of the Planck function for a given temp. and wavelength. Output shape is (n_time, n_wave).
+        Planck: nd.array
+            The value of the Planck function for a given temp. and wavelength.
+            Output shape is (n_time, n_wave).
     """
     # cutoff argument to which we set Planck function to zero
     x_cut = 100.0

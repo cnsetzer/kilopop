@@ -2,24 +2,18 @@
  instances."""
 import warnings
 import numpy as np
-from astropy.constants import c as speed_of_light_ms
 import astropy.units as units
 from astropy.time import Time
 from sncosmo import TimeSeriesSource, Model
-from astropy.cosmology import Planck18 as cosmos
-from astropy.cosmology import z_at_value
-from bnspopkne.macronovae_wrapper import make_rosswog_seds as mw
+from astropy.cosmology import z_at_value, Planck18
+from bnspopkne.macronovae_wrapper import create_SAEE_SEDs
 from bnspopkne.inspiral import compact_binary_inspiral
 from bnspopkne import equation_of_state as eos
 from bnspopkne import mappings
 from bnspopkne import population
-from scipy.integrate import quadrature
 
 # Filter warnings from Numpy
 warnings.filterwarnings("ignore", message="ERFA function")
-
-# Set global module constants.
-speed_of_light_kms = speed_of_light_ms.to("km/s").value  # Convert m/s to km/s
 
 
 class em_transient(object):
@@ -45,7 +39,7 @@ class em_transient(object):
             self.dist_mpc = 1.0e-5
         self.tmax = self.observer_merger_time + self.model.maxtime()
 
-    def put_in_universe(self, z=None, cosmo=cosmos, dl=None):
+    def put_in_universe(self, z=None, cosmo=Planck18, dl=None):
         """Place transient instance into the simulated Universe.
 
         Set properties related to assumed cosmology, i.e., redshift, and
@@ -386,10 +380,11 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             self.map_to_kilonova_ejecta()
 
     def create_spectral_timeseries(self, KNE_parameters=None):
-        """Create the SED for this kNe instance.
+        """Create the spectral energy density timeseries for this kilonova
+        instance.
 
-        Wrapper function to send the selected, and default parameters to the
-        fortran library which computes the Kilonova SED evolution.
+        First layer wrapper function to FORTRAN library that computes the
+        kilonova SED evolution.
 
         Parameters:
         -----------
@@ -426,6 +421,6 @@ class saee_bns_emgw_with_viewing_angle(kilonova):
             )  # Flag to use numerical fit nuclear heating rates
             KNE_parameters.append(False)  # Read heating rates variable
             KNE_parameters.append("placeholder string")  # Heating rates file
-        self.phase, self.wave, self.flux = mw(
+        self.phase, self.wave, self.flux = create_SAEE_SEDs(
             KNE_parameters, self.min_wave, self.max_wave
         )
