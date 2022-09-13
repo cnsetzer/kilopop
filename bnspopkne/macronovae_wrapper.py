@@ -1,18 +1,8 @@
 import numpy as np
 from scipy.interpolate import interp1d
 from macronova2py import macronova2py as m2p
-
-#####################
-# physics constants #
-#####################
-parsec = 3.08567758e18  # parsec [cm]
-clight = 2.99792458e10  # speed of light [cm/s]
-sigma = 5.670374419e-5  # Stefan-Boltzmann constant [erg/(s*cm2*K4)]
-day_in_s = 8.64e4  # one day [s]
-Ang_to_cm = 1.0e-8  # angstrom [cm]
-Robs = 10.0 * parsec  # distance for absolute magnitudes
-hplanck = 6.62607015e-27  # Planck constant [erg*s]
-kB = 1.38064852e-16  # Boltzmann constant [erg/K]
+from astropy import units as u
+from astropy.constants import h, c, sigma_sb, k_B, pc
 
 
 def make_rosswog_seds(KNE_parameters,
@@ -88,6 +78,8 @@ def sed_timeseries(
             Energy per area values for every combination of phase and wavelengths
             characterizing the lightcurve of the source, [Ergs/s/cm^2/Angstrom]. Shape is (n_time, n_wave).
     """
+    day_in_s = 8.64e4  # one day [s]
+    Ang_to_cm = 1.0e-8  # angstrom [cm]
     # extract values from luminosity
     ti = luminosity[:, 0]  # times [seconds]
     Li = luminosity[:, 1]  # luminosities [erg/s]
@@ -105,7 +97,8 @@ def sed_timeseries(
     if wavelengths is None:
         wavelengths = np.arange(min_wave, max_wave, 10.0)  # Angstrom
     # output array,
-    Coef = np.divide(Li, (4.0 * (Robs ** 2) * sigma * np.power(Ti, 4)))
+    Robs = 10.0 * pc.cgs.value
+    Coef = np.divide(Li, (4.0 * (Robs ** 2) * sigma_sb.cgs.value * np.power(Ti, 4)))
     print(Coef.shape)
     # output flux f [erg s^-1 cm^-2 Ang.^-1]
     lam_cm = np.multiply(wavelengths, Ang_to_cm)
@@ -138,11 +131,11 @@ def blam(lam, T):
     x_cut = 100.0
     lam = np.expand_dims(lam, axis=0)
     T = np.expand_dims(T, axis=1)
-    x = np.divide(hplanck * clight, (kB * T * lam))
+    x = np.divide(h.cgs.value * c.cgs.value, (k_B.cgs.value * T * lam))
     lam_planck = np.tile(lam, (x.shape[0], 1))
     Planck = np.zeros(x.shape)
     Planck[x <= x_cut] = np.divide(
-        (2.0 * hplanck * clight ** 2) / np.power(lam_planck[x <= x_cut], 5),
+        (2.0 * h.cgs.value * (c.cgs.value ** 2)) / np.power(lam_planck[x <= x_cut], 5),
         (np.exp(x[x <= x_cut]) - 1.0),
     )
     return Planck

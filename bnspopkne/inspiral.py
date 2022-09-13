@@ -49,7 +49,7 @@ class compact_binary_inspiral(object):
         # but preserve the RA DEC per year positioning by modulating the time
         # of coalescence by gps time in years
         gps_time_mod_year = (
-            self.t0_gps / gps_sec_year - int(self.t0_gps / gps_sec_year)
+            self.observer_merger_time_gps / gps_sec_year - int(self.observer_merger_time_gps / gps_sec_year)
         ) * gps_sec_year
         self.gps_time_mod_year = gps_time_mod_year
 
