@@ -135,8 +135,9 @@ def compute_equation_5(mass1, mass2, compactness1, compactness2):
     e = -0.3090
     f = -1.879
     g = 0.657
-    median_ejecta_velocity = ((e * mass1 * (f * compactness1 + 1.0)) / (mass2))
-    + ((e * mass2 * (f * compactness2 + 1.0)) / (mass1)) + g
+    median_ejecta_velocity = (
+        ((e * mass1 * (f * compactness1 + 1.0)) / (mass2))
+        + ((e * mass2 * (f * compactness2 + 1.0)) / (mass1)) + g)
     return median_ejecta_velocity
 
 
@@ -226,17 +227,12 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
     """
     # Import the opacity data, and the hyperparameters from training the GP.
     # FUTURE TODO: Consider loading directly the GP object from pickle
-
-    try:
-        hyper_vec = np.load(hyperparam_file)
-    except (FileNotFoundError, TypeError) as error:
-        print(error)
-        hyper_vec = np.array([9.05275106, -3.34210729, -0.43019937, -2.93326251])
+    hyper_vec = np.load(hyperparam_file)
     opac_dataframe = read_csv(csv_loc, index_col=0)
     grey_opac_vals = opac_dataframe["kappa"].values
     opacity_std = opac_dataframe["sigma_kappa"].values
     masses = opac_dataframe["m_ej"].values
-    velocities = opac_dataframe["median_ejecta_velocity"].values
+    velocities = opac_dataframe["v_ej"].values
     electron_fractions = opac_dataframe["Y_e"].values
 
     kilonova_ejecta_array = np.empty(shape=(len(masses), 3))
@@ -255,8 +251,8 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
 
 
 def emulate_grey_opacity_from_kilonova_ejecta(
-    m_tot, median_ejecta_velocity, Y_e, grey_opacity_gp, opacity_data,
-    grey_opacity=None
+    total_ejecta_mass, median_ejecta_velocity, electron_fraction,
+    grey_opacity_gp, opacity_data,
 ):
     """
     Wrapper funciton to use an interpolation instance or other function to
@@ -269,60 +265,24 @@ def emulate_grey_opacity_from_kilonova_ejecta(
             The grey opacity for the instance set of binary and kilonova
             parameters to generate the kilonovae signal.
     """
+    kilonova_ejecta_predictions = np.empty(shape=(1, 3))
+    kilonova_ejecta_predictions[0, 0] = total_ejecta_mass
+    kilonova_ejecta_predictions[0, 1] = median_ejecta_velocity
+    kilonova_ejecta_predictions[0, 2] = electron_fraction
 
-    if grey_opacity is None:
-        m_ej_pred = m_tot
-        v_ej_pred = median_ejecta_velocity
-        Y_e_pred = Y_e
-    else:
-        ind = np.isnan(grey_opacity)
-        m_ej_pred = m_tot[ind]
-        v_ej_pred = median_ejecta_velocity[ind]
-        Y_e_pred = Y_e[ind]
-    if np.isscalar(m_ej_pred):
-        x_pred = np.empty(shape=(1, 3))
-        x_pred[0, 0] = m_ej_pred
-        x_pred[0, 1] = v_ej_pred
-        x_pred[0, 2] = Y_e_pred
-    else:
-        x_pred = np.empty(shape=(len(m_ej_pred), 3))
-        x_pred[:, 0] = m_ej_pred.flatten()
-        x_pred[:, 1] = v_ej_pred.flatten()
-        x_pred[:, 2] = Y_e_pred.flatten()
-
-    k_mean, k_var = grey_opacity_gp.predict(
-        opacity_data, x_pred, return_var=True, cache=True
+    grey_opacity_mean, grey_opacity_variance = grey_opacity_gp.predict(
+        opacity_data, kilonova_ejecta_predictions, return_var=True, cache=True
     )
-
-    if np.isscalar(k_mean):
-        kappa = -1.0
-        ind2 = np.array([1, 1])
-        kit = 0
-        while kappa < 0.1 and kit < 10000:
-            kappa = np.random.normal(loc=k_mean, scale=np.sqrt(k_var))
-            kit += 1
-        if kappa < 0.1:
-            kappa = 0.1
-    else:
-        kappa = -1.0 * np.ones(shape=(len(k_mean),))
-        ind2 = np.argwhere(kappa < 0.1)
-        kit = 0
-        while ind2.shape[0] > 0 and kit < 10000:
-            kappa[ind2] = np.random.normal(loc=k_mean[ind2], scale=np.sqrt(k_var[ind2]))
-            ind2 = np.argwhere(kappa < 0.1)
-            kit += 1
-        if ind2.shape[0] > 0:
-            kappa[ind2] = 0.1
-    if grey_opacity is None:
-        grey_opacity = kappa
-    else:
-        grey_opacity[ind] = kappa
-    if grey_opacity.ndim == 2:
-        return grey_opacity
-    elif np.isscalar(m_ej_pred):
-        return float(grey_opacity)
-    else:
-        return np.expand_dims(grey_opacity, axis=1)
+    grey_opacity = -1.0
+    kit = 0
+    while grey_opacity < 0.1 and kit < 10000:
+        grey_opacity = np.random.normal(loc=grey_opacity_mean,
+                                        scale=np.sqrt(grey_opacity_variance))
+        kit += 1
+    # currently threshold on 0.1
+    if grey_opacity < 0.1:
+        grey_opacity = 0.1
+    return grey_opacity
 
 
 class tanaka_mean_fixed(Model):

@@ -1,6 +1,7 @@
 """Module with classes and methods for constructing individual kilonovae
  instances."""
 import warnings
+import pkg_resources
 import numpy as np
 import astropy.units as units
 from astropy.time import Time
@@ -9,9 +10,7 @@ from bnspopkne.macronovae_wrapper import create_SAEE_SEDs
 from bnspopkne import equation_of_state as eos
 from bnspopkne import mappings
 from bnspopkne import population
-
-# Filter warnings from Numpy
-warnings.filterwarnings("ignore", message="ERFA function")
+from tqdm import tqdm
 
 
 class Setzer2022_kilonova(object):
@@ -77,9 +76,9 @@ class Setzer2022_kilonova(object):
         min_wave=500.0,
         max_wave=12000.0,
         merger_time=60000.0,
-        EOS_path="data_directory_placeholder",
-        opacity_data_path="data_directory_placeholder",
-        emulator_path="data_directory_placeholder",
+        EOS_path=pkg_resources.resource_filename('bnspopkne', "data/mr_sfho_full_right.csv"),
+        opacity_data_path=pkg_resources.resource_filename('bnspopkne', "data/paper_opacity_data.csv"),
+        emulator_path=pkg_resources.resource_filename('bnspopkne', "data/paper_kernel_hyperparameters.npy"),
         id=None,
         only_draw_parameters=False,
         **kwargs,
@@ -187,14 +186,14 @@ class Setzer2022_kilonova(object):
                 self.param1,
                 _,
             ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-                min(self.__class__tov_mass, (3.0/2.0)*self.param2),
+                min(self.__class__tov_mass, (3.0/2.0)*self.param2), m_low=self.param2
             )
         elif self.param1 is not None and self.param2 is None:
             (
                 self.param2,
                 _,
             ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-                self.param1, m_low=self.param1*(2.0/3.0)
+                self.param1, m_low=max(self.param1*(2.0/3.0), 1.0),
             )
         if self.param3 is None:
             self.param3 = eos.compute_compactnesses_from_EOS(
@@ -290,10 +289,10 @@ class Setzer2022_kilonova(object):
             self.param7 = None
             self.param8 = None
             self.param10 = None
-            self.param11 = None
             if (self.param11 > 0.08) or (self.param11 < 0.002):
                 self.param12 = None
-            self.draw_from_population()
+            self.param11 = None
+            self.draw_from_binary_population()
             self.map_to_kilonova_ejecta()
 
     def create_spectral_timeseries(self, KNE_parameters=None):
@@ -341,3 +340,51 @@ class Setzer2022_kilonova(object):
         self.phase, self.wave, self.flux = create_SAEE_SEDs(
             KNE_parameters, self.min_wave, self.max_wave
         )
+
+
+class Setzer2022_population_parameter_distribution(object):
+    """
+    Class to construct population from Setzer et al. 2022.
+
+    This class holds attributes which are vectors of each parameter of the
+    population.
+
+    The user can generate a new population, based on size,
+    otherwise the population from the paper is imported.
+    """
+    def __init__(
+        self,
+        population_size=50000,
+    ):
+        """
+        Parameters:
+        -----------
+            population_size: int
+                The size of the population to be drawn from the population.
+        """
+        self.population_size = population_size
+        self.number_of_parameters = 12
+        # Set the parameter names
+        self.param1_name = "mass1"
+        self.param2_name = "mass2"
+        self.param3_name = "compactness1"
+        self.param4_name = "compactness2"
+        self.param5_name = "viewing_angle"
+        self.param6_name = "electron_fraction"
+        self.param7_name = "dynamical_ejecta_mass"
+        self.param8_name = "median_ejecta_velocity"
+        self.param9_name = "grey_opacity"
+        self.param10_name = "secular_ejecta_mass"
+        self.param11_name = "total_ejecta_mass"
+        self.param12_name = "disk_unbinding_efficiency"
+
+        # initialize attributes
+        for i in range(self.number_of_parameters):
+            setattr(self, "param{}".format(i + 1),
+                    np.empty(self.population_size))
+
+        for i in tqdm(range(self.population_size)):
+            kilonova = Setzer2022_kilonova(only_draw_parameters=True)
+            for k in range(self.number_of_parameters):
+                getattr(self, f"param{k + 1}")[i] = (
+                                        getattr(kilonova, f"param{k + 1}"))

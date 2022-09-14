@@ -84,7 +84,7 @@ def compute_compactnesses_from_EOS(mass, EOS_mass_to_rad):
     """
     radius = EOS_mass_to_rad(mass)  # units km
     compactness = ((G.to('km3 / (M_sun s2)').value * mass) /
-                   (((c.to.('km/s').value) ** 2) * radius))
+                   (((c.to('km/s').value) ** 2) * radius))
     return compactness
 
 

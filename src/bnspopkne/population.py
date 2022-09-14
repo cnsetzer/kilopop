@@ -1,54 +1,5 @@
 """Public module for drawing population parameters."""
 import numpy as np
-from bnspopkne.kne import Setzer2022_kilonova
-
-
-class Setzer2022_population_parameter_distribution(object):
-    """
-    Class to construct population from Setzer et al. 2022.
-
-    This class holds attributes which are vectors of each parameter of the
-    population.
-
-    The user can generate a new population, based on size,
-    otherwise the population from the paper is imported.
-    """
-    def __init__(
-        self,
-        population_size=50000,
-    ):
-        """
-        Parameters:
-        -----------
-            population_size: int
-                The size of the population to be drawn from the population.
-        """
-        self.population_size = population_size
-        self.number_of_parameters = 12
-        # Set the parameter names
-        self.param1_name = "mass1"
-        self.param2_name = "mass2"
-        self.param3_name = "compactness1"
-        self.param4_name = "compactness2"
-        self.param5_name = "viewing_angle"
-        self.param6_name = "electron_fraction"
-        self.param7_name = "dynamical_ejecta_mass"
-        self.param8_name = "median_ejecta_velocity"
-        self.param9_name = "grey_opacity"
-        self.param10_name = "secular_ejecta_mass"
-        self.param11_name = "total_ejecta_mass"
-        self.param12_name = "disk_unbinding_efficiency"
-
-        # initialize attributes
-        for i in range(self.number_of_parameters):
-            setattr(self, "param{}".format(i + 1),
-                    np.empty(self.population_size))
-
-        for i in range(self.population_size):
-            kilonova = Setzer2022_kilonova(only_draw_parameters=True)
-            for k in range(self.number_of_parameters):
-                setattr(self, f"param{k + 1}"[i],
-                        getattr(kilonova, f"param{k + 1}"))
 
 
 def draw_disk_unbinding_efficiency(output_shape=1):
@@ -144,8 +95,8 @@ def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
     mass1 = draw_mass_from_EOS_bounds(max_mass,
                                       m_low=m_low,
                                       output_shape=output_shape)
-    m_low = mass1*mass_ratio_cut
-    mass2 = draw_mass_from_EOS_bounds(max_mass,
+    m_low = max(mass1*mass_ratio_cut, 1.0)
+    mass2 = draw_mass_from_EOS_bounds(mass1,
                                       m_low=m_low,
                                       output_shape=output_shape)
     return mass1, mass2

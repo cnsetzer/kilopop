@@ -6,10 +6,10 @@ import numpy.f2py as npf2py
 ext = Extension(
     name="macronova2py",
     sources=[
-        "bnspopkne/fortran_source/module_physics_constants.f90",
-        "bnspopkne/fortran_source/hratelib.f90",
-        "bnspopkne/fortran_source/macronova_Pinto_Eastman_CNS.f90",
-        "bnspopkne/fortran_source/macronova2py.f90",
+        "src/bnspopkne/fortran_source/module_physics_constants.f90",
+        "src/bnspopkne/fortran_source/hratelib.f90",
+        "src/bnspopkne/fortran_source/macronova_Pinto_Eastman_CNS.f90",
+        "src/bnspopkne/fortran_source/macronova2py.f90",
     ],
     extra_f90_compile_args=[
         "-cpp",
@@ -43,8 +43,8 @@ if __name__ == "__main__":
         description="Kilonova model and population model used in C. N. Setzer et al. 2022.",
         url="http://github.com/cnsetzer/Setzer2022_BNSpopkNe",
         author="Christian N. Setzer",
-        author_email="christian.setzer@fysik.su.se",
-        license="MIT",
+        author_email="aerosetzer@gmail.com",
+        license="GNU General Public License v3",
         classifiers=[
             # How mature is this project? Common values are
             #   3 - Alpha
@@ -54,12 +54,13 @@ if __name__ == "__main__":
             # Indicate who your project is intended for
             "Intended Audience :: Astronomers",
             # Pick your license as you wish (should match "license" above)
-            "License :: OSI Approved :: MIT License",
+            "License :: OSI Approved :: GNU General Public License v3",
             # Specify the Python versions you support here. In particular, ensure
             # that you indicate whether you support Python 2, Python 3 or both.
             "Programming Language :: Python :: 3.6+",
         ],
-        packages=find_packages(),
+        packages=find_packages(where='src'),
+        package_dir={"": "src"},
         ext_modules=[ext],
         include_package_data=True,
         package_data={'': ['data/*']},

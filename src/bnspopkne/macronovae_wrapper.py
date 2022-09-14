@@ -110,12 +110,10 @@ def sed_timeseries(
     Coef = np.divide(luminosity,
                      (4.0 * (Robs ** 2) * sigma_sb.cgs.value *
                       np.power(temperature, 4)))
-    print(Coef.shape)
     # output flux f [erg s^-1 cm^-2 Ang.^-1]
     lam_cm = np.multiply(wavelengths, Ang_to_cm)
     # output is ergs / s /cm^3
     blam_test = blam(lam_cm, temperature)
-    print(blam_test.shape)
     # rescale spectrum with luminosity-derived coefficient
     flux = (blam_test.T * Coef).T
     # convert to ergs/s /cm^2 /Angstrom
