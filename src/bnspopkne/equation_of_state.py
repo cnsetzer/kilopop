@@ -108,7 +108,7 @@ def calculate_threshold_mass(tov_mass, EOS_mass_to_rad):
     # fit coefficients
     a = 2.38
     b = 3.606
-    radius_1_6_km = EOS_mass_to_rad(1.6)
+    radius_1_6_msol = EOS_mass_to_rad(1.6)
     prompt_collpase_mass_threshold = ((a - b *
-                                      (tov_mass / radius_1_6_km)) * tov_mass)
+                                      (tov_mass / radius_1_6_msol)) * tov_mass)
     return prompt_collpase_mass_threshold

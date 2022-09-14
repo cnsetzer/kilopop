@@ -204,7 +204,7 @@ def compute_equation_10(viewing_angle):
     return electron_fraction
 
 
-def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
+def construct_opacity_gaussian_process(opacity_data_path, hyperparameter_file_path):
     """
     Wrapper function to build the gaussian process instance for obtaining a
     grey opacity value for arbitray values of total ejecta mass, median
@@ -212,10 +212,10 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
 
     Parameters:
     -----------
-        csv_loc: string
+        opacity_data_path: string
             File path for the data from which the grid
             interpolation is built.
-        hyperparam_file: string
+        hyperparameter_file_path: string
             File path for the parameters of the Gaussian process from traiing.
 
     Returns:
@@ -227,13 +227,13 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
     """
     # Import the opacity data, and the hyperparameters from training the GP.
     # FUTURE TODO: Consider loading directly the GP object from pickle
-    hyper_vec = np.load(hyperparam_file)
-    opac_dataframe = read_csv(csv_loc, index_col=0)
-    grey_opac_vals = opac_dataframe["kappa"].values
-    opacity_std = opac_dataframe["sigma_kappa"].values
-    masses = opac_dataframe["m_ej"].values
-    velocities = opac_dataframe["v_ej"].values
-    electron_fractions = opac_dataframe["Y_e"].values
+    hyper_parameters = np.load(hyperparameter_file_path)
+    opacity_array_from_SuperNu_fits = read_csv(opacity_data_path, index_col=0)
+    grey_opac_vals = opacity_array_from_SuperNu_fits["kappa"].values
+    opacity_std = opacity_array_from_SuperNu_fits["sigma_kappa"].values
+    masses = opacity_array_from_SuperNu_fits["m_ej"].values
+    velocities = opacity_array_from_SuperNu_fits["v_ej"].values
+    electron_fractions = opacity_array_from_SuperNu_fits["Y_e"].values
 
     kilonova_ejecta_array = np.empty(shape=(len(masses), 3))
     kilonova_ejecta_array[:, 0] = masses
@@ -246,7 +246,7 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
 
     opacity_GP = george.GP(mean=tanaka_mean_fixed(), kernel=kernel_choice)
     opacity_GP.compute(kilonova_ejecta_array, opacity_std)
-    opacity_GP.set_parameter_vector(hyper_vec)
+    opacity_GP.set_parameter_vector(hyper_parameters)
     return grey_opac_vals, opacity_GP
 
 

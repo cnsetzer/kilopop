@@ -75,10 +75,9 @@ class Setzer2022_kilonova(object):
         transient_duration=25.0,
         min_wave=500.0,
         max_wave=12000.0,
-        merger_time=60000.0,
-        EOS_path=pkg_resources.resource_filename('bnspopkne', "data/mr_sfho_full_right.csv"),
-        opacity_data_path=pkg_resources.resource_filename('bnspopkne', "data/paper_opacity_data.csv"),
-        emulator_path=pkg_resources.resource_filename('bnspopkne', "data/paper_kernel_hyperparameters.npy"),
+        EOS_path=None,
+        opacity_data_path=None,
+        emulator_path=None,
         id=None,
         only_draw_parameters=False,
         **kwargs,
@@ -88,17 +87,23 @@ class Setzer2022_kilonova(object):
             self.id = np.random.randint(0, high=2**31)
         else:
             self.id = int(float(id))
-        self.observer_frame_merger_time = float(merger_time)
         self.number_of_parameters = 12
         self.min_wave = float(min_wave)
         self.max_wave = float(max_wave)
         self.transient_duration = float(transient_duration)
+        if EOS_path is None:
+            EOS_path = pkg_resources.resource_filename('bnspopkne', "data/mr_sfho_full_right.csv")
         self.EOS_path = EOS_path
+        if emulator_path is None:
+            emulator_path = pkg_resources.resource_filename('bnspopkne', "data/paper_kernel_hyperparameters.npy")
         self.emulator_path = emulator_path
+        if opacity_data_path is None:
+            opacity_data_path = pkg_resources.resource_filename('bnspopkne', "data/paper_opacity_data.csv")
         self.opacity_data_path = opacity_data_path
 
         # Handle setup of EOS dependent mapping objects
         if not self.__class__.EOS_mass_to_rad:
+            print('Should only see this once. EOS')
             E1 = eos.get_EOS_table(EOS_path=self.EOS_path)
             self.__class__.tov_mass = eos.get_max_EOS_mass(E1)
             self.__class__.EOS_mass_to_rad = eos.get_radius_from_EOS(E1)
@@ -106,6 +111,7 @@ class Setzer2022_kilonova(object):
                 self.__class__.tov_mass, self.__class__.EOS_mass_to_rad
             )
         if not self.__class__.grey_opacity_emulator:
+            print('Should only see this once. GP')
             (
              self.__class__.opacity_data, self.__class__.grey_opacity_emulator
             ) = mappings.construct_opacity_gaussian_process(
@@ -132,13 +138,13 @@ class Setzer2022_kilonova(object):
             setattr(self, "param{}".format(i + 1), None)
 
         # parse user-provided parameter values
-        if mass1 is not None and mass1 <= self.__class__.tov_mass:
+        if ((mass1 is not None) and (mass1 <= self.__class__.tov_mass)):
             self.param1 = float(mass1)
-        elif mass1 is not None and mass1 > self.__class__.tov_mass:
+        elif ((mass1 is not None) and (mass1 > self.__class__.tov_mass)):
             raise Exception(f"The provided mass is not compatible with the EOS.")
-        if mass2 is not None and mass2 <= self.__class__.tov_mass:
+        if ((mass2 is not None) and (mass2 <= self.__class__.tov_mass)):
             self.param2 = float(mass2)
-        elif mass2 is not None and mass2 > self.__class__.tov_mass:
+        elif ((mass2 is not None) and (mass2 > self.__class__.tov_mass)):
             raise Exception(f"The provided mass is not compatible with the EOS.")
         if compactness1 is not None:
             self.param3 = float(compactness1)
@@ -171,42 +177,47 @@ class Setzer2022_kilonova(object):
             self.flux = None
             self.redshift = 0.0
             self.dist_mpc = 1.0e-5
-            self.tmax = self.observer_frame_merger_time + self.model.maxtime()
+            self.t0 = 0.0  # Currently always start the model at zero phase
+            self.tmax = self.model.maxtime()
 
     def draw_from_binary_population(self):
-        if self.param1 is None and self.param2 is None:
-            (
-                self.param1,
-                self.param2,
-            ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-                self.__class__.tov_mass,
-            )
-        elif self.param1 is None and self.param2 is not None:
-            (
-                self.param1,
-                _,
-            ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-                min(self.__class__tov_mass, (3.0/2.0)*self.param2), m_low=self.param2
-            )
-        elif self.param1 is not None and self.param2 is None:
-            (
-                self.param2,
-                _,
-            ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-                self.param1, m_low=max(self.param1*(2.0/3.0), 1.0),
-            )
+        """
+        Draw from the population priors on masses and inclination.
+        """
+        # Draw masses based on what is provided.
+        if ((self.param1 is None) and (self.param2 is None)):
+            (self.param1, self.param2
+             ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
+                self.__class__.tov_mass)
+        elif ((self.param1 is None) and (self.param2 is not None)):
+            self.param1 = population.draw_mass_from_EOS_bounds(
+                min(self.__class__tov_mass, (3.0/2.0)*self.param2),
+                m_low=self.param2)
+        elif ((self.param1 is not None) and (self.param2 is None)):
+            self.param2 = population.draw_mass_from_EOS_bounds(
+                self.param1, m_low=max(self.param1*(2.0/3.0), 1.0))
+        # If not already set, draw the viewing angles
+        if self.param5 is None:
+            self.param5 = population.draw_viewing_angle()
+        # Disk unbinding efficiency
+        if self.param12 is None:
+            self.param12 = population.draw_disk_unbinding_efficiency()
+
+    def map_mass_to_compactness(self):
+        """
+        Using the inverse function interpolated from the given EOS mass-radius
+        table, compute the compactness for a given mass.
+        """
+        # only compute if not already set
         if self.param3 is None:
             self.param3 = eos.compute_compactnesses_from_EOS(
                 self.param1, self.__class__.EOS_mass_to_rad
             )
+        # only compute if not already set
         if self.param4 is None:
             self.param4 = eos.compute_compactnesses_from_EOS(
                 self.param2, self.__class__.EOS_mass_to_rad
             )
-        if self.param5 is None:
-            self.param5 = population.draw_viewing_angle()
-        if self.param6 is None:
-            self.param6 = mappings.compute_equation_10(self.param5)
 
     def draw_parameters(self):
         """Draw parameters not populated by the user.
@@ -238,9 +249,12 @@ class Setzer2022_kilonova(object):
 
         """
         self.draw_from_binary_population()
+        self.map_mass_to_compactness()
         self.map_to_kilonova_ejecta()
         self.enforce_emulator_bounds()
+        self.emulate_grey_opacity()
 
+    def emulate_grey_opacity(self):
         if self.param9 is None:
             self.param9 = mappings.emulate_grey_opacity_from_kilonova_ejecta(
                 self.param11,
@@ -251,6 +265,12 @@ class Setzer2022_kilonova(object):
             )
 
     def map_to_kilonova_ejecta(self):
+        """
+
+        """
+        # Electron fraction
+        if self.param6 is None:
+            self.param6 = mappings.compute_equation_10(self.param5)
         # Dynamical Ejecta
         if None in (self.param7, self.param8):
             dynamical_ejecta_mass, median_ejecta_velocity = mappings.map_to_dynamical_ejecta(
@@ -263,9 +283,7 @@ class Setzer2022_kilonova(object):
                 self.param7 = dynamical_ejecta_mass
             if self.param8 is None:
                 self.param8 = median_ejecta_velocity
-        # Disk unbinding efficiency
-        if self.param12 is None:
-            self.param12 = population.draw_disk_unbinding_efficiency()
+
         # Secular Ejecta and Total Ejecta Mass
         total_binary_mass = self.param1 + self.param2
         if self.param10 is None and self.param11 is None:
@@ -289,10 +307,11 @@ class Setzer2022_kilonova(object):
             self.param7 = None
             self.param8 = None
             self.param10 = None
-            if (self.param11 > 0.08) or (self.param11 < 0.002):
+            if ((self.param11 > 0.08) or (self.param11 < 0.002)):
                 self.param12 = None
             self.param11 = None
             self.draw_from_binary_population()
+            self.map_mass_to_compactness()
             self.map_to_kilonova_ejecta()
 
     def create_spectral_timeseries(self, KNE_parameters=None):

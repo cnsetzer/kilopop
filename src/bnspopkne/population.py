@@ -63,7 +63,7 @@ def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, output_shape=1):
 
 
 def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-    max_mass, m_low=1.0, mass_ratio_cut=2.0 / 3.0, output_shape=1
+    max_mass, m_low=1.0, mass_ratio_cut=(2.0 / 3.0), output_shape=1
 ):
     """
     Draw neutron star component mass in the source frame given constraints.
@@ -95,8 +95,7 @@ def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
     mass1 = draw_mass_from_EOS_bounds(max_mass,
                                       m_low=m_low,
                                       output_shape=output_shape)
-    m_low = max(mass1*mass_ratio_cut, 1.0)
     mass2 = draw_mass_from_EOS_bounds(mass1,
-                                      m_low=m_low,
+                                      m_low=max(mass1*mass_ratio_cut, 1.0),
                                       output_shape=output_shape)
     return mass1, mass2
