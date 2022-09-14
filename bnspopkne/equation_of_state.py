@@ -1,5 +1,6 @@
 """Module for equation of state dependent properties of the model."""
 
+from astropy.constants import c, G
 from scipy.interpolate import interp1d
 from pandas import read_csv
 
@@ -15,8 +16,6 @@ def get_EOS_table(EOS_path=None):
     -----------
         EOS_path: str
             The location of the file containing the mass vs. radius data.
-        EOS: str
-            The name of the equation of state.
 
     Returns:
     --------
@@ -39,33 +38,13 @@ def get_radius_from_EOS(EOS_table):
 
     Returns:
     --------
-        f: scipy.interpolate instance
+        radius_interpolator: scipy.interpolate instance
             Function which interpolates mass vs. radius for given EOS.
     """
     mass = EOS_table["grav_mass"]
     radius = EOS_table["radius"]
-    f = interp1d(mass, radius)
-    return f
-
-
-def get_bary_mass_from_EOS(EOS_table):
-    """
-    Wrapper function to create the interpolation function from the provided
-    EOS data to evaluate the mass vs. radius relation for arbitray mass.
-    Parameters:
-    -----------
-        EOS_table: pandas DataFrame
-            Data table of the gravitational mass vs. radius curve.
-
-    Returns:
-    --------
-        f: scipy.interpolate instance
-            Function which interpolates mass vs. radius for the given EOS.
-    """
-    mass = EOS_table["grav_mass"]
-    bary_mass = EOS_table["bary_mass"]
-    f = interp1d(mass, bary_mass)
-    return f
+    radius_interpolator = interp1d(mass, radius)
+    return radius_interpolator
 
 
 def get_max_EOS_mass(EOS_table):
@@ -100,14 +79,13 @@ def compute_compactnesses_from_EOS(mass, EOS_mass_to_rad):
 
     Returns:
     ---------------------
-        c1: float
+        compactness: float
             The stellar compactness of the neutron star.
     """
-    G = 13.271317987e10  # units km, M_sol^-1, (km/s)^2
-    c = 299792.458  # units km/s
-    R1 = EOS_mass_to_rad(mass)  # units km
-    c1 = (G * mass) / ((c ** 2) * R1)
-    return c1
+    radius = EOS_mass_to_rad(mass)  # units km
+    compactness = ((G.to('km3 / (M_sun s2)').value * mass) /
+                   (((c.to.('km/s').value) ** 2) * radius))
+    return compactness
 
 
 def calculate_threshold_mass(tov_mass, EOS_mass_to_rad):
@@ -124,12 +102,13 @@ def calculate_threshold_mass(tov_mass, EOS_mass_to_rad):
             Interpolator function from provided EOS mass-radius curve.
     Returns:
     --------
-        M_thr: float
+        prompt_collpase_mass_threshold: float
             Threshold mass in solar masses for prompt blackhole collapse.
     """
+    # fit coefficients
     a = 2.38
     b = 3.606
-    M_tov = tov_mass
-    R_16 = EOS_mass_to_rad(1.6)
-    M_thr = (a - b * (M_tov / R_16)) * M_tov
-    return M_thr
+    radius_1_6_km = EOS_mass_to_rad(1.6)
+    prompt_collpase_mass_threshold = ((a - b *
+                                      (tov_mass / radius_1_6_km)) * tov_mass)
+    return prompt_collpase_mass_threshold

@@ -243,7 +243,7 @@ class Setzer2022_kilonova(object):
         self.enforce_emulator_bounds()
 
         if self.param9 is None:
-            self.param9 = mappings.map_kne_ejecta_to_grey_opacity_via_gaussian_process(
+            self.param9 = mappings.emulate_grey_opacity_from_kilonova_ejecta(
                 self.param11,
                 self.param8,
                 self.param6,

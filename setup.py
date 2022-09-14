@@ -39,10 +39,10 @@ if __name__ == "__main__":
 
     setup(
         name="bnspopkne",
-        version="0.0.1",
-        description="Kilonova population model used in C. N. Setzer et al. 2022.",
+        version="0.1",
+        description="Kilonova model and population model used in C. N. Setzer et al. 2022.",
         url="http://github.com/cnsetzer/Setzer2022_BNSpopkNe",
-        author="Christian Setzer",
+        author="Christian N. Setzer",
         author_email="christian.setzer@fysik.su.se",
         license="MIT",
         classifiers=[
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             #   3 - Alpha
             #   4 - Beta
             #   5 - Production/Stable
-            "Development Status :: 3 - Alpha",
+            "Development Status :: 4 - Beta",
             # Indicate who your project is intended for
             "Intended Audience :: Astronomers",
             # Pick your license as you wish (should match "license" above)
@@ -61,4 +61,6 @@ if __name__ == "__main__":
         ],
         packages=find_packages(),
         ext_modules=[ext],
+        include_package_data=True,
+        package_data={'': ['data/*']},
     )

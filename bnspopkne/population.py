@@ -1,8 +1,6 @@
-"""Public module for drawing population intrinsic parameters."""
+"""Public module for drawing population parameters."""
 import numpy as np
-from bnspopkne import equation_of_state as eos
 from bnspopkne.kne import Setzer2022_kilonova
-from bnspopkne import mappings
 
 
 class Setzer2022_population_parameter_distribution(object):
@@ -12,7 +10,7 @@ class Setzer2022_population_parameter_distribution(object):
     This class holds attributes which are vectors of each parameter of the
     population.
 
-    There is minimal tuning available to the user to generate a new population,
+    The user can generate a new population, based on size,
     otherwise the population from the paper is imported.
     """
     def __init__(
@@ -27,7 +25,6 @@ class Setzer2022_population_parameter_distribution(object):
         """
         self.population_size = population_size
         self.number_of_parameters = 12
-        # Instantiate parameter values as none to be filled in later
         # Set the parameter names
         self.param1_name = "mass1"
         self.param2_name = "mass2"
@@ -44,12 +41,14 @@ class Setzer2022_population_parameter_distribution(object):
 
         # initialize attributes
         for i in range(self.number_of_parameters):
-            setattr(self, "param{}".format(i + 1), np.empty(self.population_size))
+            setattr(self, "param{}".format(i + 1),
+                    np.empty(self.population_size))
 
         for i in range(self.population_size):
             kilonova = Setzer2022_kilonova(only_draw_parameters=True)
             for k in range(self.number_of_parameters):
-                setattr(self, f"param{k + 1}"[i], getattr(kilonova, f"param{k + 1}"))
+                setattr(self, f"param{k + 1}"[i],
+                        getattr(kilonova, f"param{k + 1}"))
 
 
 def draw_disk_unbinding_efficiency(output_shape=1):
@@ -65,7 +64,7 @@ def draw_disk_unbinding_efficiency(output_shape=1):
             The fraction of matter unbound from the accretion disk contributing
             to the total radiating ejecta mass of the kilonova.
     """
-    disk_unbinding_efficiency = np.random.uniform(0.1, 0.4, size=out_shape)
+    disk_unbinding_efficiency = np.random.uniform(0.1, 0.4, size=output_shape)
     return disk_unbinding_efficiency
 
 
@@ -99,9 +98,10 @@ def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, output_shape=1):
     Parameters:
     -----------
         max_mass: float
-            The maximum mass from which to draw the distribution.
+            The maximum mass from which to draw the distribution. Typically,
+            this is the TOV mass associated with the EOS. [solar masses]
         m_low: float
-            The minimum mass of the distribution, default 1.0 solar mass.
+            The minimum mass of the distribution, default 1.0 [solar mass].
         output_shape: float or tuple
             The number and array shaping structure for the draws.
     """
@@ -115,7 +115,7 @@ def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
     max_mass, m_low=1.0, mass_ratio_cut=2.0 / 3.0, output_shape=1
 ):
     """
-    Draw neutron star component mass in the source frame give constraints.
+    Draw neutron star component mass in the source frame given constraints.
 
     Draw the neutron star component masses assuming a uniform prior over
     the range of masses, as used by LIGO's BNS compact binary waveform search,
@@ -134,18 +134,18 @@ def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
 
     Returns (Implicitly):
     ---------------------
-        m1: float
+        mass1: float
             The source-frame gravitational mass of the first neutron star
             [solar masses].
-        m2: float
+        mass2: float
             The source-frame gravitational mass of the second neutron star
             [solar masses].
     """
-    m1 = draw_mass_from_EOS_bounds(max_mass,
-                                   m_low=m_low,
-                                   output_shape=output_shape)
-    m_low = m1*mass_ratio_cut
-    m2 = draw_mass_from_EOS_bounds(max_mass,
-                                   m_low=m_low,
-                                   output_shape=output_shape)
-    return m1, m2
+    mass1 = draw_mass_from_EOS_bounds(max_mass,
+                                      m_low=m_low,
+                                      output_shape=output_shape)
+    m_low = mass1*mass_ratio_cut
+    mass2 = draw_mass_from_EOS_bounds(max_mass,
+                                      m_low=m_low,
+                                      output_shape=output_shape)
+    return mass1, mass2

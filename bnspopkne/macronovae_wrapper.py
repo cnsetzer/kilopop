@@ -1,3 +1,5 @@
+"""Public module which computes the thermal spectra from a given set of
+kilonova parameters. Wrapper to the FORTRAN library for the SAEE model. """
 import numpy as np
 from scipy.interpolate import interp1d
 from macronova2py import macronova2py as m2p
@@ -6,11 +8,11 @@ from astropy.constants import h, c, sigma_sb, k_B, pc
 
 
 def create_SAEE_SEDs(KNE_parameters,
-                      min_wave=500.0,
-                      max_wave=12000.0,
-                      phases=None,
-                      wavelengths=None
-                      ):
+                     min_wave=500.0,
+                     max_wave=12000.0,
+                     phases=None,
+                     wavelengths=None
+                     ):
     """
     Function which prepares the inputs from the python code to the fortran
     library to compute the bolometric luminosity evolution for a kilonova given
@@ -36,28 +38,31 @@ def create_SAEE_SEDs(KNE_parameters,
             A function call returning a phase, wavelength, and flux array.
     """
     Nt = 5000  # internal grid of times over which to generate the luminosity
-    n = len(KNE_parameters) - 3  # number of parameters for base kN params.
+    n = len(KNE_parameters) - 3  # number of base kN parameters.
     MNE_parameters = KNE_parameters[0:n]  # sub select parameters
     func_hrate = KNE_parameters[n]  # flag to use functional heating rate
     read_hrate = KNE_parameters[n + 1]  # flag to read heating rates.
     heating_rates_file = KNE_parameters[n + 2]  # file to read from.
-    luminosity = m2p.calculate_luminosity(
+    luminosity_array = m2p.calculate_luminosity(
         n, MNE_parameters, func_hrate, read_hrate, heating_rates_file, Nt
     )
-    return sed_timeseries(luminosity, min_wave, max_wave, phases, wavelengths)
+    return sed_timeseries(luminosity_array,
+                          min_wave, max_wave, phases, wavelengths)
 
 
 def sed_timeseries(
-    luminosity, min_wave=500.0, max_wave=12000.0, phases=None, wavelengths=None
+    luminosity_array, min_wave=500.0, max_wave=12000.0, phases=None,
+    wavelengths=None
 ):
     """
     Function to compute a planck distribution normalized to sigma*T**4/pi
 
     Parameters:
     -----------
-        luminosity: nd.array
+        luminosity_array: nd.array
             Time-series evolution of the bolometric luminosity of the simulated
-            kilonova source. For use with scaling the Planck distribution. Expected shape (n_time, 4).
+            kilonova source. For use with scaling the Planck distribution.
+            Expected shape (n_time, 4).
         min_wave: float (optional)
             Minimum wavelength in Angstroms over which to simulate spectra.
         max_wave: float (optional)
@@ -69,58 +74,65 @@ def sed_timeseries(
 
     Returns:
     --------
-        ti: array
+        phase_days: array
             Array containing all the phases along the lightcurve evolution at
-            which an SED is defined. This is given in seconds. Shape is (n_time,).
+            which an SED is defined. This is given in days. Shape is (n_time,).
         wavelengths: array
-            Values in Angstroms of the covered energy spectrum. Shape is (n_wave,).
+            Values in Angstroms of the covered energy spectrum.
+            Shape is (n_wave,).
         flux: array
-            Energy per area values for every combination of phase and wavelengths
-            characterizing the lightcurve of the source, [Ergs/s/cm^2/Angstrom]. Shape is (n_time, n_wave).
+            Energy per area values for every combination of phase and
+            wavelengths characterizing the lightcurve of the source.
+            [Ergs/s/cm^2/Angstrom]. Shape is (n_time, n_wave).
     """
     day_in_s = 8.64e4  # one day [s]
     Ang_to_cm = 1.0e-8  # angstrom [cm]
-    # extract values from luminosity
-    ti = luminosity[:, 0]  # times [seconds]
-    Li = luminosity[:, 1]  # luminosities [erg/s]
-    Ti = luminosity[:, 2]  # Temperatures [K]
+    # extract values from luminosity_array
+    phase = luminosity_array[:, 0]  # times [seconds]
+    luminosity = luminosity_array[:, 1]  # luminosities [erg/s]
+    temperature = luminosity_array[:, 2]  # Temperatures [K]
 
+    # if phases specificed, interpolate solution to those times
     if phases is not None:
-        Linterp = interp1d(ti, y=Li)
-        Li = Linterp(phases * day_in_s)
-        Tinterp = interp1d(ti, y=Ti)
-        Ti = Tinterp(phases * day_in_s)
-        ti_days = phases
+        luminosity_nterp = interp1d(phase, y=luminosity)
+        luminosity = luminosity_nterp(phases * day_in_s)
+        temperature_nterp = interp1d(phase, y=temperature)
+        temperature = temperature_nterp(phases * day_in_s)
+        phase_days = phases
     else:
-        ti_days = ti / day_in_s
+        phase_days = phase / day_in_s
     # if wavelengths not provided, setup wavelength array
     if wavelengths is None:
         wavelengths = np.arange(min_wave, max_wave, 10.0)  # Angstrom
-    # output array,
+    # distance scaling to 10pc at which spectra is computed
     Robs = 10.0 * pc.cgs.value
-    Coef = np.divide(Li, (4.0 * (Robs ** 2) * sigma_sb.cgs.value * np.power(Ti, 4)))
+    # scaling coefficient for the spectra from luminosity solution
+    Coef = np.divide(luminosity,
+                     (4.0 * (Robs ** 2) * sigma_sb.cgs.value *
+                      np.power(temperature, 4)))
     print(Coef.shape)
     # output flux f [erg s^-1 cm^-2 Ang.^-1]
     lam_cm = np.multiply(wavelengths, Ang_to_cm)
-    # use normalisation coefficient and integrate the per steraidan blam over the outward solid angle
-    # i.e., that which is toward the observer
-    blam_test = blam(lam_cm, Ti)
+    # output is ergs / s /cm^3
+    blam_test = blam(lam_cm, temperature)
     print(blam_test.shape)
+    # rescale spectrum with luminosity-derived coefficient
     flux = (blam_test.T * Coef).T
+    # convert to ergs/s /cm^2 /Angstrom
     flux *= Ang_to_cm
-    return ti_days, wavelengths, flux
+    return phase_days, wavelengths, flux
 
 
-def blam(lam, T):
+def blam(lambda_cm, temperature):
     """
     Planck function of wavelength.
 
     Parameters:
     -----------
-        lam: nd.array
-            Wavelengths in cm. Expected shape is (n_wave,).
-        T: nd.array
-            Time-series of temperatures for model evoluation.
+        lambda_cm: nd.array
+            Wavelengths [cm]. Expected shape is (n_wave,).
+        temperature: nd.array
+            Time-series of temperatures [K] for spectra generation.
             Expected shape is (n_time,).
 
     Returns:
@@ -130,14 +142,21 @@ def blam(lam, T):
             Output shape is (n_time, n_wave).
     """
     # cutoff argument to which we set Planck function to zero
-    x_cut = 100.0
-    lam = np.expand_dims(lam, axis=0)
-    T = np.expand_dims(T, axis=1)
-    x = np.divide(h.cgs.value * c.cgs.value, (k_B.cgs.value * T * lam))
-    lam_planck = np.tile(lam, (x.shape[0], 1))
-    Planck = np.zeros(x.shape)
-    Planck[x <= x_cut] = np.divide(
-        (2.0 * h.cgs.value * (c.cgs.value ** 2)) / np.power(lam_planck[x <= x_cut], 5),
-        (np.exp(x[x <= x_cut]) - 1.0),
+    planck_arg_limit = 100.0
+    # utilize linear algebra for fast generation
+    lambda_cm = np.expand_dims(lambda_cm, axis=0)
+    temperature = np.expand_dims(temperature, axis=1)
+    # pre-compute exponent argument for Planck function
+    planck_arg = np.divide(h.cgs.value * c.cgs.value,
+                           (k_B.cgs.value * temperature * lambda_cm))
+    # construct wavelength array for each temperature
+    lam_planck = np.tile(lambda_cm, (planck_arg.shape[0], 1))
+    # initialize Planck function array
+    Planck = np.zeros(planck_arg.shape)
+    # compute Planck function
+    Planck[planck_arg <= planck_arg_limit] = np.divide(
+        (2.0 * h.cgs.value * (c.cgs.value ** 2)) /
+        np.power(lam_planck[planck_arg <= planck_arg_limit], 5),
+        (np.exp(planck_arg[planck_arg <= planck_arg_limit]) - 1.0),
     )
     return Planck

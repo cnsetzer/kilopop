@@ -1,35 +1,72 @@
-"""Module which contains mappings between intrinsic population parameters and kilonova parameters."""
+"""Module which contains mappings between intrinsic population parameters and
+ kilonova parameters."""
 
 import numpy as np
 import george
 from george.modeling import Model
 from pandas import read_csv
-from bnspopkne import equation_of_state as eos
+import dill as pickle
 
 
-def compute_equation_6(M_ns_tot, M_thr):
+def compute_equation_6(total_binary_mass, prompt_collapse_threshold_mass):
     """
-    
+    Equation 6 from Setzer et al. 2022.
+
+    Compute the remnant disk mass from CITATION.
+
+    Parameters:
+    -----------
+        total_binary_mass: float or array
+            The total mass [solar masses] of the neutron star binary.
+        prompt_collapse_threshold_mass: float
+            The prompt collapse threshold mass for the given EOS.
+    Returns:
+    --------
+        remnant_disk_mass: float or array
+            The mass [solar masses] of the remnant disk after merger.
     """
+    # fit coefficients
     a = -31.335
     b = -0.9760
     c = 1.0474
     d = 0.05957
-    m_disk = np.power(
-        10.0, a * (1.0 + b * np.tanh((c - (M_ns_tot / M_thr)) / d))
+    remnant_disk_mass = np.power(
+                                10.0, a * (1.0 + b * np.tanh(
+                                 (c - (total_binary_mass /
+                                  prompt_collapse_threshold_mass)) / d))
     )
-    if m_disk < 1.0e-3:
-        m_disk = 1.0e-3
-    return m_disk
+    if remnant_disk_mass < 1.0e-3:
+        remnant_disk_mass = 1.0e-3
+    return remnant_disk_mass
 
 
-def compute_secular_ejecta_mass(total_binary_mass, threshold_mass, disk_unbinding_efficiency):
+def compute_secular_ejecta_mass(total_binary_mass, threshold_mass,
+                                disk_unbinding_efficiency):
+    """
+    Wrapper function for computing the total secular ejecta mass.
+
+    Parameters:
+    -----------
+        total_binary_mass: float or array
+            The total mass [solar masses] of the neutron star binary.
+        threshold_mass: float or array
+            The mass threshold [solar mass] for prompt collpase after merger.
+        disk_unbinding_efficiency: float or array
+            The percentage of matter unbound from the remnant disk contributing
+            to the radiating ejecta.
+
+    Returns:
+    --------
+        secular_ejecta_mass: float or array
+            The total mass coming from secular processes, post-merger, to add
+            to the total mass comprising the kilonova ejecta.
+    """
     disk_mass = compute_equation_6(total_binary_mass, threshold_mass)
     secular_ejecta_mass = disk_unbinding_efficiency*disk_mass
     return secular_ejecta_mass
 
 
-def compute_equation_4(m1, m2, c1, c2):
+def compute_equation_4(mass1, mass2, compactness1, compactness2):
     """
     Equation 4 in Setzer et al. 2022.
 
@@ -38,19 +75,20 @@ def compute_equation_4(m1, m2, c1, c2):
 
     Parameters:
     -----------
-        m1: float
+        mass1: float
             The mass of the primary (more massive) neutron star.
-        m2: float
+        mass2: float
             The mass of the secondary (less massive) neutron star.
-        c1: float
+        compactness1: float
             The compactness of the primary (more massive) neutron star.
-        c2: float
+        compactness2: float
             The compactness of the secondary (less massive) neutron star.
     Returns:
     --------
         dynamical_ejecta_mass: float
             The dynamical ejecta mass from the fit.
     """
+    # fit coefficients
     a = -0.0719
     b = 0.2116
     d = -2.42
@@ -58,20 +96,20 @@ def compute_equation_4(m1, m2, c1, c2):
     dynamical_ejecta_mass = np.power(
         10.0,
         (
-            ((a * (1.0 - 2.0 * c1) * m1) / (c1))
-            + b * m2 * np.power((m1 / m2), n)
+            ((a * (1.0 - 2.0 * compactness1) * mass1) / (compactness1))
+            + b * mass2 * np.power((mass1 / mass2), n)
             + (d / 2.0)
         )
         + (
-            ((a * (1.0 - 2.0 * c2) * m2) / (c2))
-            + b * m1 * np.power((m2 / m1), n)
+            ((a * (1.0 - 2.0 * compactness2) * mass2) / (compactness2))
+            + b * mass1 * np.power((mass2 / mass1), n)
             + (d / 2.0)
         ),
     )
     return dynamical_ejecta_mass
 
 
-def compute_equation_5(m1, m2, c1, c2):
+def compute_equation_5(mass1, mass2, compactness1, compactness2):
     """
     Equation 5 in Setzer et al. 2022.
 
@@ -80,25 +118,26 @@ def compute_equation_5(m1, m2, c1, c2):
 
     Parameters:
     -----------
-        m1: float
+        mass1: float
             The mass of the primary (more massive) neutron star.
-        m2: float
+        mass2: float
             The mass of the secondary (less massive) neutron star.
-        c1: float
+        compactness1: float
             The compactness of the primary (more massive) neutron star.
-        c2: float
+        compactness2: float
             The compactness of the secondary (less massive) neutron star.
     Returns:
     --------
-        vej: float
+        median_ejecta_velocity: float
             The median ejecta velocity from the fit.
     """
+    # fit coefficients
     e = -0.3090
     f = -1.879
     g = 0.657
-    vej = ((e * m1 * (f * c1 + 1.0)) / (m2)) + (g / 2.0)
-    +(((e * m2 * (f * c2 + 1.0)) / (m1)) + (g / 2.0))
-    return vej
+    median_ejecta_velocity = ((e * mass1 * (f * compactness1 + 1.0)) / (mass2))
+    + ((e * mass2 * (f * compactness2 + 1.0)) / (mass1)) + g
+    return median_ejecta_velocity
 
 
 def map_to_dynamical_ejecta(
@@ -106,40 +145,40 @@ def map_to_dynamical_ejecta(
     comp1,
     mass2,
     comp2,
-    mej_dyn=None,
-    v_ej=None,
+    dynamical_ejecta_mass=None,
+    median_ejecta_velocity=None,
 ):
     """
-    Wrapper for fit functions from various references: Coughlin et. al 2018 etc.
-    to map m1,m2,c1,c2 to mej,vej.
+    Wrapper for fit functions from various references: Coughlin et. al 2018
+    to map mass1, mass2, compactness1, compactness2 to mej,median_ejecta_velocity.
 
     Parameters:
     -----------
-        m1: float
+        mass1: float
             The mass of the primary (more massive) neutron star.
-        m2: float
+        mass2: float
             The mass of the secondary (less massive) neutron star.
-        c1: float
+        compactness1: float
             The compactness of the primary (more massive) neutron star.
-        c2: float
+        compactness2: float
             The compactness of the secondary (less massive) neutron star.
     Returns:
     --------
-.       mej_dyn: float
+.       dynamical_ejecta_mass: float
             Dynamical ejecta mass from the fit.
-        v_ej: float
+        median_ejecta_velocity: float
             The median ejecta velocity of the kilonova dynamical ejecta.
     """
-    if mej_dyn is None:
-        mej_dyn = compute_equation_4(mass1, mass2, comp1, comp2)
-    if v_ej is None:
-        v_ej = compute_equation_5(mass1, mass2, comp1, comp2)
-    return mej_dyn, v_ej
+    if dynamical_ejecta_mass is None:
+        dynamical_ejecta_mass = compute_equation_4(mass1, mass2, comp1, comp2)
+    if median_ejecta_velocity is None:
+        median_ejecta_velocity = compute_equation_5(mass1, mass2, comp1, comp2)
+    return dynamical_ejecta_mass, median_ejecta_velocity
 
 
 def compute_equation_10(viewing_angle):
     """
-    Equation 5 in Setzer et al. 2022.
+    Equation 10 in Setzer et al. 2022.
 
     Fit function that determines the average electron fraction of the
     material directly in the line of sight of the observer. Determined
@@ -149,7 +188,7 @@ def compute_equation_10(viewing_angle):
     Parameters:
     -----------
         viewing_angle: float or ndarray
-            The orientation of the kNe w.r.t the observer.
+            The orientation of the kilonova w.r.t the observer.
 
     Returns:
     --------
@@ -157,6 +196,7 @@ def compute_equation_10(viewing_angle):
             The mass-weighted average electron fraction of the material at the
             given viewing_angle or viewing-angle of the observer.
     """
+    # fit coefficients
     a = 0.22704
     b = 0.16147
     electron_fraction = a * (np.cos(viewing_angle) ** 2) + b
@@ -172,13 +212,17 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
     Parameters:
     -----------
         csv_loc: string
-            absolute file path for the data from which the grid
-            interpolation is built
+            File path for the data from which the grid
+            interpolation is built.
+        hyperparam_file: string
+            File path for the parameters of the Gaussian process from traiing.
 
     Returns:
     --------
-        opacity_GP: george.GP: instance
-            Trained interpolator function to map (m_ej_tot,v_ej,Ye) to grey opacity.
+        opacity_GP: george.GP instance
+            Trained interpolator function to map
+            (total_ejecta_mass, median_ejecta_velocity, electron_fraction) to
+            grey opacity.
     """
     # Import the opacity data, and the hyperparameters from training the GP.
     # FUTURE TODO: Consider loading directly the GP object from pickle
@@ -192,26 +236,27 @@ def construct_opacity_gaussian_process(csv_loc, hyperparam_file):
     grey_opac_vals = opac_dataframe["kappa"].values
     opacity_std = opac_dataframe["sigma_kappa"].values
     masses = opac_dataframe["m_ej"].values
-    velocities = opac_dataframe["v_ej"].values
+    velocities = opac_dataframe["median_ejecta_velocity"].values
     electron_fractions = opac_dataframe["Y_e"].values
 
-    x = np.empty(shape=(len(masses), 3))
-    x[:, 0] = masses
-    x[:, 1] = velocities
-    x[:, 2] = electron_fractions
+    kilonova_ejecta_array = np.empty(shape=(len(masses), 3))
+    kilonova_ejecta_array[:, 0] = masses
+    kilonova_ejecta_array[:, 1] = velocities
+    kilonova_ejecta_array[:, 2] = electron_fractions
 
     kernel_choice = np.var(grey_opac_vals) * george.kernels.Matern52Kernel(
         metric=[0.01, 0.05, 0.05], ndim=3
     )
 
     opacity_GP = george.GP(mean=tanaka_mean_fixed(), kernel=kernel_choice)
-    opacity_GP.compute(x, opacity_std)
+    opacity_GP.compute(kilonova_ejecta_array, opacity_std)
     opacity_GP.set_parameter_vector(hyper_vec)
     return grey_opac_vals, opacity_GP
 
 
-def map_kne_ejecta_to_grey_opacity_via_gaussian_process(
-    m_tot, v_ej, Y_e, grey_opacity_gp, opacity_data, grey_opacity=None
+def emulate_grey_opacity_from_kilonova_ejecta(
+    m_tot, median_ejecta_velocity, Y_e, grey_opacity_gp, opacity_data,
+    grey_opacity=None
 ):
     """
     Wrapper funciton to use an interpolation instance or other function to
@@ -227,12 +272,12 @@ def map_kne_ejecta_to_grey_opacity_via_gaussian_process(
 
     if grey_opacity is None:
         m_ej_pred = m_tot
-        v_ej_pred = v_ej
+        v_ej_pred = median_ejecta_velocity
         Y_e_pred = Y_e
     else:
         ind = np.isnan(grey_opacity)
         m_ej_pred = m_tot[ind]
-        v_ej_pred = v_ej[ind]
+        v_ej_pred = median_ejecta_velocity[ind]
         Y_e_pred = Y_e[ind]
     if np.isscalar(m_ej_pred):
         x_pred = np.empty(shape=(1, 3))
@@ -281,22 +326,42 @@ def map_kne_ejecta_to_grey_opacity_via_gaussian_process(
 
 
 class tanaka_mean_fixed(Model):
-    """Construct GP mean model based on Tanaka et al. 2019.
+    """Construct piece-wise mean function model based on Tanaka et al. 2019.
 
     Mean model class to be used with the Gaussian process model of the opacity
     surface. This is based on the work of Tanaka et. al 2019.
     """
+    def get_value(self, kilonova_ejecta_array):
+        """Get value function in george format.
 
-    def get_value(self, x):
-        """Get value function in george format."""
-        amp = np.zeros((len(x[:, 0]),))
-        amp[x[:, 2] <= 0.2] = 25.0
-        amp[(x[:, 2] > 0.2) & (x[:, 2] < 0.25)] = ((-21.0) / (0.05)) * x[
-            (x[:, 2] > 0.2) & (x[:, 2] < 0.25), 2
-        ] + 109.0
-        amp[(x[:, 2] >= 0.25) & (x[:, 2] <= 0.35)] = 4.0
-        amp[(x[:, 2] > 0.35) & (x[:, 2] < 0.4)] = ((-3.0) / (0.05)) * x[
-            (x[:, 2] > 0.35) & (x[:, 2] < 0.4), 2
-        ] + 25.0
-        amp[x[:, 2] >= 0.4] = 1.0
-        return amp
+        Parameters:
+        -----------
+            self: class instance [implicit]
+                Reference to class instance.
+            kilonova_ejecta_array: array
+                Array of kilonova ejecta parameter pairs.
+
+        Returns:
+        --------
+            mean_function_value: array
+                The mean function value at the given kilonova parameters.
+        """
+        mean_function_value = np.zeros((len(kilonova_ejecta_array[:, 0]),))
+        # low electron fraction
+        mean_function_value[kilonova_ejecta_array[:, 2] <= 0.2] = 25.0
+        # transition region (linear interpolation)
+        mean_function_value[(kilonova_ejecta_array[:, 2] > 0.2) &
+                            (kilonova_ejecta_array[:, 2] < 0.25)] = (((-21.0) / (0.05)) * kilonova_ejecta_array[
+                             (kilonova_ejecta_array[:, 2] > 0.2) & (kilonova_ejecta_array[:, 2] < 0.25), 2
+                            ] + 109.0)
+        # mid electron fraction
+        mean_function_value[(kilonova_ejecta_array[:, 2] >= 0.25) &
+                            (kilonova_ejecta_array[:, 2] <= 0.35)] = 4.0
+        # second transition (linear interpolation)
+        mean_function_value[(kilonova_ejecta_array[:, 2] > 0.35) &
+                            (kilonova_ejecta_array[:, 2] < 0.4)] = (((-3.0) / (0.05)) * kilonova_ejecta_array[
+                             (kilonova_ejecta_array[:, 2] > 0.35) & (kilonova_ejecta_array[:, 2] < 0.4), 2
+                            ] + 25.0)
+        # high electron fraction opacities
+        mean_function_value[kilonova_ejecta_array[:, 2] >= 0.4] = 1.0
+        return mean_function_value
