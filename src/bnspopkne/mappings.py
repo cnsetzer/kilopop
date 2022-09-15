@@ -351,8 +351,8 @@ def emulate_grey_opacity_from_kilonova_ejecta(
     grey_opacity = -1.0
     kit = 0
     while grey_opacity < 0.1 and kit < 10000:
-        grey_opacity = np.random.normal(loc=grey_opacity_mean,
-                                        scale=np.sqrt(grey_opacity_variance))
+        grey_opacity = np.random.normal(loc=grey_opacity_mean[0],
+                                        scale=np.sqrt(grey_opacity_variance[0]))
         kit += 1
     # currently threshold on 0.1
     if grey_opacity < 0.1:
