@@ -2,7 +2,7 @@
 import numpy as np
 
 
-def draw_disk_unbinding_efficiency(output_shape=1):
+def draw_disk_unbinding_efficiency(output_shape=None):
     """Set the disk unbinding efficiency.
 
     Parameters:
@@ -19,7 +19,7 @@ def draw_disk_unbinding_efficiency(output_shape=1):
     return disk_unbinding_efficiency
 
 
-def draw_viewing_angle(output_shape=1):
+def draw_viewing_angle(output_shape=None):
     """Set the observer viewing-angle.
 
     Function draw the observer angle at which the kilonovae is observed. This
@@ -43,7 +43,7 @@ def draw_viewing_angle(output_shape=1):
     return viewing_angle
 
 
-def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, output_shape=1):
+def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, output_shape=None):
     """Sample a uniform distribution for the mass.
 
     Parameters:
@@ -63,7 +63,7 @@ def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, output_shape=1):
 
 
 def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-    max_mass, m_low=1.0, mass_ratio_cut=(2.0 / 3.0), output_shape=1
+    max_mass, m_low=1.0, mass_ratio_cut=(2.0 / 3.0), output_shape=None
 ):
     """
     Draw neutron star component mass in the source frame given constraints.
