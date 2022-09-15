@@ -5,7 +5,6 @@ import numpy as np
 import george
 from george.modeling import Model
 from pandas import read_csv
-import dill as pickle
 
 
 def compute_equation_4(mass1, mass2, compactness1, compactness2):
