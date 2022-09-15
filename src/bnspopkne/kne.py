@@ -443,6 +443,7 @@ class Setzer2022_population_parameter_distribution(object):
         self,
         population_size=50000,
         only_draw_parameters=True,
+        chunksize=500,
     ):
         """
         Parameters:
@@ -486,11 +487,10 @@ class Setzer2022_population_parameter_distribution(object):
                                             getattr(kilonova, f"param{k + 1}"))
         else:
             with Pool() as p:
-                with tqdm(total=self.population_size) as progress_bar:
+                with tqdm(total=int(self.population_size/chunksize)) as progress_bar:
                     for _ in p.imap_unordered(self.compute_per_kilonova,
-                                              range(self.population_size),
-                                              chunksize=1):
-                        print('Progress update.')
+                                              list(range(self.population_size)),
+                                              chunksize=chunksize):
                         progress_bar.update()
 
     def compute_per_kilonova(self, id, **kwargs):
