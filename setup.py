@@ -28,7 +28,7 @@ ext = Extension(
     library_dirs=[
         # os.environ["SCALAPACK_LIB"],
         # os.environ["OPENBLAS_LIB"],
-        "/Users/cnsetzer/software/lib/lapack-3.8.0/",
+        "/Users/cnsetzer/software/lib/lapack-3.10.1/",
         # "/usr/lib64/",
     ],
     f2py_options=["c", "only:", "calculate_luminosity", ":", "m"],

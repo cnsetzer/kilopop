@@ -86,29 +86,3 @@ def compute_compactnesses_from_EOS(mass, EOS_mass_to_rad):
     compactness = ((G.to('km3 / (M_sun s2)').value * mass) /
                    (((c.to('km/s').value) ** 2) * radius))
     return compactness
-
-
-def calculate_threshold_mass(tov_mass, EOS_mass_to_rad):
-    """
-    Function to calculate the prompt collapse threshold mass, given the
-    maximum TOV mass and the radius at 1.6 solar mass for the chosen EOS.
-    Based on Bauswein et al. 2013.
-
-    Parameters:
-    -----------
-        tov_mass: float
-            The maximum mass from solving the TOV equations for given EOS.
-        EOS_mass_to_rad: function
-            Interpolator function from provided EOS mass-radius curve.
-    Returns:
-    --------
-        prompt_collpase_mass_threshold: float
-            Threshold mass in solar masses for prompt blackhole collapse.
-    """
-    # fit coefficients
-    a = 2.38
-    b = 3.606
-    radius_1_6_msol = EOS_mass_to_rad(1.6)
-    prompt_collpase_mass_threshold = ((a - b *
-                                      (tov_mass / radius_1_6_msol)) * tov_mass)
-    return prompt_collpase_mass_threshold
