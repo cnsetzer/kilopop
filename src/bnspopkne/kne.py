@@ -511,12 +511,12 @@ class Setzer2022_population_parameter_distribution(object):
         """
         kilonova = Setzer2022_kilonova(only_draw_parameters=False)
         times = np.linspace(0.0, kilonova.model.maxtime(), 1001)
-        lc_mags = kilonova.model.bandmag(band, "ab", time=times)
-        one_mag_inds = np.nonzero(lc_mags <= peak_mag + 1)
-        one_mag_total_time = times[one_mag_inds][-1] - times[one_mag_inds][0]
-        peak_time_index = np.argmin(lc_mags)
+        lightcurve_abs_i = kilonova.model.bandmag('lssti', "ab", time=times)
+        one_mag_indices = np.nonzero(lightcurve_abs_i <= peak_mag + 1)
+        one_mag_total_time = times[one_mag_indices][-1] - times[one_mag_indices][0]
+        peak_time_index = np.argmin(lightcurve_abs_i)
         self.peak_time[id] = times[peak_time_index]
-        self.peak_abs_lssti[id] = lc_mags[peak_time_index]
+        self.peak_abs_lssti[id] = lightcurve_abs_i[peak_time_index]
         self.one_mag_peak_time_lssti[id] = one_mag_total_time
         for k in range(self.number_of_parameters):
             getattr(self, f"param{k + 1}")[id] = (
