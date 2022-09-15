@@ -400,3 +400,30 @@ class tanaka_mean_fixed(Model):
         # high electron fraction opacities
         mean_function_value[kilonova_ejecta_array[:, 2] >= 0.4] = 1.0
         return mean_function_value
+
+
+class hyperbolic_tangent(Model):
+    """Construct piece-wise mean function model based on Tanaka et al. 2019.
+
+    Mean model class to be used with the Gaussian process model of the opacity
+    surface. This is based on the work of Tanaka et. al 2019.
+    """
+    parameter_names = ("amplitude", "tau", "damp", "transition_length", "transition_location")
+
+    def get_value(self, kilonova_ejecta_array):
+        """Get value function in george format.
+
+        Parameters:
+        -----------
+            self: class instance [implicit]
+                Reference to class instance.
+            kilonova_ejecta_array: array
+                Array of kilonova ejecta parameter pairs.
+
+        Returns:
+        --------
+            mean_function_value: array
+                The mean function value at the given kilonova parameters.
+        """
+        mean_function_value = self.amplitude*(np.exp(-self.tau/(kilonova_ejecta_array[:,2]+self.damp))*tanh((x-self.transition_location)/self.transition_length) + self.offset)
+        return mean_function_value
