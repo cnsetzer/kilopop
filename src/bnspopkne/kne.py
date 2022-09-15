@@ -1,6 +1,5 @@
 """Module with classes and methods for constructing individual kilonovae
  instances."""
-import warnings
 import pkg_resources
 import numpy as np
 import astropy.units as units
@@ -487,7 +486,7 @@ class Setzer2022_population_parameter_distribution(object):
                                             getattr(kilonova, f"param{k + 1}"))
         else:
             with Pool() as p:
-                with tqdm(total=int(self.population_size/chunksize)) as progress_bar:
+                with tqdm(total=int(self.population_size)) as progress_bar:
                     for _ in p.imap_unordered(self.compute_per_kilonova,
                                               list(range(self.population_size)),
                                               chunksize=chunksize):
@@ -510,14 +509,14 @@ class Setzer2022_population_parameter_distribution(object):
                 of its peak brightness.
         """
         kilonova = Setzer2022_kilonova(only_draw_parameters=False)
-        times = np.linspace(0.0, kilonova.model.maxtime(), 5000)
+        times = np.linspace(0.0, kilonova.model.maxtime(), 5001)
         lightcurve_abs_i = kilonova.model.bandmag('lssti', "ab", time=times)
-        peak_time_index = np.argmin(lightcurve_abs_i)
-        self.peak_abs_lssti[id] = lightcurve_abs_i[peak_time_index]
-        one_mag_indices = np.nonzero(lightcurve_abs_i <= self.peak_abs_lssti[id] + 1)
+        peak_abs_lssti = kilonova.model.source.peakmag('lssti', 'ab', sampling=0.01)
+        one_mag_indices = np.nonzero(lightcurve_abs_i <= peak_abs_lssti + 1)
         one_mag_total_time = times[one_mag_indices][-1] - times[one_mag_indices][0]
-        self.peak_time[id] = times[peak_time_index]
+        self.peak_time[id] = kilonova.model.source.peakphase('lssti', sampling=0.01)
         self.one_mag_peak_time_lssti[id] = one_mag_total_time
+        self.peak_abs_lssti[id] = peak_abs_lssti
         for k in range(self.number_of_parameters):
             getattr(self, f"param{k + 1}")[id] = (
                                     getattr(kilonova, f"param{k + 1}"))
