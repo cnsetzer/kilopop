@@ -510,13 +510,13 @@ class Setzer2022_population_parameter_distribution(object):
                 of its peak brightness.
         """
         kilonova = Setzer2022_kilonova(only_draw_parameters=False)
-        times = np.linspace(0.0, kilonova.model.maxtime(), 1001)
+        times = np.linspace(0.0, kilonova.model.maxtime(), 5000)
         lightcurve_abs_i = kilonova.model.bandmag('lssti', "ab", time=times)
-        one_mag_indices = np.nonzero(lightcurve_abs_i <= peak_mag + 1)
-        one_mag_total_time = times[one_mag_indices][-1] - times[one_mag_indices][0]
         peak_time_index = np.argmin(lightcurve_abs_i)
-        self.peak_time[id] = times[peak_time_index]
         self.peak_abs_lssti[id] = lightcurve_abs_i[peak_time_index]
+        one_mag_indices = np.nonzero(lightcurve_abs_i <= self.peak_abs_lssti[id] + 1)
+        one_mag_total_time = times[one_mag_indices][-1] - times[one_mag_indices][0]
+        self.peak_time[id] = times[peak_time_index]
         self.one_mag_peak_time_lssti[id] = one_mag_total_time
         for k in range(self.number_of_parameters):
             getattr(self, f"param{k + 1}")[id] = (
