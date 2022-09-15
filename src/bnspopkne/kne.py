@@ -141,33 +141,33 @@ class Setzer2022_kilonova(object):
 
         # parse user-provided parameter values
         if ((mass1 is not None) and (mass1 <= self.__class__.tov_mass)):
-            self.param1 = float(mass1)
+            self.param1 = np.array(mass1)
         elif ((mass1 is not None) and (mass1 > self.__class__.tov_mass)):
             raise Exception(f"The provided mass is not compatible with the EOS.")
         if ((mass2 is not None) and (mass2 <= self.__class__.tov_mass)):
-            self.param2 = float(mass2)
+            self.param2 = np.array(mass2)
         elif ((mass2 is not None) and (mass2 > self.__class__.tov_mass)):
             raise Exception(f"The provided mass is not compatible with the EOS.")
         if compactness1 is not None:
-            self.param3 = float(compactness1)
+            self.param3 = np.array(compactness1)
         if compactness2 is not None:
-            self.param4 = float(compactness2)
+            self.param4 = np.array(compactness2)
         if viewing_angle is not None:
-            self.param5 = float(viewing_angle)
+            self.param5 = np.array(viewing_angle)
         if electron_fraction is not None:
-            self.param6 = float(electron_fraction)
+            self.param6 = np.array(electron_fraction)
         if dynamical_ejecta_mass is not None:
-            self.param7 = float(dynamical_ejecta_mass)
+            self.param7 = np.array(dynamical_ejecta_mass)
         if median_ejecta_velocity is not None:
-            self.param8 = float(median_ejecta_velocity)
+            self.param8 = np.array(median_ejecta_velocity)
         if grey_opacity is not None:
-            self.param9 = float(grey_opacity)
+            self.param9 = np.array(grey_opacity)
         if secular_ejecta_mass is not None:
-            self.param10 = float(secular_ejecta_mass)
+            self.param10 = np.array(secular_ejecta_mass)
         if total_ejecta_mass is not None:
-            self.param11 = float(total_ejecta_mass)
+            self.param11 = np.array(total_ejecta_mass)
         if disk_unbinding_efficiency is not None:
-            self.param12 = float(disk_unbinding_efficiency)
+            self.param12 = np.array(disk_unbinding_efficiency)
 
         self.draw_parameters()
         if not only_draw_parameters:
