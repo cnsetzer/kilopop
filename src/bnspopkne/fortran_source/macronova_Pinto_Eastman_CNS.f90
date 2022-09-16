@@ -644,6 +644,7 @@ MODULE macronova_Pinto_eastman_CNS
             END IF
             CALL heating_rate_func(v_med/clight,ye,t0*(tm_p + 0.5*dt),hrate)
             hrate = e_th * DZ_factor * hrate
+        ! Look into adding time-dependent thermalisation
          ELSE
             hrate = heating_rate(e_th,alpha,tm_p + 0.5*dt, t0, DZ_factor,read_hrate, nLinesHrate,HR, t_HR)
          ENDIF
