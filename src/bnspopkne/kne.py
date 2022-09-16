@@ -105,7 +105,6 @@ class Setzer2022_kilonova(object):
 
         # Handle setup of EOS dependent mapping objects
         if not self.__class__.EOS_mass_to_rad:
-            print('Should only see this once. EOS')
             E1 = eos.get_EOS_table(EOS_path=self.EOS_path)
             self.__class__.tov_mass = eos.get_max_EOS_mass(E1)
             self.__class__.EOS_mass_to_rad = eos.get_radius_from_EOS(E1)
@@ -114,7 +113,6 @@ class Setzer2022_kilonova(object):
             )
         # Handle setup of Gaussian process emulator
         if not self.__class__.grey_opacity_emulator:
-            print('Should only see this once. GP')
             (
              self.__class__.opacity_data, self.__class__.grey_opacity_emulator
             ) = mappings.construct_opacity_gaussian_process(
@@ -471,10 +469,6 @@ class Setzer2022_population_parameter_distribution(object):
         self.param11_name = "total_ejecta_mass"
         self.param12_name = "disk_unbinding_efficiency"
 
-        # initialize attributes
-        self.peak_time = np.empty(self.population_size)
-        self.peak_abs_lssti = np.empty(self.population_size)
-        self.one_mag_peak_time_lssti = np.empty(self.population_size)
         for i in range(self.number_of_parameters):
             setattr(self, "param{}".format(i + 1),
                     np.empty(self.population_size))
@@ -486,11 +480,21 @@ class Setzer2022_population_parameter_distribution(object):
                     getattr(self, f"param{k + 1}")[i] = (
                                             getattr(kilonova, f"param{k + 1}"))
         else:
+            # initialize attributes computed in paper
+            self.peak_time = np.empty(self.population_size)
+            self.peak_absmag_lssti = np.empty(self.population_size)
+            self.one_mag_peak_time_lssti = np.empty(self.population_size)
             with Pool() as p:
                 with tqdm(total=int(self.population_size)) as progress_bar:
-                    for _ in p.imap_unordered(self.compute_per_kilonova,
+                    for return_dict in p.imap_unordered(self.compute_per_kilonova,
                                               list(range(self.population_size)),
                                               chunksize=chunksize):
+                        id = return_dict['id']
+                        self.peak_time[id] = return_dict['peak_time']
+                        self.peak_absmag_lssti[id] = return_dict['peak_absmag_lssti']
+                        self.one_mag_peak_time_lssti[id] = return_dict['one_mag_peak_time_lssti']
+                        for k in range(self.number_of_parameters):
+                            getattr(self, f"param{k + 1}")[id] = return_dict[getattr(self, f"param{k + 1}_name")]
                         progress_bar.update()
 
     def compute_per_kilonova(self, id, **kwargs):
@@ -498,26 +502,27 @@ class Setzer2022_population_parameter_distribution(object):
         Wrapper function to execute the per-kilonova population draws and
         computation of light curve properties in parallel.
 
-        Returns (Implicitly):
-        ---------------------
-            self.peak_time: float or Array
-                The time of peak of the given kilonova. [days]
-            self.peak_abs_lssti: float or Array
-                The peak absolute magnitude of the simulated kilonova in the
-                LSST i-band.
-            self.one_mag_peak_time_lssti: float or Array
-                The time [days], the simulated kilonova spends within one mag
-                of its peak brightness.
+        Parameters:
+        -----------
+            id: int
+                The id of the transient being generated for record keeping
+        Returns:
+        --------
+            return_dict: dict
+                Dictionary construct containing all the parameters set for the
+                population.
         """
+        return_dict = dict.fromkeys([getattr(self, f"param{i+1}_name") for i in range(self.number_of_parameters)], None)
         kilonova = Setzer2022_kilonova(only_draw_parameters=False)
         times = np.linspace(0.0, kilonova.model.maxtime(), 5001)
         lightcurve_abs_i = kilonova.model.bandmag('lssti', "ab", time=times)
         peak_abs_lssti = kilonova.model.source.peakmag('lssti', 'ab', sampling=0.01)
         one_mag_indices = np.nonzero(lightcurve_abs_i <= peak_abs_lssti + 1)
         one_mag_total_time = times[one_mag_indices][-1] - times[one_mag_indices][0]
-        self.peak_time[id] = kilonova.model.source.peakphase('lssti', sampling=0.01)
-        self.one_mag_peak_time_lssti[id] = one_mag_total_time
-        self.peak_abs_lssti[id] = peak_abs_lssti
+        return_dict['id'] = id
+        return_dict['peak_time'] = kilonova.model.source.peakphase('lssti', sampling=0.01)
+        return_dict['one_mag_peak_time_lssti'] = one_mag_total_time
+        return_dict['peak_absmag_lssti'] = peak_abs_lssti
         for k in range(self.number_of_parameters):
-            getattr(self, f"param{k + 1}")[id] = (
-                                    getattr(kilonova, f"param{k + 1}"))
+            return_dict[getattr(kilonova, f"param{k + 1}_name")]= (getattr(kilonova, f"param{k + 1}"))
+        return return_dict
