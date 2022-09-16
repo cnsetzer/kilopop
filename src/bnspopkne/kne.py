@@ -5,6 +5,7 @@ import pkg_resources
 import numpy as np
 import astropy.units as units
 from astropy.time import Time
+from astropy.cosmology import Planck18 as cosmo
 from sncosmo import TimeSeriesSource, Model
 from bnspopkne.macronovae_wrapper import create_SAEE_SEDs
 from bnspopkne import equation_of_state as eos
@@ -81,6 +82,7 @@ class Setzer2022_kilonova(object):
         emulator_path=None,
         id=None,
         only_draw_parameters=False,
+        redback=False,
         **kwargs,
     ):
         # give each transient an id to differentiate simulations
@@ -176,10 +178,14 @@ class Setzer2022_kilonova(object):
             self.phase = None
             self.wave = None
             self.flux = None
-            self.redshift = 0.0
-            self.dist_mpc = 1.0e-5
+            self.redshift = redshift
+            self.dist_mpc = cosmo.luminosity_distance(self.redshift).value
+            self.dist_pc = self.dist_mpc*1.0e6
+            self.amp = np.square((10.0/self.dist_pc), 2)
+            self.model.set({'amp': self.amp, 'z': self.redshift})
             self.t0 = 0.0  # Currently always start the model at zero phase
             self.tmax = self.model.maxtime()
+            self.model.bandflux()
 
     def draw_parameters(self):
         """Draw parameters not populated by the user.
