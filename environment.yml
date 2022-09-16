@@ -104,4 +104,3 @@ dependencies:
     - wcwidth==0.2.5
     - webencodings==0.5.1
     - widgetsnbextension==4.0.3
-prefix: /Users/cnsetzer/anaconda3/envs/bnspopkne

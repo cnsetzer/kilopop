@@ -24,12 +24,8 @@ ext = Extension(
         "-fopenmp",
     ],
     libraries=["lapack", "blas"],
-    # libraries=["scalapack", "openblas"],
     library_dirs=[
-        # os.environ["SCALAPACK_LIB"],
-        # os.environ["OPENBLAS_LIB"],
-        "/Users/cnsetzer/software/lib/lapack-3.10.1/",
-        # "/usr/lib64/",
+        os.environ["LD_LIBRARY_PATH"],
     ],
     f2py_options=["c", "only:", "calculate_luminosity", ":", "m"],
 )
@@ -39,8 +35,8 @@ if __name__ == "__main__":
 
     setup(
         name="bnspopkne",
-        version="0.1",
-        description="Kilonova model and population model used in C. N. Setzer et al. 2022.",
+        version="0.2",
+        description="Kilonova and population model used in C. N. Setzer et al. 2022.",
         url="http://github.com/cnsetzer/Setzer2022_BNSpopkNe",
         author="Christian N. Setzer",
         author_email="aerosetzer@gmail.com",
