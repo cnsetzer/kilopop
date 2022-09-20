@@ -425,5 +425,5 @@ class hyperbolic_tangent(Model):
             mean_function_value: array
                 The mean function value at the given kilonova parameters.
         """
-        mean_function_value = self.amplitude*(np.exp(-self.tau/(kilonova_ejecta_array[:,2]+self.damp))*tanh((x-self.transition_location)/self.transition_length) + self.offset)
+        mean_function_value = self.amplitude*(np.exp(-self.tau/(kilonova_ejecta_array[:,2]+self.damp))*tanh((kilonova_ejecta_array[:,2]-self.transition_location)/self.transition_length) + self.offset)
         return mean_function_value
