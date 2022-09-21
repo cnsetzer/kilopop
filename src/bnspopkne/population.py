@@ -5,6 +5,12 @@ import numpy as np
 def draw_disk_unbinding_efficiency(output_shape=None):
     """Set the disk unbinding efficiency.
 
+    The unbinding efficiency is drawn from a uniform distribution over the
+    range of values encountered in the literature of long-term GRMHD simulations
+    of the remnant accretion disk around a neutron star merger remnant. See
+    the paper for references to Metzger et al. 2008; Siegel & Metzger 2018;
+    Miller et al. 2019; Fernández et al. 2019.
+
     Parameters:
     -----------
         output_shape: float or tuple
@@ -38,32 +44,38 @@ def draw_viewing_angle(output_shape=None):
             The observer viewing angle, i.e., inclination, with respect to the
             binary merger plane.
     """
+    # Viewing angle compute as a uniform distribution over the half-sphere due
+    # to planar symmetry of the viewing angle in our model.
     viewing_angle = np.arccos(1.0 - np.random.random_sample(size=output_shape))
     # in radians
     return viewing_angle
 
 
-def draw_mass_from_EOS_bounds(max_mass, m_low=1.0, output_shape=None):
+def draw_mass_from_EOS_bounds(maximum_mass_bound, mass_lower_bound=1.0, output_shape=None):
     """Sample a uniform distribution for the mass.
 
     Parameters:
     -----------
-        max_mass: float
+        maximum_mass_bound: float
             The maximum mass from which to draw the distribution. Typically,
             this is the TOV mass associated with the EOS. [solar masses]
-        m_low: float
+        mass_lower_bound: float
             The minimum mass of the distribution, default 1.0 [solar mass].
         output_shape: float or tuple
             The number and array shaping structure for the draws.
+    Returns:
+    --------
+        source_frame_grav_mass: float
+            The gravitational mass of the neutron star in the source frame.
     """
-    source_frame_grav_mass = np.random.uniform(low=m_low,
-                                               high=max_mass,
+    source_frame_grav_mass = np.random.uniform(low=mass_lower_bound,
+                                               high=maximum_mass_bound,
                                                size=output_shape)
     return source_frame_grav_mass
 
 
 def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-    max_mass, m_low=1.0, mass_ratio_cut=(2.0 / 3.0), output_shape=None
+    maximum_mass_bound, mass_lower_bound=1.0, mass_ratio_cut=(2.0 / 3.0), output_shape=None
 ):
     """
     Draw neutron star component mass in the source frame given constraints.
@@ -74,16 +86,16 @@ def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
 
     Parameters:
     -----------
-        max_mass: float
+        maximum_mass_bound: float
             The maximum TOV mass for the given EOS.
-        m_low: float
+        mass_lower_bound: float
             The lower bound on the allowable mass of the neutron star.
         mass_ratio_cut: float
             The mass ratio constraint to apply to the mass sampling.
         output_shape: float or tuple
             The number and array shaping structure for the draws of masses.
 
-    Returns (Implicitly):
+    Returns:
     ---------------------
         mass1: float
             The source-frame gravitational mass of the first neutron star
@@ -92,10 +104,10 @@ def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
             The source-frame gravitational mass of the second neutron star
             [solar masses].
     """
-    mass1 = draw_mass_from_EOS_bounds(max_mass,
-                                      m_low=m_low,
+    mass1 = draw_mass_from_EOS_bounds(maximum_mass_bound,
+                                      mass_lower_bound=mass_lower_bound,
                                       output_shape=output_shape)
     mass2 = draw_mass_from_EOS_bounds(mass1,
-                                      m_low=max(mass1*mass_ratio_cut, 1.0),
+                                      mass_lower_bound=max(mass1*mass_ratio_cut, 1.0),
                                       output_shape=output_shape)
     return mass1, mass2

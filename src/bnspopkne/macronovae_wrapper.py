@@ -7,7 +7,7 @@ from astropy import units as u
 from astropy.constants import h, c, sigma_sb, k_B, pc
 
 
-def create_SAEE_SEDs(KNE_parameters,
+def create_saee_seds(KNE_parameters,
                      min_wave=500.0,
                      max_wave=12000.0,
                      phases=None,
@@ -94,10 +94,10 @@ def sed_timeseries(
 
     # if phases specificed, interpolate solution to those times
     if phases is not None:
-        luminosity_nterp = interp1d(phase, y=luminosity)
-        luminosity = luminosity_nterp(phases * day_in_s)
-        temperature_nterp = interp1d(phase, y=temperature)
-        temperature = temperature_nterp(phases * day_in_s)
+        luminosity_interpolator = interp1d(phase, y=luminosity)
+        luminosity = luminosity_interpolator(phases * day_in_s)
+        temperature_interpolator = interp1d(phase, y=temperature)
+        temperature = temperature_interpolator(phases * day_in_s)
         phase_days = phases
     else:
         phase_days = phase / day_in_s
@@ -105,23 +105,23 @@ def sed_timeseries(
     if wavelengths is None:
         wavelengths = np.arange(min_wave, max_wave, 10.0)  # Angstrom
     # distance scaling to 10pc at which spectra is computed
-    Robs = 10.0 * pc.cgs.value
+    distance_scaling = 10.0 * pc.cgs.value
     # scaling coefficient for the spectra from luminosity solution
-    Coef = np.divide(luminosity,
-                     (4.0 * (Robs ** 2) * sigma_sb.cgs.value *
-                      np.power(temperature, 4)))
+    flux_coefficient = np.divide(luminosity,
+                                 (4.0 * (distance_scaling ** 2) * sigma_sb.cgs.value *
+                                  np.power(temperature, 4)))
     # output flux f [erg s^-1 cm^-2 Ang.^-1]
     lam_cm = np.multiply(wavelengths, Ang_to_cm)
     # output is ergs / s /cm^3
-    blam_test = blam(lam_cm, temperature)
+    planck_values = compute_planck_function(lam_cm, temperature)
     # rescale spectrum with luminosity-derived coefficient
-    flux = (blam_test.T * Coef).T
+    flux = (planck_values.T * flux_coefficient).T
     # convert to ergs/s /cm^2 /Angstrom
     flux *= Ang_to_cm
     return phase_days, wavelengths, flux
 
 
-def blam(lambda_cm, temperature):
+def compute_planck_function(lambda_cm, temperature):
     """
     Planck function of wavelength.
 
@@ -135,7 +135,7 @@ def blam(lambda_cm, temperature):
 
     Returns:
     --------
-        Planck: nd.array
+        planck_values: nd.array
             The value of the Planck function for a given temp. and wavelength.
             Output shape is (n_time, n_wave).
     """
@@ -150,11 +150,11 @@ def blam(lambda_cm, temperature):
     # construct wavelength array for each temperature
     lam_planck = np.tile(lambda_cm, (planck_arg.shape[0], 1))
     # initialize Planck function array
-    Planck = np.zeros(planck_arg.shape)
+    planck_values = np.zeros(planck_arg.shape)
     # compute Planck function
-    Planck[planck_arg <= planck_arg_limit] = np.divide(
+    planck_values[planck_arg <= planck_arg_limit] = np.divide(
         (2.0 * h.cgs.value * (c.cgs.value ** 2)) /
         np.power(lam_planck[planck_arg <= planck_arg_limit], 5),
         (np.exp(planck_arg[planck_arg <= planck_arg_limit]) - 1.0),
     )
-    return Planck
+    return planck_values

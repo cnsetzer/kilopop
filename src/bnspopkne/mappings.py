@@ -8,8 +8,7 @@ from pandas import read_csv
 
 
 def compute_equation_4(mass1, mass2, compactness1, compactness2):
-    """
-    Equation 4 in Setzer et al. 2022.
+    """ Compute equation 4 in Setzer et al. 2022.
 
     Coughlin M. W., Dietrich T., Margalit B., Metzger B. D., 2019,
     MNRAS: Letters, 489, L91
@@ -51,8 +50,7 @@ def compute_equation_4(mass1, mass2, compactness1, compactness2):
 
 
 def compute_equation_5(mass1, mass2, compactness1, compactness2):
-    """
-    Equation 5 in Setzer et al. 2022.
+    """Compute equation 5 in Setzer et al. 2022.
 
     Coughlin M. W., Dietrich T., Margalit B., Metzger B. D., 2019,
     MNRAS: Letters, 489, L91
@@ -82,10 +80,10 @@ def compute_equation_5(mass1, mass2, compactness1, compactness2):
 
 
 def compute_equation_6(total_binary_mass, prompt_collapse_threshold_mass):
-    """
-    Equation 6 from Setzer et al. 2022.
+    """Compute equation 6 from Setzer et al. 2022.
 
-    Compute the remnant disk mass from CITATION.
+    Compute the remnant disk mass from Radice et al. (2018b) and
+    Coughlin et al. (2019), as referenced in the accompanying paper.
 
     Parameters:
     -----------
@@ -108,13 +106,15 @@ def compute_equation_6(total_binary_mass, prompt_collapse_threshold_mass):
                                  (c - (total_binary_mass /
                                   prompt_collapse_threshold_mass)) / d))
     )
+    # lower limit of .1% of a solar mass
     if remnant_disk_mass < 1.0e-3:
         remnant_disk_mass = 1.0e-3
     return remnant_disk_mass
 
 
 def compute_equation_7(tov_mass, EOS_mass_to_rad):
-    """
+    """Compute equation 7 from Setzer et al. 2022.
+
     Function to calculate the prompt collapse threshold mass, given the
     maximum TOV mass and the radius at 1.6 solar mass for the chosen EOS.
     Based on Bauswein et al. 2013.
@@ -140,7 +140,8 @@ def compute_equation_7(tov_mass, EOS_mass_to_rad):
 
 
 def compute_equation_8(disk_unbinding_efficiency, disk_mass):
-    """
+    """Compute equation 8 from Setzer et al. 2022.
+
     Compute the total secular ejecta mass given the mass of the remnant disk
     and the assumed unbinding efficiency of the secular processes.
 
@@ -163,7 +164,8 @@ def compute_equation_8(disk_unbinding_efficiency, disk_mass):
 
 
 def compute_equation_9(dynamical_ejecta_mass, secular_ejecta_mass):
-    """
+    """Compute equation 9 from Setzer et al. 2022.
+
     Compute the total ejecta mass by simple addition of the ejecta mass from
     the dynamical and secular processes involved in the merger.
 
@@ -184,8 +186,7 @@ def compute_equation_9(dynamical_ejecta_mass, secular_ejecta_mass):
 
 
 def compute_equation_10(viewing_angle):
-    """
-    Equation 10 in Setzer et al. 2022.
+    """Compute equation 10 from Setzer et al. 2022.
 
     Fit function that determines the average electron fraction of the
     material directly in the line of sight of the observer. Determined
@@ -220,8 +221,8 @@ def map_to_dynamical_ejecta(
 ):
     """
     Wrapper for fit functions from various references: Coughlin et. al 2018
-    to map mass1, mass2, compactness1, compactness2 to mej,
-    median_ejecta_velocity.
+    to map mass1, mass2, compactness1, compactness2 to dynamical ejecta mass and
+    median ejecta velocity.
 
     Parameters:
     -----------
@@ -249,8 +250,10 @@ def map_to_dynamical_ejecta(
 
 def compute_secular_ejecta_mass(total_binary_mass, threshold_mass,
                                 disk_unbinding_efficiency):
-    """
-    Wrapper function for computing the total secular ejecta mass.
+    """Compute the total secular ejecta mass.
+
+    This computes the contribution to the total ejecta mass from secular processes
+    following the series of equations referenced in Setzer et al. 2022.
 
     Parameters:
     -----------
@@ -291,16 +294,15 @@ def construct_opacity_gaussian_process(opacity_data_path,
 
     Returns:
     --------
+        grey_opacity_training_data: nd.array
+            The training data corresponding to the grey opacity values fit
+            from our weighted chi square optimisation.
         opacity_GP: george.GP instance
             Trained interpolator function to map
             (total_ejecta_mass, median_ejecta_velocity, electron_fraction) to
             grey opacity.
-        grey_opacity_training_data: nd.array
-            The training data corresponding to the grey opacity values fit
-            from our weighted chi square optimisation.
     """
     # Import the opacity data, and the hyperparameters from training the GP.
-    # FUTURE TODO: Consider loading directly the GP object from pickle
     hyper_parameters = np.load(hyperparameter_file_path)
     opacity_array_from_SuperNu_fits = read_csv(opacity_data_path, index_col=0)
     grey_opacity_training_data = opacity_array_from_SuperNu_fits["kappa"].values
@@ -328,12 +330,13 @@ def emulate_grey_opacity_from_kilonova_ejecta(
     total_ejecta_mass, median_ejecta_velocity, electron_fraction,
     grey_opacity_gp, opacity_data,
 ):
-    """
-    Wrapper funciton to use an interpolation instance or other function to
-    calculate the corresponding grey opacity that was fit from simulation
-    data to triplets of ejecta mass, ejecta velocity, and electron fraction.
+    """Map kilonova ejecta properties to grey opacity with emulator.
 
-    Returns (Implicitly):
+    Use an interpolation instance or other function to calculate the corresponding
+    grey opacity that was fit from simulation data to triplets of ejecta mass,
+    ejecta velocity, and electron fraction.
+
+    Returns:
     ---------------------
         grey_opacity: ndarray
             The grey opacity for the instance set of binary and kilonova
@@ -349,11 +352,11 @@ def emulate_grey_opacity_from_kilonova_ejecta(
     )
     # enforce grey opacity thresholding
     grey_opacity = -1.0
-    kit = 0
-    while grey_opacity < 0.1 and kit < 10000:
+    iteration = 0
+    while grey_opacity < 0.1 and iteration < 10000:
         grey_opacity = np.random.normal(loc=grey_opacity_mean[0],
                                         scale=np.sqrt(grey_opacity_variance[0]))
-        kit += 1
+        iteration += 1
     # currently threshold on 0.1
     if grey_opacity < 0.1:
         grey_opacity = 0.1
@@ -371,7 +374,7 @@ class tanaka_mean_fixed(Model):
 
         Parameters:
         -----------
-            self: class instance [implicit]
+            self: class instance
                 Reference to class instance.
             kilonova_ejecta_array: array
                 Array of kilonova ejecta parameter pairs.
@@ -381,15 +384,16 @@ class tanaka_mean_fixed(Model):
             mean_function_value: array
                 The mean function value at the given kilonova parameters.
         """
+        # initialize
         mean_function_value = np.zeros((len(kilonova_ejecta_array[:, 0]),))
-        # low electron fraction
+        # low electron fraction region
         mean_function_value[kilonova_ejecta_array[:, 2] <= 0.2] = 25.0
         # transition region (linear interpolation)
         mean_function_value[(kilonova_ejecta_array[:, 2] > 0.2) &
                             (kilonova_ejecta_array[:, 2] < 0.25)] = (((-21.0) / (0.05)) * kilonova_ejecta_array[
                              (kilonova_ejecta_array[:, 2] > 0.2) & (kilonova_ejecta_array[:, 2] < 0.25), 2
                             ] + 109.0)
-        # mid electron fraction
+        # mid electron fraction region
         mean_function_value[(kilonova_ejecta_array[:, 2] >= 0.25) &
                             (kilonova_ejecta_array[:, 2] <= 0.35)] = 4.0
         # second transition (linear interpolation)
@@ -397,6 +401,6 @@ class tanaka_mean_fixed(Model):
                             (kilonova_ejecta_array[:, 2] < 0.4)] = (((-3.0) / (0.05)) * kilonova_ejecta_array[
                              (kilonova_ejecta_array[:, 2] > 0.35) & (kilonova_ejecta_array[:, 2] < 0.4), 2
                             ] + 25.0)
-        # high electron fraction opacities
+        # high electron fraction region
         mean_function_value[kilonova_ejecta_array[:, 2] >= 0.4] = 1.0
         return mean_function_value

@@ -6,7 +6,7 @@ import numpy as np
 import astropy.units as units
 from astropy.time import Time
 from sncosmo import TimeSeriesSource, Model
-from bnspopkne.macronovae_wrapper import create_SAEE_SEDs
+from bnspopkne.macronovae_wrapper import create_saee_seds
 from bnspopkne import equation_of_state as eos
 from bnspopkne import mappings
 from bnspopkne import population
@@ -46,11 +46,19 @@ class Setzer2022_kilonova(object):
             The secular ejecta mass of the expanding kilonova material.
         total_ejecta_mass: float
             The total ejecta mass of the expanding kilonova material.
-
+        disk_unbinding_efficiency=None,
+        transient_duration=25.0,
+        min_wave=500.0,
+        max_wave=12000.0,
+        EOS_path=None,
+        opacity_data_path=None,
+        emulator_path=None,
+        id=None,
+        only_draw_parameters=False,
 
     Returns (Implicitly):
     ---------------------
-        Kilonova instance of the class
+        Instance of this class of kilonovae.
     """
     # Class variables, saves time cacheing these.
     tov_mass = None
@@ -88,6 +96,7 @@ class Setzer2022_kilonova(object):
             self.id = np.random.randint(0, high=2**31)
         else:
             self.id = int(float(id))
+        # set instance attributes from inputs
         self.number_of_parameters = 12
         self.min_wave = float(min_wave)
         self.max_wave = float(max_wave)
@@ -97,17 +106,19 @@ class Setzer2022_kilonova(object):
             EOS_path = pkg_resources.resource_filename('bnspopkne', "data/mr_sfho_full_right.csv")
         self.EOS_path = EOS_path
         if emulator_path is None:
-            emulator_path = pkg_resources.resource_filename('bnspopkne', "data/paper_kernel_hyperparameters.npy")
+            emulator_path = pkg_resources.resource_filename('bnspopkne',
+                                                            "data/paper_kernel_hyperparameters.npy")
         self.emulator_path = emulator_path
         if opacity_data_path is None:
-            opacity_data_path = pkg_resources.resource_filename('bnspopkne', "data/paper_opacity_data.csv")
+            opacity_data_path = pkg_resources.resource_filename('bnspopkne',
+                                                                "data/paper_opacity_data.csv")
         self.opacity_data_path = opacity_data_path
 
-        # Handle setup of EOS dependent mapping objects
+        # Handle setup of EOS dependent mapping objects and set as class attributes
         if not self.__class__.EOS_mass_to_rad:
             E1 = eos.get_EOS_table(EOS_path=self.EOS_path)
             self.__class__.tov_mass = eos.get_max_EOS_mass(E1)
-            self.__class__.EOS_mass_to_rad = eos.get_radius_from_EOS(E1)
+            self.__class__.EOS_mass_to_rad = eos.get_radius_interpolator_from_EOS(E1)
             self.__class__.threshold_mass = mappings.compute_equation_7(
                 self.__class__.tov_mass, self.__class__.EOS_mass_to_rad
             )
@@ -169,9 +180,11 @@ class Setzer2022_kilonova(object):
             self.param12 = float(disk_unbinding_efficiency)
 
         self.draw_parameters()
+        # if not only drawing parameters also create the spectral timeseries
         if not only_draw_parameters:
             self.create_spectral_timeseries()
-            source = TimeSeriesSource(self.phase, self.wave, self.flux, name='SAEE kilonova', version='1.0')
+            source = TimeSeriesSource(self.phase, self.wave, self.flux,
+                                      name='SAEE kilonova', version='1.0')
             self.model = Model(source=source)  # add dust effect here.
             self.phase = None
             self.wave = None
@@ -317,13 +330,17 @@ class Setzer2022_kilonova(object):
         # Secular Ejecta and Total Ejecta Mass
         total_binary_mass = self.param1 + self.param2
         if self.param10 is None and self.param11 is None:
-            self.param10 = mappings.compute_secular_ejecta_mass(total_binary_mass, self.__class__.threshold_mass, self.param12)
+            self.param10 = mappings.compute_secular_ejecta_mass(total_binary_mass,
+                                                                self.__class__.threshold_mass,
+                                                                self.param12)
             self.param11 = mappings.compute_equation_9(self.param7, self.param10)
         elif self.param10 is None and self.param11 is not None:
             self.param10 = self.param11 - self.param7
-            self.param12 = self.param10/mappings.compute_equation_6(total_binary_mass, self.__class__.threshold_mass)
+            self.param12 = self.param10/mappings.compute_equation_6(total_binary_mass,
+                                                                    self.__class__.threshold_mass)
         elif self.param10 is not None and self.param11 is None:
-            self.param12 = self.param10/mappings.compute_equation_6(total_binary_mass, self.__class__.threshold_mass)
+            self.param12 = self.param10/mappings.compute_equation_6(total_binary_mass,
+                                                                    self.__class__.threshold_mass)
             self.param11 = mappings.compute_equation_9(self.param7, self.param10)
 
     def emulate_grey_opacity(self):
@@ -346,7 +363,8 @@ class Setzer2022_kilonova(object):
             )
 
     def enforce_emulator_bounds(self):
-        """
+        """Impose emulator boundary conditions for validity.
+
         Imposes the boundary conditions we are limited to by our training data
         for the Gaussian process emulator.
 
@@ -355,7 +373,8 @@ class Setzer2022_kilonova(object):
         """
         # impose velocity region boundary conditions for heating rates and
         # emulator
-        while ((self.param8 < 0.05) or (self.param8 > 0.4) or (self.param11 > 0.08) or (self.param11 < 0.002)):
+        while ((self.param8 < 0.05) or (self.param8 > 0.4) or
+                (self.param11 > 0.08) or (self.param11 < 0.002)):
             self.param1 = None
             self.param2 = None
             self.param3 = None
@@ -414,7 +433,7 @@ class Setzer2022_kilonova(object):
             )  # Flag to use numerical fit nuclear heating rates
             KNE_parameters.append(False)  # Read heating rates variable
             KNE_parameters.append("placeholder string")  # Heating rates file
-        self.phase, self.wave, self.flux = create_SAEE_SEDs(
+        self.phase, self.wave, self.flux = create_saee_seds(
             KNE_parameters, self.min_wave, self.max_wave
         )
 
@@ -447,11 +466,14 @@ class Setzer2022_population_parameter_distribution(object):
         Parameters:
         -----------
             population_size: int
-                The size of the population to be drawn from the population.
-            only_draw_parameters: boolean
+                The size of the population to be drawn from the population. Default is 50000.
+            only_draw_parameters: boolean (optional)
                 Flag whether to generate only the parameter distributions, or
                 also the properties derived from the simulated lightcurves.
                 Default is True.
+            chunksize: int (optional)
+                If computing properties from the lightcurves this option will
+                batch the computation into chunks for multiprocessing. Default is 500.
         """
         self.population_size = population_size
         self.number_of_parameters = 12
@@ -469,6 +491,7 @@ class Setzer2022_population_parameter_distribution(object):
         self.param11_name = "total_ejecta_mass"
         self.param12_name = "disk_unbinding_efficiency"
 
+        # initialize parameter arrays for distributions
         for i in range(self.number_of_parameters):
             setattr(self, "param{}".format(i + 1),
                     np.empty(self.population_size))
@@ -486,18 +509,18 @@ class Setzer2022_population_parameter_distribution(object):
             self.one_mag_peak_time_lssti = np.empty(self.population_size)
             with Pool() as p:
                 with tqdm(total=int(self.population_size)) as progress_bar:
-                    for return_dict in p.imap_unordered(self.compute_per_kilonova,
-                                              list(range(self.population_size)),
-                                              chunksize=chunksize):
-                        id = return_dict['id']
-                        self.peak_time[id] = return_dict['peak_time']
-                        self.peak_absmag_lssti[id] = return_dict['peak_absmag_lssti']
-                        self.one_mag_peak_time_lssti[id] = return_dict['one_mag_peak_time_lssti']
+                    for parameter_dict in p.imap_unordered(self.compute_lightcurve_properties_per_kilonova,
+                                                           list(range(self.population_size)),
+                                                           chunksize=chunksize):
+                        id = parameter_dict['id']
+                        self.peak_time[id] = parameter_dict['peak_time']
+                        self.peak_absmag_lssti[id] = parameter_dict['peak_absmag_lssti']
+                        self.one_mag_peak_time_lssti[id] = parameter_dict['one_mag_peak_time_lssti']
                         for k in range(self.number_of_parameters):
-                            getattr(self, f"param{k + 1}")[id] = return_dict[getattr(self, f"param{k + 1}_name")]
+                            getattr(self, f"param{k + 1}")[id] = parameter_dict[getattr(self, f"param{k + 1}_name")]
                         progress_bar.update()
 
-    def compute_per_kilonova(self, id, **kwargs):
+    def compute_lightcurve_properties_per_kilonova(self, id, **kwargs):
         """
         Wrapper function to execute the per-kilonova population draws and
         computation of light curve properties in parallel.
@@ -508,21 +531,22 @@ class Setzer2022_population_parameter_distribution(object):
                 The id of the transient being generated for record keeping
         Returns:
         --------
-            return_dict: dict
+            parameter_dict: dict
                 Dictionary construct containing all the parameters set for the
                 population.
         """
-        return_dict = dict.fromkeys([getattr(self, f"param{i+1}_name") for i in range(self.number_of_parameters)], None)
+        parameter_dict = (dict.fromkeys([getattr(self, f"param{i+1}_name")
+                          for i in range(self.number_of_parameters)], None))
         kilonova = Setzer2022_kilonova(only_draw_parameters=False)
         times = np.linspace(0.0, kilonova.model.maxtime(), 5001)
         lightcurve_abs_i = kilonova.model.bandmag('lssti', "ab", time=times)
         peak_abs_lssti = kilonova.model.source.peakmag('lssti', 'ab', sampling=0.01)
         one_mag_indices = np.nonzero(lightcurve_abs_i <= peak_abs_lssti + 1)
         one_mag_total_time = times[one_mag_indices][-1] - times[one_mag_indices][0]
-        return_dict['id'] = id
-        return_dict['peak_time'] = kilonova.model.source.peakphase('lssti', sampling=0.01)
-        return_dict['one_mag_peak_time_lssti'] = one_mag_total_time
-        return_dict['peak_absmag_lssti'] = peak_abs_lssti
+        parameter_dict['id'] = id
+        parameter_dict['peak_time'] = kilonova.model.source.peakphase('lssti', sampling=0.01)
+        parameter_dict['one_mag_peak_time_lssti'] = one_mag_total_time
+        parameter_dict['peak_absmag_lssti'] = peak_abs_lssti
         for k in range(self.number_of_parameters):
-            return_dict[getattr(kilonova, f"param{k + 1}_name")]= (getattr(kilonova, f"param{k + 1}"))
-        return return_dict
+            parameter_dict[getattr(kilonova, f"param{k + 1}_name")] = getattr(kilonova, f"param{k + 1}")
+        return parameter_dict
