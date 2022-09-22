@@ -460,7 +460,7 @@ class Setzer2022_population_parameter_distribution(object):
         self,
         population_size=50000,
         only_draw_parameters=True,
-        chunksize=500,
+        chunk_size=500,
     ):
         """
         Parameters:
@@ -471,7 +471,7 @@ class Setzer2022_population_parameter_distribution(object):
                 Flag whether to generate only the parameter distributions, or
                 also the properties derived from the simulated lightcurves.
                 Default is True.
-            chunksize: int (optional)
+            chunk_size: int (optional)
                 If computing properties from the lightcurves this option will
                 batch the computation into chunks for multiprocessing. Default is 500.
         """
