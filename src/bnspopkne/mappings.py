@@ -127,16 +127,16 @@ def compute_equation_7(tov_mass, EOS_mass_to_rad):
             Interpolator function from provided EOS mass-radius curve.
     Returns:
     --------
-        prompt_collpase_mass_threshold: float
+        prompt_collapse_mass_threshold: float
             Threshold mass in solar masses for prompt blackhole collapse.
     """
     # fit coefficients
     a = 2.38
     b = 3.606
     radius_1_6_msol = EOS_mass_to_rad(1.6)
-    prompt_collpase_mass_threshold = ((a - b *
+    prompt_collapse_mass_threshold = ((a - b *
                                       (tov_mass / radius_1_6_msol)) * tov_mass)
-    return prompt_collpase_mass_threshold
+    return prompt_collapse_mass_threshold
 
 
 def compute_equation_8(disk_unbinding_efficiency, disk_mass):
@@ -196,7 +196,7 @@ def compute_equation_10(viewing_angle):
     Parameters:
     -----------
         viewing_angle: float or ndarray
-            The orientation of the kilonova w.r.t the observer.
+            The orientation of the kilonova w.r.t the observer. In radians.
 
     Returns:
     --------
