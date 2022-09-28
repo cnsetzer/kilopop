@@ -141,7 +141,7 @@ def compute_planck_function(lambda_cm, temperature):
     """
     # cutoff argument to which we set Planck function to zero
     planck_arg_limit = 100.0
-    # utilize linear algebra for fast generation
+    # utilize linear algebra for fast generation, i.e., broadcasting
     lambda_cm = np.expand_dims(lambda_cm, axis=0)
     temperature = np.expand_dims(temperature, axis=1)
     # pre-compute exponent argument for Planck function
