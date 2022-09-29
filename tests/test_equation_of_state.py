@@ -3,14 +3,14 @@
 """
 
 import unittest
-import pkg_resources
+from pkg_resources import resource_filename
 from bnspopkne import equation_of_state as eos
-from bnspopkne.kne import Setzer2022_kilonova as kilonova
+from bnspopkne.kilonovae import Setzer2022_kilonova as kilonova
 
 
 class test_equation_of_state(unittest.TestCase):
     def setUp(self):
-        self.EOS_table = eos.get_EOS_table(EOS_path=pkg_resources.resource_filename('bnspopkne', "data/mr_sfho_full_right.csv"))
+        self.EOS_table = eos.get_EOS_table(EOS_path=resource_filename('bnspopkne', "data/mr_sfho_full_right.csv"))
         self.radius_interpolator = eos.get_radius_interpolator_from_EOS(self.EOS_table)
 
     def test_radius_interpolator_from_EOS(self):

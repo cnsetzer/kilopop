@@ -3,7 +3,6 @@ kilonova parameters. Wrapper to the FORTRAN library for the SAEE model. """
 import numpy as np
 from scipy.interpolate import interp1d
 from macronova2py import macronova2py as m2p
-from astropy import units as u
 from astropy.constants import h, c, sigma_sb, k_B, pc
 
 
@@ -34,7 +33,7 @@ def create_saee_seds(KNE_parameters,
             Wavelengths at which to compute the thermal spectrum.
     Returns:
     --------
-        sed_timeseries: function call
+        create_sed_timeseries: function call
             A function call returning a phase, wavelength, and flux array.
     """
     Nt = 5000  # internal grid of times over which to generate the luminosity
@@ -46,11 +45,11 @@ def create_saee_seds(KNE_parameters,
     luminosity_array = m2p.calculate_luminosity(
         n, MNE_parameters, func_hrate, read_hrate, heating_rates_file, Nt
     )
-    return sed_timeseries(luminosity_array,
+    return create_sed_timeseries(luminosity_array,
                           min_wave, max_wave, phases, wavelengths)
 
 
-def sed_timeseries(
+def create_sed_timeseries(
     luminosity_array, min_wave=500.0, max_wave=12000.0, phases=None,
     wavelengths=None
 ):

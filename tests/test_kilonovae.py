@@ -3,8 +3,8 @@
 """
 
 import unittest
-from bnspopkne.kne import Setzer2022_kilonova as kilonova
-from bnspopkne.kne import Setzer2022_kilonova as population
+from bnspopkne.kilonovae import Setzer2022_kilonova as kilonova
+from bnspopkne.kilonovae import Setzer2022_population_parameter_distribution as population
 
 
 class test_kne(unittest.TestCase):
@@ -19,8 +19,9 @@ class test_kne(unittest.TestCase):
         for key, value in paper_ranges.items():
             getattr(pop_instance, key)
 
-    @unittest.skipIf
-    def test_derived_properties_of_populations
+    @unittest.skipIf(condition, "This is a very slow test, skipping.")
+    def test_derived_properties_of_populations(self):
+        return
 
 
 if __name__ == '__main__':

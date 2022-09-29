@@ -1,15 +1,14 @@
 """Module with classes and methods for constructing individual kilonovae
  instances."""
 
-import pkg_resources
+from pkg_resources import resource_filename
 import numpy as np
 import astropy.units as units
-from astropy.time import Time
 from sncosmo import TimeSeriesSource, Model
 from bnspopkne.macronovae_wrapper import create_saee_seds
 from bnspopkne import equation_of_state as eos
 from bnspopkne import mappings
-from bnspopkne import population
+from bnspopkne import population_priors
 from tqdm import tqdm
 from multiprocessing import Pool
 
@@ -103,14 +102,14 @@ class Setzer2022_kilonova(object):
         self.transient_duration = float(transient_duration)
         # Set default data directories
         if EOS_path is None:
-            EOS_path = pkg_resources.resource_filename('bnspopkne', "data/mr_sfho_full_right.csv")
+            EOS_path = resource_filename('bnspopkne', "data/mr_sfho_full_right.csv")
         self.EOS_path = EOS_path
         if emulator_path is None:
-            emulator_path = pkg_resources.resource_filename('bnspopkne',
+            emulator_path = resource_filename('bnspopkne',
                                                             "data/paper_kernel_hyperparameters.npy")
         self.emulator_path = emulator_path
         if opacity_data_path is None:
-            opacity_data_path = pkg_resources.resource_filename('bnspopkne',
+            opacity_data_path = resource_filename('bnspopkne',
                                                                 "data/paper_opacity_data.csv")
         self.opacity_data_path = opacity_data_path
 
@@ -249,21 +248,21 @@ class Setzer2022_kilonova(object):
         # Draw masses based on what is provided.
         if ((self.param1 is None) and (self.param2 is None)):
             (self.param1, self.param2
-             ) = population.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
+             ) = population_priors.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
                 self.__class__.tov_mass)
         elif ((self.param1 is None) and (self.param2 is not None)):
-            self.param1 = population.draw_mass_from_EOS_bounds(
+            self.param1 = population_priors.draw_mass_from_EOS_bounds(
                 min(self.__class__tov_mass, (3.0/2.0)*self.param2),
                 m_low=self.param2)
         elif ((self.param1 is not None) and (self.param2 is None)):
-            self.param2 = population.draw_mass_from_EOS_bounds(
+            self.param2 = population_priors.draw_mass_from_EOS_bounds(
                 self.param1, m_low=max(self.param1*(2.0/3.0), 1.0))
         # If not already set, draw the viewing angles
         if self.param5 is None:
-            self.param5 = population.draw_viewing_angle()
+            self.param5 = population_priors.draw_viewing_angle()
         # Disk unbinding efficiency
         if self.param12 is None:
-            self.param12 = population.draw_disk_unbinding_efficiency()
+            self.param12 = population_priors.draw_disk_unbinding_efficiency()
 
     def map_mass_to_compactness(self):
         """
