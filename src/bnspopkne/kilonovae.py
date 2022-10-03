@@ -51,6 +51,8 @@ class Setzer2022_kilonova(object):
             The total ejecta mass of the expanding kilonova material.
         disk_unbinding_efficiency: float
             The fractional percentage of matter unbound by disk winds.
+        mass_ratio_threshold: float
+            The lower bound on mass-ratio for which to simulate the binary.
         transient_duration: float [days]
             The maximal length of time over which to generate the kilonova signal.
             Default is 15 days.
@@ -100,6 +102,7 @@ class Setzer2022_kilonova(object):
         secular_ejecta_mass=None,
         total_ejecta_mass=None,
         disk_unbinding_efficiency=None,
+        mass_ratio_threshold=0.4,
         transient_duration=15.0,
         min_wave=500.0,
         max_wave=12000.0,
@@ -120,6 +123,7 @@ class Setzer2022_kilonova(object):
         self.min_wave = float(min_wave)
         self.max_wave = float(max_wave)
         self.transient_duration = float(transient_duration)
+        self.mass_ratio_threshold = mass_ratio_threshold
         # Set default data directories
         if EOS_path is None:
             EOS_path = resource_filename('bnspopkne', "data/mr_sfho_full_right.csv")
@@ -269,14 +273,14 @@ class Setzer2022_kilonova(object):
         if ((self.param1 is None) and (self.param2 is None)):
             (self.param1, self.param2
              ) = population_priors.draw_masses_from_EOS_bounds_with_mass_ratio_cut(
-                self.__class__.tov_mass)
+                self.__class__.tov_mass, mass_ratio_cut=self.mass_ratio_threshold)
         elif ((self.param1 is None) and (self.param2 is not None)):
             self.param1 = population_priors.draw_mass_from_EOS_bounds(
-                min(self.__class__tov_mass, (3.0/2.0)*self.param2),
+                min(self.__class__tov_mass, (1.0/self.mass_ratio_threshold)*self.param2),
                 m_low=self.param2)
         elif ((self.param1 is not None) and (self.param2 is None)):
             self.param2 = population_priors.draw_mass_from_EOS_bounds(
-                self.param1, m_low=max(self.param1*(2.0/3.0), 1.0))
+                self.param1, m_low=max(self.param1*self.mass_ratio_threshold, 1.0))
         # If not already set, draw the viewing angles
         if self.param5 is None:
             self.param5 = population_priors.draw_viewing_angle()
@@ -480,6 +484,7 @@ class Setzer2022_population_parameter_distribution(object):
         population_size=50000,
         only_draw_parameters=True,
         chunk_size=500,
+        **kwargs,
     ):
         """
         Parameters:
@@ -518,7 +523,7 @@ class Setzer2022_population_parameter_distribution(object):
         # populate the parameter distributions
         if only_draw_parameters:
             for i in tqdm(range(self.population_size)):
-                kilonova = Setzer2022_kilonova(only_draw_parameters=only_draw_parameters)
+                kilonova = Setzer2022_kilonova(only_draw_parameters=only_draw_parameters, **kwargs)
                 for k in range(self.number_of_parameters):
                     getattr(self, f"param{k + 1}")[i] = (
                                             getattr(kilonova, f"param{k + 1}"))
@@ -559,7 +564,7 @@ class Setzer2022_population_parameter_distribution(object):
         """
         parameter_dict = (dict.fromkeys([getattr(self, f"param{i+1}_name")
                           for i in range(self.number_of_parameters)], None))
-        kilonova = Setzer2022_kilonova(only_draw_parameters=False)
+        kilonova = Setzer2022_kilonova(only_draw_parameters=False, **kwargs)
         times = np.linspace(0.0, kilonova.model.maxtime(), 5001)
         lightcurve_abs_i = kilonova.model.bandmag('lssti', "ab", time=times)
         peak_abs_lssti = kilonova.model.source.peakmag('lssti', 'ab', sampling=0.01)

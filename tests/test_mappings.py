@@ -1,6 +1,6 @@
 import unittest
 from bnspopkne import mappings
-from bnspopkne.kne import Setzer2022_kilonova as kilonova
+from bnspopkne.kilonovae import Setzer2022_kilonova as kilonova
 
 
 class test_mappings(unittest.TestCase):
