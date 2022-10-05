@@ -711,7 +711,7 @@ MODULE macronova_Pinto_eastman_CNS
     f_beta = p_e*((1.0 + time/t_e)**(-1.0)) + p_gamma*(1.0 - exp(-((t_gamma/time)**2.0)))
     f_alpha = (1.0 + time/t_alpha)**(-1.5)
 
-    eps = 0.5*f_beta + 0.5*f_alpha
+    eps = 0.5*f_beta + 0.5*f_alpha ! at present use average since applied to total heating rate
 
   END FUNCTION calc_t_dep_therm
 
