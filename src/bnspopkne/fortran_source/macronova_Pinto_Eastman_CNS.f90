@@ -519,7 +519,7 @@ MODULE macronova_Pinto_eastman_CNS
          tm= tm_p + dt
          !---- Step to add function heating rate call from new hratelib
          IF (func_therm) THEN
-            e_th = time_dependent_thermalisation(t0*(tm_p + 0.5*dt), m_ej, v_max)
+            e_th = calc_t_dep_therm((t0/day_in_s)*(tm_p + 0.5*dt), m_ej, v_max)
          ENDIF
 
          IF (func_hrate) THEN
@@ -691,7 +691,7 @@ MODULE macronova_Pinto_eastman_CNS
 
   END FUNCTION mass_func
 
-  FUNCTION time_dependent_thermalisation(time, ejecta_mass, max_ejecta_velocity) RESULT(eps)
+  FUNCTION calc_t_dep_therm(time, ejecta_mass, max_ejecta_velocity) RESULT(eps)
 
       !************************************************************************
       !                                                                       *
@@ -713,7 +713,7 @@ MODULE macronova_Pinto_eastman_CNS
 
     eps = 0.5*f_beta + 0.5*f_alpha
 
-  END FUNCTION time_dependent_thermalisation
+  END FUNCTION calc_t_dep_therm
 
 
   FUNCTION photospheric_radius(tau,tm,kappa,rho0,t0, v_max) RESULT(x)

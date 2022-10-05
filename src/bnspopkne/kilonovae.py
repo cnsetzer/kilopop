@@ -541,7 +541,7 @@ class Setzer2022_population_parameter_distribution(object):
                 with tqdm(total=int(self.population_size)) as progress_bar:
                     for parameter_dict in p.imap_unordered(self.compute_lightcurve_properties_per_kilonova,
                                                            list(range(self.population_size)),
-                                                           chunksize=chunksize):
+                                                           chunksize=chunk_size):
                         id = parameter_dict['id']
                         self.peak_time[id] = parameter_dict['peak_time']
                         self.peak_absmag_lssti[id] = parameter_dict['peak_absmag_lssti']
