@@ -37,13 +37,14 @@ def create_saee_seds(KNE_parameters,
             A function call returning a phase, wavelength, and flux array.
     """
     Nt = 5000  # internal grid of times over which to generate the luminosity
-    n = len(KNE_parameters) - 3  # number of base kN parameters.
+    n = len(KNE_parameters) - 4  # number of base kN parameters.
     MNE_parameters = KNE_parameters[0:n]  # sub select parameters
     func_hrate = KNE_parameters[n]  # flag to use functional heating rate
-    read_hrate = KNE_parameters[n + 1]  # flag to read heating rates.
-    heating_rates_file = KNE_parameters[n + 2]  # file to read from.
+    func_therm = KNE_parameters[n + 1]  # flag to use functional thermalisation
+    read_hrate = KNE_parameters[n + 2]  # flag to read heating rates.
+    heating_rates_file = KNE_parameters[n + 3]  # file to read from.
     luminosity_array = m2p.calculate_luminosity(
-        n, MNE_parameters, func_hrate, read_hrate, heating_rates_file, Nt
+        n, MNE_parameters, func_hrate, func_therm, read_hrate, heating_rates_file, Nt
     )
     return create_sed_timeseries(luminosity_array,
                           min_wave, max_wave, phases, wavelengths)

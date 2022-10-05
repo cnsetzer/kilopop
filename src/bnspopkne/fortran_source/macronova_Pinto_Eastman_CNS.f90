@@ -40,7 +40,7 @@ MODULE macronova_Pinto_eastman_CNS
 
   CONTAINS
 
-  SUBROUTINE macronova(np, parameters, func_hrate, read_hrate, heating_rates_file, Nt, luminosity)
+  SUBROUTINE macronova(np, parameters, func_hrate, func_therm, read_hrate, heating_rates_file, Nt, luminosity)
 
       IMPLICIT NONE
       !--------------------------!
@@ -49,7 +49,7 @@ MODULE macronova_Pinto_eastman_CNS
       INTEGER, INTENT(IN) :: np, Nt
       DOUBLE PRECISION, INTENT(IN) :: parameters(np)
       DOUBLE PRECISION, INTENT(OUT) :: luminosity(Nt+1,4)
-      LOGICAL, INTENT(IN) :: read_hrate, func_hrate
+      LOGICAL, INTENT(IN) :: read_hrate, func_hrate, func_therm
       CHARACTER*255, INTENT(IN) :: heating_rates_file
 
       !--------------------------!
@@ -148,7 +148,6 @@ MODULE macronova_Pinto_eastman_CNS
       IF (func_hrate) THEN
           ye = parameters(10)
       ENDIF
-
       !--------------------!
       !-- derived values --!
       !--------------------!
@@ -519,6 +518,10 @@ MODULE macronova_Pinto_eastman_CNS
          !
          tm= tm_p + dt
          !---- Step to add function heating rate call from new hratelib
+         IF (func_therm) THEN
+            e_th = time_dependent_thermalisation(t0*(tm_p + 0.5*dt), m_ej, v_max)
+         ENDIF
+
          IF (func_hrate) THEN
             IF (v_med/clight .GT. 0.5) THEN
                 v_med = 0.5*clight
@@ -687,6 +690,30 @@ MODULE macronova_Pinto_eastman_CNS
     y= 16./315./(x*x) -x*(1./3.-3./5.*x**2+3./7.*x**4-1./9.*x**6)
 
   END FUNCTION mass_func
+
+  FUNCTION time_dependent_thermalisation(time, ejecta_mass, max_ejecta_velocity) RESULT(eps)
+
+      !************************************************************************
+      !                                                                       *
+      ! Implement a time-dependent thermalisation based on Barnes et al. 2018 *
+      !                                                                       *
+      !************************************************************************
+
+    IMPLICIT NONE
+    DOUBLE PRECISION:: f_beta, f_alpha, t_alpha, t_gamma, t_e, p_e, p_gamma, eps
+    DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity
+    ! Using approximations from the discussion of Barnes et al. 2018
+    p_e = 0.2
+    t_e = 12.9*((ejecta_mass/0.01)**(2.0/3.0))*((max_ejecta_velocity/0.2)**(-2.0))
+    p_gamma = 0.5
+    t_gamma = 0.3*((ejecta_mass/0.01)**(1.0/2.0))*((max_ejecta_velocity/0.2)*(-1.0))
+    t_alpha = 3.0*t_e
+    f_beta = p_e*((1.0 + time/t_e)**(-1.0)) + p_gamma*(1.0 - exp(-((t_gamma/time)**2.0)))
+    f_alpha = (1.0 + time/t_alpha)**(-1.5)
+
+    eps = 0.5*f_beta + 0.5*f_alpha
+
+  END FUNCTION time_dependent_thermalisation
 
 
   FUNCTION photospheric_radius(tau,tm,kappa,rho0,t0, v_max) RESULT(x)

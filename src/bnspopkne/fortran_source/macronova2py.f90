@@ -6,7 +6,7 @@ USE physics_constants
 
 CONTAINS
 
-SUBROUTINE calculate_luminosity(n, MNE_parameters, func_hrate, read_hrate, heating_rates_file, Nt, luminosity)
+SUBROUTINE calculate_luminosity(n, MNE_parameters, func_hrate, func_therm, read_hrate, heating_rates_file, Nt, luminosity)
     IMPLICIT NONE
 
     INTEGER, INTENT(IN) :: n, Nt
@@ -15,12 +15,12 @@ SUBROUTINE calculate_luminosity(n, MNE_parameters, func_hrate, read_hrate, heati
     !f2py DOUBLE PRECISION, intent(in), depend(n) :: MNE_parameters
     DOUBLE PRECISION, INTENT(OUT) :: luminosity(Nt+1,4)
     !f2py DOUBLE PRECISION, intent(out), depend(Nt) :: luminosity
-    LOGICAL, INTENT(IN) :: read_hrate, func_hrate
+    LOGICAL, INTENT(IN) :: read_hrate, func_hrate, func_therm
     !f2py intent(in) :: read_hrate, func_hrate
     CHARACTER*255, INTENT(IN) :: heating_rates_file
     !f2py intent(in) :: heating_rates_file
 
-    CALL macronova(n, MNE_parameters, func_hrate, read_hrate, heating_rates_file, Nt, luminosity)
+    CALL macronova(n, MNE_parameters, func_hrate, func_therm, read_hrate, heating_rates_file, Nt, luminosity)
 
 END SUBROUTINE calculate_luminosity
 

@@ -454,6 +454,9 @@ class Setzer2022_kilonova(object):
             KNE_parameters.append(
                 True
             )  # Flag to use numerical fit nuclear heating rates
+            KNE_parameters.append(
+                True
+            )  # Flag to use numerical fit thermalisation efficiency
             KNE_parameters.append(False)  # Read heating rates variable
             KNE_parameters.append("placeholder string")  # Heating rates file
         self.phase, self.wave, self.flux = create_saee_seds(
