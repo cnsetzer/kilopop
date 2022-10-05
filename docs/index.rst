@@ -5,10 +5,27 @@
 
 Welcome to bnspopkne's documentation!
 =====================================
+.. automodule:: bnspopkne
+    :members:
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   Installation
+   Tutorial
+   Acknowledgements
+   How to Cite
+
+.. currentmodule:: bnspopkne
+
+.. autosummary::
+   :toctree: api
+   :template: custom-module-template.rst
+   :caption: API:
+   :recursive:
+
+
 
 
 
