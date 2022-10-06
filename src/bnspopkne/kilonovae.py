@@ -4,6 +4,10 @@
 from pkg_resources import resource_filename
 import numpy as np
 import astropy.units as units
+import warnings
+from astropy.utils.exceptions import AstropyDeprecationWarning
+# suppress AstropyDeprecationWarning
+warnings.filterwarnings("ignore", category=AstropyDeprecationWarning)
 from sncosmo import TimeSeriesSource, Model
 from bnspopkne.macronovae_wrapper import create_saee_seds
 from bnspopkne import equation_of_state as eos
