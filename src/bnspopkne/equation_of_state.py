@@ -6,7 +6,8 @@ from pandas import read_csv
 
 
 def get_EOS_table(EOS_path=None):
-    """
+    """Read in the Equation of state table.
+
     Wrapper function to read the given Equation of State mass vs. radius
     diagram as pre-computed with a TOV-solver for use with this program.
     The format of the mass vs. radius data should be (radius, grav_mass,
@@ -15,7 +16,8 @@ def get_EOS_table(EOS_path=None):
     Parameters:
     -----------
         EOS_path: str
-            The location of the file containing the mass vs. radius data.
+            The location of the file containing the mass vs. radius data. The
+            provided data should be in the form of a labeled column csv.
 
     Returns:
     --------
@@ -27,8 +29,9 @@ def get_EOS_table(EOS_path=None):
     return EOS_data
 
 
-def get_radius_from_EOS(EOS_table):
-    """
+def get_radius_interpolator_from_EOS(EOS_table):
+    """Read the radius table and create interpolator function.
+
     Wrapper function to create the interpolation function from the provided
     EOS data to evaluate the mass vs. radius relation for arbitray mass.
     Parameters:
@@ -48,7 +51,8 @@ def get_radius_from_EOS(EOS_table):
 
 
 def get_max_EOS_mass(EOS_table):
-    """
+    """Obtain the maximum supported neutron star mass from the given EOS.
+
     Wrapper function to find the Max TOV mass of the given EOS.
 
     Parameters:
@@ -66,7 +70,8 @@ def get_max_EOS_mass(EOS_table):
 
 
 def compute_compactnesses_from_EOS(mass, EOS_mass_to_rad):
-    """
+    """Calucate the neutron star stellar compactness.
+
     Using the equation for compactness from neutron star mass and radius
     compute the compactnesses for both of the component stars in the system.
 

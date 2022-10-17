@@ -3,11 +3,10 @@ kilonova parameters. Wrapper to the FORTRAN library for the SAEE model. """
 import numpy as np
 from scipy.interpolate import interp1d
 from macronova2py import macronova2py as m2p
-from astropy import units as u
 from astropy.constants import h, c, sigma_sb, k_B, pc
 
 
-def create_SAEE_SEDs(KNE_parameters,
+def create_saee_seds(KNE_parameters,
                      min_wave=500.0,
                      max_wave=12000.0,
                      phases=None,
@@ -34,23 +33,24 @@ def create_SAEE_SEDs(KNE_parameters,
             Wavelengths at which to compute the thermal spectrum.
     Returns:
     --------
-        sed_timeseries: function call
+        create_sed_timeseries: function call
             A function call returning a phase, wavelength, and flux array.
     """
     Nt = 5000  # internal grid of times over which to generate the luminosity
-    n = len(KNE_parameters) - 3  # number of base kN parameters.
+    n = len(KNE_parameters) - 4  # number of base kN parameters.
     MNE_parameters = KNE_parameters[0:n]  # sub select parameters
     func_hrate = KNE_parameters[n]  # flag to use functional heating rate
-    read_hrate = KNE_parameters[n + 1]  # flag to read heating rates.
-    heating_rates_file = KNE_parameters[n + 2]  # file to read from.
+    func_therm = KNE_parameters[n + 1]  # flag to use functional thermalisation
+    read_hrate = KNE_parameters[n + 2]  # flag to read heating rates.
+    heating_rates_file = KNE_parameters[n + 3]  # file to read from.
     luminosity_array = m2p.calculate_luminosity(
-        n, MNE_parameters, func_hrate, read_hrate, heating_rates_file, Nt
+        n, MNE_parameters, func_hrate, func_therm, read_hrate, heating_rates_file, Nt
     )
-    return sed_timeseries(luminosity_array,
+    return create_sed_timeseries(luminosity_array,
                           min_wave, max_wave, phases, wavelengths)
 
 
-def sed_timeseries(
+def create_sed_timeseries(
     luminosity_array, min_wave=500.0, max_wave=12000.0, phases=None,
     wavelengths=None
 ):
@@ -94,10 +94,10 @@ def sed_timeseries(
 
     # if phases specificed, interpolate solution to those times
     if phases is not None:
-        luminosity_nterp = interp1d(phase, y=luminosity)
-        luminosity = luminosity_nterp(phases * day_in_s)
-        temperature_nterp = interp1d(phase, y=temperature)
-        temperature = temperature_nterp(phases * day_in_s)
+        luminosity_interpolator = interp1d(phase, y=luminosity)
+        luminosity = luminosity_interpolator(phases * day_in_s)
+        temperature_interpolator = interp1d(phase, y=temperature)
+        temperature = temperature_interpolator(phases * day_in_s)
         phase_days = phases
     else:
         phase_days = phase / day_in_s
@@ -105,23 +105,23 @@ def sed_timeseries(
     if wavelengths is None:
         wavelengths = np.arange(min_wave, max_wave, 10.0)  # Angstrom
     # distance scaling to 10pc at which spectra is computed
-    Robs = 10.0 * pc.cgs.value
+    distance_scaling = 10.0 * pc.cgs.value
     # scaling coefficient for the spectra from luminosity solution
-    Coef = np.divide(luminosity,
-                     (4.0 * (Robs ** 2) * sigma_sb.cgs.value *
-                      np.power(temperature, 4)))
+    flux_coefficient = np.divide(luminosity,
+                                 (4.0 * (distance_scaling ** 2) * sigma_sb.cgs.value *
+                                  np.power(temperature, 4)))
     # output flux f [erg s^-1 cm^-2 Ang.^-1]
     lam_cm = np.multiply(wavelengths, Ang_to_cm)
     # output is ergs / s /cm^3
-    blam_test = blam(lam_cm, temperature)
+    planck_values = compute_planck_function(lam_cm, temperature)
     # rescale spectrum with luminosity-derived coefficient
-    flux = (blam_test.T * Coef).T
+    flux = (planck_values.T * flux_coefficient).T
     # convert to ergs/s /cm^2 /Angstrom
     flux *= Ang_to_cm
     return phase_days, wavelengths, flux
 
 
-def blam(lambda_cm, temperature):
+def compute_planck_function(lambda_cm, temperature):
     """
     Planck function of wavelength.
 
@@ -135,13 +135,13 @@ def blam(lambda_cm, temperature):
 
     Returns:
     --------
-        Planck: nd.array
+        planck_values: nd.array
             The value of the Planck function for a given temp. and wavelength.
             Output shape is (n_time, n_wave).
     """
     # cutoff argument to which we set Planck function to zero
     planck_arg_limit = 100.0
-    # utilize linear algebra for fast generation
+    # utilize linear algebra for fast generation, i.e., broadcasting
     lambda_cm = np.expand_dims(lambda_cm, axis=0)
     temperature = np.expand_dims(temperature, axis=1)
     # pre-compute exponent argument for Planck function
@@ -150,11 +150,11 @@ def blam(lambda_cm, temperature):
     # construct wavelength array for each temperature
     lam_planck = np.tile(lambda_cm, (planck_arg.shape[0], 1))
     # initialize Planck function array
-    Planck = np.zeros(planck_arg.shape)
+    planck_values = np.zeros(planck_arg.shape)
     # compute Planck function
-    Planck[planck_arg <= planck_arg_limit] = np.divide(
+    planck_values[planck_arg <= planck_arg_limit] = np.divide(
         (2.0 * h.cgs.value * (c.cgs.value ** 2)) /
         np.power(lam_planck[planck_arg <= planck_arg_limit], 5),
         (np.exp(planck_arg[planck_arg <= planck_arg_limit]) - 1.0),
     )
-    return Planck
+    return planck_values

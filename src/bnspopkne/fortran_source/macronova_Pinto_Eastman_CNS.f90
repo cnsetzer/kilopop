@@ -22,6 +22,8 @@ MODULE macronova_Pinto_eastman_CNS
   !                   with MNe observations *
   !                   simulation code       *
   !                                         *
+  !   CNS 21.09.2022: remove unsued code    *
+  !                                         *
   ! ===> read-in heating-rate file MUST BE  *
   !      WITHOUT EFFICIENCY FACTORS         *
   !                                         *
@@ -38,7 +40,7 @@ MODULE macronova_Pinto_eastman_CNS
 
   CONTAINS
 
-  SUBROUTINE macronova(np, parameters, func_hrate, read_hrate, heating_rates_file, Nt, luminosity)
+  SUBROUTINE macronova(np, parameters, func_hrate, func_therm, read_hrate, heating_rates_file, Nt, luminosity)
 
       IMPLICIT NONE
       !--------------------------!
@@ -47,7 +49,7 @@ MODULE macronova_Pinto_eastman_CNS
       INTEGER, INTENT(IN) :: np, Nt
       DOUBLE PRECISION, INTENT(IN) :: parameters(np)
       DOUBLE PRECISION, INTENT(OUT) :: luminosity(Nt+1,4)
-      LOGICAL, INTENT(IN) :: read_hrate, func_hrate
+      LOGICAL, INTENT(IN) :: read_hrate, func_hrate, func_therm
       CHARACTER*255, INTENT(IN) :: heating_rates_file
 
       !--------------------------!
@@ -62,7 +64,6 @@ MODULE macronova_Pinto_eastman_CNS
       !-- control parameters --!
       !------------------------!
       ! read precomputed (with quad precision) matrix?
-      ! LOGICAL, PARAMETER :: read_matrix = .FALSE.
       LOGICAL, PARAMETER :: DEBUG = .FALSE.
 
       !-----------------------!
@@ -72,7 +73,6 @@ MODULE macronova_Pinto_eastman_CNS
       INTEGER, PARAMETER :: uMod=      80
       INTEGER, PARAMETER :: uLum=      81
       INTEGER, PARAMETER :: uHrate=    83
-      !INTEGER, PARAMETER :: uMat=      84
       INTEGER, PARAMETER :: unit_mac=  85
 
       INTEGER     ::     it,iostatos,i,j,n,m,nLinesHrate,INFO
@@ -80,7 +80,6 @@ MODULE macronova_Pinto_eastman_CNS
       DOUBLE PRECISION :: v_max,rho0,E0,F0,tau0,dt,dx,dx2,dx3,L0,hrate
       DOUBLE PRECISION :: qm0,x,y,Lum,tm_p,tm
       DOUBLE PRECISION :: n2,n3,n4,n5,n6,n8,n10,n12,n14,n16,n18,nn1
-      !DOUBLE PRECISION Esol, tau, t_in_days, Flux
 
       !---------------------------!
       !-- other local variables --!
@@ -114,22 +113,6 @@ MODULE macronova_Pinto_eastman_CNS
 
       ! heating rates: times and values (read from file)
       DOUBLE PRECISION,ALLOCATABLE::  t_HR(:), HR(:)
-
-      !----------------------------------!
-      !-- parse command-line arguments --!
-      !----------------------------------!
-      ! IF (iargc().NE.1) THEN
-      !    PRINT '("Usage: ./macronova_PE.x <PARAMETERS-FILE>")'
-      !    PRINT '("example PARAMETERS-FILE: data/MN_model_parameters.dat")'
-      !    STOP
-      ! ENDIF
-      ! CALL getarg(1,parameters_file)
-
-    !******************************************************************************
-    !******************************************************************************
-    !           Need Modifications Here
-    !******************************************************************************
-    !******************************************************************************
 
       !---------------------------------!
       !-- problem-specific parameters --!
@@ -165,35 +148,6 @@ MODULE macronova_Pinto_eastman_CNS
       IF (func_hrate) THEN
           ye = parameters(10)
       ENDIF
-    !******************************************************************************
-    !******************************************************************************
-    !           Need Modifications Here
-    !******************************************************************************
-    !******************************************************************************
-
-
-      !-------------------------------------!
-      !-- output parameters on the screen --!
-      !-------------------------------------!
-      ! PRINT '("Simulation parameters:")'
-      ! PRINT '(" - initial & final times[d]:        ",2(F9.5,",",F9.5))', &
-      !                                              t0/day_in_s,t1/day_in_s
-      ! PRINT '(" - ejecta mass [Msun]:              ",F9.5)', m_ej/msol
-      ! PRINT '(" - median velocity [c]:             ",F9.5)', v_max/clight
-      ! PRINT '(" - gray opacity [cm2/g]:            ",F9.5)', kappa
-      ! PRINT '(" - initial temperature [K]:         ",F9.2)', Temp0
-      ! PRINT '(" - number of harmonics:             ",I9)', mmax
-      ! PRINT '(" - number of timesteps:             ",I9)', Nt
-      ! IF (read_hrate) THEN
-      !    PRINT '(" - heating rates - from file:        """,A,"""")',&
-      !                                            TRIM(heating_rates_file)
-      ! ELSE
-      !    PRINT '(" - nuclear heating rate:              analytic")'
-      !    PRINT '(" - heating rate exponent:           ",F9.5)',alpha
-      ! ENDIF
-      ! PRINT '(" - thermalization factor:           ",F9.5)', e_th
-      ! PRINT '(" - heating enhancement (DZ-factor): ",F9.5)', DZ_factor
-
       !--------------------!
       !-- derived values --!
       !--------------------!
@@ -236,18 +190,6 @@ MODULE macronova_Pinto_eastman_CNS
       ALLOCATE(AP(Nx*(Nx+1)/2),BP(Nx*(Nx+1)/2),W(Nx),WORK(LWORK))
       ALLOCATE(psi(Nx,Nx),LT(2,Nx),Dm(Nx),Nm2(Nx))
 
-      !-- open matrix file for reading or writing, depending on the parameter
-      ! IF(read_matrix) THEN
-      !    Write(*,*) "Debug 1.2"
-      !    OPEN (uMat,FILE='matrix.dat',status='OLD')
-      !    Write(*,*) "Debug 1.3"
-      ! ELSE
-      !    Write(*,*) "Debug 1.4"
-      !    OPEN (uMat,FILE='matrix.dat',status='UNKNOWN')
-      !    Write(*,*) "Debug 1.5"
-      ! ENDIF
-
-
       DO n=0,Nx
          n2=  DBLE(n*n)
          n3=  DBLE(n)*n2
@@ -262,9 +204,6 @@ MODULE macronova_Pinto_eastman_CNS
          n18= n8*n10
          nn1= DBLE(n*(n+1))
 
-         ! IF(read_matrix)THEN
-         !    READ(uMat,'(4(ES23.16,1X))') Tnn(n),Tnp(n),Mnn(n),Mnp(n)
-         ! ELSE
         IF(n.GE.1)THEN
            ! Int [x^2(1-x^2)^5 h'n h'n, {x, (n-1)*dx, (n+1)*dx}]
            Tnn(n)= dx*(      (2./3.+n2*2.) &  ! T_nn
@@ -350,10 +289,7 @@ MODULE macronova_Pinto_eastman_CNS
                 + dx2*(  1./7980.*(19+nn1*(378+19*nn1*(168+nn1*(784+nn1*(2205+nn1*&
                  (3822+nn1*(4004+nn1*(2376+7*nn1*(99+10*nn1))))))))))))))))))
 
-        !WRITE(uMat,'(4(ES23.16,1X))') Tnn(n),Tnp(n),Mnn(n),Mnp(n)
-!         ENDIF
 
-    !!!PRINT '(4(ES23.16,1X))', Tnn(n),Tnp(n),Mnn(n),Mnp(n)
       ENDDO !<---------------------------------------------------------- n
 
       ! Correct corner diagonal elements (imposing boundary conditions)
@@ -511,37 +447,6 @@ MODULE macronova_Pinto_eastman_CNS
          pm(m)= W(m)* t0/tau0
       ENDDO
 
-      ! ! --- open files and write headers
-      ! PRINT '("Writing output files:")'
-      ! PRINT '(" - sol.dat:    snapshots of solution")'
-      ! PRINT '(" - modes.dat:  evolution of mode amplitudes")'
-      ! PRINT '(" - lum.dat:    time[s], luminosity, temperature, radius")'
-      ! PRINT '(" - mac.dat:    time[d], luminosity, temperature, radius, velocity")'
-      ! OPEN (uSol,FILE='sol.dat',STATUS='unknown',IOSTAT=iostatos)
-      ! IF (iostatos.NE.0) STOP "ERROR: cannot open sol.dat for writing"
-      ! WRITE(uSol,'("# Snapshots of solution: 1:x 2:E[erg/cm3] 3:tau 4:total radial flux[erg/s]")')
-      ! WRITE(uSol,'("# Simulation parameters:")')
-      ! WRITE(uSol,'("# - initial & final times[d]:",2(F9.5,",",F9.5))') t0/day_in_s,t1/day_in_s
-      ! WRITE(uSol,'("# - ejecta mass [Msun]:      ",F9.5)') m_ej/msol
-      ! WRITE(uSol,'("# - ejecta velocity [c]:     ",F9.5)') v_max/clight
-      ! WRITE(uSol,'("# - thermalization factor:   ",F9.5)') e_th
-      ! WRITE(uSol,'("# - gray opacity [cm2/g]:    ",F9.5)') kappa
-      ! WRITE(uSol,'("# - initial temperature [K]: ",F9.2)') Temp0
-      ! WRITE(uSol,'("# - number of harmonics:     ",I9)') mmax
-      ! WRITE(uSol,'("# - number of timesteps:     ",I9)') Nt
-      !
-      ! OPEN (uMod,FILE='modes.dat',STATUS='unknown',IOSTAT=iostatos)
-      ! IF (iostatos.NE.0) STOP "ERROR: cannot open modes.dat for writing"
-      ! WRITE(uMod,'("# Snapshots of phi_m(t): 1:m 2:phi_m")')
-      !
-      ! OPEN (uLum,FILE='lum.dat',STATUS='unknown',IOSTAT=iostatos)
-      ! IF (iostatos.NE.0) STOP "ERROR: cannot open modes.dat for writing"
-      ! WRITE(uLum,'("#  1: time[s]     2: L[erg/s]    3: T [K]       4: R [cm]")')
-      !
-      ! OPEN(unit_mac,FILE='mac.dat',STATUS='unknown',IOSTAT=iostatos)
-      ! IF (iostatos.NE.0) STOP "ERROR: cannot open mac.dat for writing"
-      ! WRITE(unit_mac,*)'# 1:time[d]   2:L[erg/s]   3:T[K]   4:R[cm]   5:v[c]'
-
       ! --- read the heating rates file if requested
       !     Heating rate file format:
       !     - first line: header
@@ -587,27 +492,6 @@ MODULE macronova_Pinto_eastman_CNS
       phi_p(1:mmax)= phi(1:mmax)
 
       main_evolution_loop: DO it=0,Nt
-
-    !      ! --- output E[x,t]
-    !      IF (mod(it,(Nt/100)).EQ.0) THEN
-    !         WRITE(uSol,'("# t= ",F9.5," [d]")') (tm*t0/day_in_s)
-    !         x= 0.0
-    !         DO i=0,Nx
-    !            Esol= solution_internal_energy(x)
-    !            Flux= solution_flux(x)
-    !            tau= optical_depth(x,tm)
-    !            WRITE(uSol,'(F9.5,3(1X,ES14.7))') x, Esol, tau, Flux
-    !
-    ! !           Flux=-Flux * E0*clight/(3*kappa*rho0*v_max*t0 * tm**2)
-    ! !           tau_optdepth = kappa*rho0*v_max*t0/tm**2*(1-x)
-    ! !           WRITE(uSol,'(F9.5,5(1X,ES14.7))') x, Esol, Flux, &
-    ! !               x*v_max*t0*tm, & ! current distance from the origin
-    ! !               tau_optdepth     ! optical depth
-    !            x= x + dx
-    !         ENDDO
-    !         WRITE(uSol,*);WRITE(uSol,*) ! two empty lines in the end of each block
-    !      ENDIF
-
          ! --- output t[s] - L[erg/s] - T[K] - R[cm] ------
          Lum= 0.0
          DO m=1,mmax
@@ -622,7 +506,6 @@ MODULE macronova_Pinto_eastman_CNS
             luminosity(it+1,2) = Lum
             luminosity(it+1,3) = y
             luminosity(it+1,4) = x
-!            WRITE(uLum,'(4(ES14.7,1X))') tm*t0, Lum, y, x
          ENDIF
 
          ! --- Crank-Nicholson integration step
@@ -635,6 +518,10 @@ MODULE macronova_Pinto_eastman_CNS
          !
          tm= tm_p + dt
          !---- Step to add function heating rate call from new hratelib
+         IF (func_therm) THEN
+            e_th = calc_t_dep_therm((t0/day_in_s)*(tm_p + 0.5*dt), m_ej, v_max)
+         ENDIF
+
          IF (func_hrate) THEN
             IF (v_med/clight .GT. 0.5) THEN
                 v_med = 0.5*clight
@@ -788,26 +675,6 @@ MODULE macronova_Pinto_eastman_CNS
   END FUNCTION get_index
 
 
-  FUNCTION optical_depth(x,tm, kappa, rho0, v_max, t0) RESULT(y)
-
-    !************************************
-    !                                   *
-    ! Optical depth as a function of x  *
-    !                                   *
-    !************************************
-
-    IMPLICIT NONE
-    DOUBLE PRECISION:: y
-    DOUBLE PRECISION,INTENT(IN):: x
-    DOUBLE PRECISION,INTENT(IN):: tm
-    DOUBLE PRECISION, INTENT(IN) :: kappa, rho0, v_max, t0
-
-    y= x*(x*x-1.) - 3./5.*(x**5-1.) + (x**7 - 1.)/7.
-    y= y * kappa*rho0*v_max*t0/(tm*tm)
-
-  END FUNCTION optical_depth
-
-
   FUNCTION mass_func(x) RESULT(y)
 
     !***********************************
@@ -823,6 +690,30 @@ MODULE macronova_Pinto_eastman_CNS
     y= 16./315./(x*x) -x*(1./3.-3./5.*x**2+3./7.*x**4-1./9.*x**6)
 
   END FUNCTION mass_func
+
+  FUNCTION calc_t_dep_therm(time, ejecta_mass, max_ejecta_velocity) RESULT(eps)
+
+      !************************************************************************
+      !                                                                       *
+      ! Implement a time-dependent thermalisation based on Barnes et al. 2018 *
+      !                                                                       *
+      !************************************************************************
+
+    IMPLICIT NONE
+    DOUBLE PRECISION:: f_beta, f_alpha, t_alpha, t_gamma, t_e, p_e, p_gamma, eps
+    DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity
+    ! Using approximations from the discussion of Barnes et al. 2018
+    p_e = 0.2
+    t_e = 12.9*((ejecta_mass/0.01)**(2.0/3.0))*((max_ejecta_velocity/0.2)**(-2.0))
+    p_gamma = 0.5
+    t_gamma = 0.3*((ejecta_mass/0.01)**(1.0/2.0))*((max_ejecta_velocity/0.2)*(-1.0))
+    t_alpha = 3.0*t_e
+    f_beta = p_e*((1.0 + time/t_e)**(-1.0)) + p_gamma*(1.0 - exp(-((t_gamma/time)**2.0)))
+    f_alpha = (1.0 + time/t_alpha)**(-1.5)
+
+    eps = 0.5*f_beta + 0.5*f_alpha ! at present use average since applied to total heating rate
+
+  END FUNCTION calc_t_dep_therm
 
 
   FUNCTION photospheric_radius(tau,tm,kappa,rho0,t0, v_max) RESULT(x)
@@ -857,63 +748,6 @@ MODULE macronova_Pinto_eastman_CNS
     x= x*v_max*tm*t0
 
   END FUNCTION photospheric_radius
-
-
-  FUNCTION solution_internal_energy (x,Nx,N,phi, psi, E0) RESULT(y)
-
-    !*********************************************
-    !                                            *
-    ! Assemble solution at radial coordinate x_i *
-    !                                            *
-    !*********************************************
-
-    IMPLICIT NONE
-
-    INTEGER, INTENT(IN) :: Nx, N
-    DOUBLE PRECISION y
-    DOUBLE PRECISION, INTENT(IN):: x        !< grid coordinate
-    DOUBLE PRECISION, INTENT(IN):: phi(Nx), psi(Nx,Nx), E0
-
-    INTEGER i
-    i= MAX(INT((x+1e-12)*DBLE(Nx+1)),1)
-    y= E0 * SUM( psi(i ,1:N) * phi(1:Nx)) * (1.-x*x)**4
-
-  END FUNCTION solution_internal_energy
-
-
-  FUNCTION solution_flux (x,dx,F0,Nx,phi,psi) RESULT(y)
-
-    !*********************************************
-    !                                            *
-    ! Assemble solution at radial coordinate x_i *
-    !                                            *
-    !*********************************************
-
-    IMPLICIT NONE
-
-    DOUBLE PRECISION y
-    DOUBLE PRECISION, INTENT(IN):: x,dx,F0  !< grid coordinate
-    INTEGER, INTENT(IN) :: Nx
-    DOUBLE PRECISION, INTENT(IN):: psi(Nx,Nx),phi(Nx)
-
-    INTEGER i,m
-    DOUBLE PRECISION z, dzdx
-    i= MAX(INT((x+1e-12)*DBLE(Nx+1)),1)
-    y= 0.0
-    DO m=1,Nx
-       z= psi(i,m)
-       IF(m.EQ.1) THEN
-          dzdx= (psi(2,m) - psi(1,m))/dx
-       ELSEIF(m.EQ.Nx) THEN
-          dzdx= (psi(Nx,m)/(1.+2.4*dx) - psi(Nx-1,m))/(2.*dx)
-       ELSE
-          dzdx= (psi(i+1,m) - psi(i-1,m))/(2.*dx)
-       ENDIF
-       y= y + phi(m)*(8.*x*z - (1.-x*x)*dzdx)
-    ENDDO
-    y= y * F0 * x*x
-
-  END FUNCTION solution_flux
 
 
   SUBROUTINE av_efficiency_FRDM_or_DZ(ivar,t_d,f_tot)
