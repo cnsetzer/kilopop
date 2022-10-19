@@ -13,6 +13,7 @@ from bnspopkne.macronovae_wrapper import create_saee_seds
 from bnspopkne import equation_of_state as eos
 from bnspopkne import mappings
 from bnspopkne import population_priors
+from astropy.cosmology import Planck18
 from tqdm import tqdm
 from multiprocessing import Pool
 
@@ -106,6 +107,12 @@ class Setzer2022_kilonova(object):
         secular_ejecta_mass=None,
         total_ejecta_mass=None,
         disk_unbinding_efficiency=None,
+        explosion_time=None,
+        right_ascension=None,
+        declination=None,
+        redshift=None,
+        id=None,
+        cosmo=Planck18,
         mass_ratio_threshold=0.4,
         transient_duration=15.0,
         min_wave=500.0,
