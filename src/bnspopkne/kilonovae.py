@@ -130,11 +130,11 @@ class Setzer2022_kilonova(object):
         self.EOS_path = EOS_path
         if emulator_path is None:
             emulator_path = resource_filename('bnspopkne',
-                                                            "data/paper_kernel_hyperparameters.npy")
+                                                            "data/max_prob_gpvec_m52kernel.npy")
         self.emulator_path = emulator_path
         if opacity_data_path is None:
             opacity_data_path = resource_filename('bnspopkne',
-                                                                "data/paper_opacity_data.csv")
+                                                                "data/emulator_input_opacities_weights_121022.csv")
         self.opacity_data_path = opacity_data_path
 
         # Handle setup of EOS dependent mapping objects and set as class attributes
@@ -483,7 +483,7 @@ class Setzer2022_population_parameter_distribution(object):
         self,
         population_size=50000,
         only_draw_parameters=True,
-        chunk_size=500,
+        chunksize=500,
         **kwargs,
     ):
         """
