@@ -704,19 +704,72 @@ MODULE macronova_Pinto_eastman_CNS
     DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity, hrate
     ! Using approximations from the discussion of Barnes et al. 2018
     p_e = 0.2
-    t_e = 12.9*((ejecta_mass/0.01)**(2.0/3.0))*((max_ejecta_velocity/0.2)**(-2.0))
     p_gamma = 0.5
+
+    t_e = 12.9*((ejecta_mass/0.01)**(2.0/3.0))*((max_ejecta_velocity/0.2)**(-2.0))
     t_gamma = 0.3*((ejecta_mass/0.01)**(1.0/2.0))*((max_ejecta_velocity/0.2)**(-1.0))
     t_alpha = 3.0*t_e
+
     f_beta = p_e*((1.0 + time/t_e)**(-1.0)) + p_gamma*(1.0 - exp(-((t_gamma/time)**2.0)))
     f_alpha = (1.0 + time/t_alpha)**(-1.5)
-    ! Approximate that 22.5%, middle of range 5-40% suggested in Kasen and Barnes 2018
-    Q_beta = hrate/(1.225)
-    Q_alpha = hrate - Q_beta
 
-    Q_tot = Q_beta*f_beta + Q_alpha*f_alpha ! at present use average since applied to total heating rate
-
+    ! use Wollaeger et al. 2017 factors to compare against Oleg derivation
+    Q_beta = 0.6*hrate
+    Q_alpha = 0.05*hrate
+    Q_tot = Q_beta*f_beta + Q_alpha*f_alpha
   END FUNCTION calc_t_dep_therm_hrate
+
+  FUNCTION calc_t_dep_therm_hrate2(time, ejecta_mass, max_ejecta_velocity, hrate) RESULT(eps_tot)
+
+      !************************************************************************
+      !                                                                       *
+      ! Implement a time-dependent thermalisation based on Oleg's notes       *
+      !                                                                       *
+      !************************************************************************
+
+    IMPLICIT NONE
+    DOUBLE PRECISION:: A_alpha, A_beta, A_ff, rho_bar, eta_bar_alpha, eta_bar_beta, eta_bar_ff, f_bar_alpha, f_bar_beta, eps_tot
+    DOUBLE PRECISION:: tau_bar_gamma, f_bar_gamma, frac_alpha, frac_beta, frac_ff, frac_gamma, eps_alpha, eps_beta, eps_ff, eps_gamma
+    DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity, hrate
+    ! convert inputs to correct units
+    time = time*day_in_s  ! seconds
+    ejecta_mass = ejecta_mass*msol  ! grams
+    max_ejecta_velocity = max_ejecta_velocity*clight  ! cm/s
+
+    A_alpha = 1.2e-11  ! g cm-3 s
+    A_beta = 1.3e-11  ! g cm-3 s
+    A_ff = 0.2e-11  ! g cm-3 s
+
+    ! g/cm^-3
+    rho_bar = 0.14*(ejecta_mass/((0.5*max_ejecta_velocity*time)**3))
+    ! unitless
+    tau_bar_gamma =0.035*(0.1*ejecta_mass/((0.5*max_ejecta_velocity*time)**2))
+
+    ! should be unitless
+    eta_bar_alpha = sqrt(A_alpha/(time*rho_bar))
+    eta_bar_beta = sqrt(A_beta/(time*rho_bar))
+    eta_bar_ff = sqrt(A_ff/(time*rho_bar))
+
+    ! unitless
+    f_bar_alpha = log(1 + 2*((eta_bar_alpha)**2))/(2*((eta_bar_alpha)**2))
+    f_bar_beta = log(1 + 2*((eta_bar_beta)**2))/(2*((eta_bar_beta)**2))
+    f_bar_ff = log(1 + 2*((eta_bar_ff)**2))/(2*((eta_bar_ff)**2))
+    f_bar_gamma = 1.0 - exp(-tau_bar_gamma)
+
+    ! Assume constant fractions from Wollaeger et al. 2017, which are approximately the time-averaged values from this reference
+    frac_alpha = 0.05
+    frac_beta = 0.2
+    frac_ff = 0.0
+    frac_gamma = 0.4
+
+    ! determine individual heating rates from each process
+    eps_alpha = frac_alpha*hrate
+    eps_beta = frac_beta*hrate
+    eps_ff = frac_ff*hrate
+    eps_gamma = frac_gamma*hrate
+    ! combine for total heating rate
+    eps_tot = f_bar_alpha*eps_alpha + f_bar_beta*eps_beta + f_bar_ff*eps_ff + f_bar_gamma*eps_gamma
+  END FUNCTION calc_t_dep_therm_hrate2
 
 
   FUNCTION photospheric_radius(tau,tm,kappa,rho0,t0, v_max) RESULT(x)
