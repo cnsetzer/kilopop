@@ -728,8 +728,10 @@ MODULE macronova_Pinto_eastman_CNS
       !************************************************************************
 
     IMPLICIT NONE
-    DOUBLE PRECISION:: A_alpha, A_beta, A_ff, rho_bar, eta_bar_alpha, eta_bar_beta, eta_bar_ff, f_bar_alpha, f_bar_beta, eps_tot
-    DOUBLE PRECISION:: tau_bar_gamma, f_bar_gamma, frac_alpha, frac_beta, frac_ff, frac_gamma, eps_alpha, eps_beta, eps_ff, eps_gamma
+    DOUBLE PRECISION:: A_alpha, A_beta, A_ff, rho_bar, eta_bar_alpha
+    DOUBLE PRECISION:: eta_bar_beta, eta_bar_ff, f_bar_alpha, f_bar_beta, eps_tot
+    DOUBLE PRECISION:: tau_bar_gamma, f_bar_gamma, frac_alpha, frac_beta, frac_ff
+    DOUBLE PRECISION:: frac_gamma, eps_alpha, eps_beta, eps_ff, eps_gamma, f_bar_ff
     DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity, hrate
     DOUBLE PRECISION:: time_s, ejecta_mass_g, max_ejecta_velocity_cms
     ! convert inputs to correct units
