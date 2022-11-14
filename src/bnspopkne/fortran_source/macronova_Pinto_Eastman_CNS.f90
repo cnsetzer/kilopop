@@ -527,7 +527,7 @@ MODULE macronova_Pinto_eastman_CNS
             END IF
             CALL heating_rate_func(v_med/clight,ye,t0*(tm_p + 0.5*dt),hrate)
             IF (func_therm) THEN
-                hrate = DZ_factor*calc_t_dep_therm_hrate((t0/day_in_s)*(tm_p + 0.5*dt), m_ej, v_max, hrate)
+                hrate = DZ_factor*calc_t_dep_therm_hrate2((t0/day_in_s)*(tm_p + 0.5*dt), m_ej, v_max, hrate)
             ELSE
                 hrate = e_th*DZ_factor*hrate
             END IF
