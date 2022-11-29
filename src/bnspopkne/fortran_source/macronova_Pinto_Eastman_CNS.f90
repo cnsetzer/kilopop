@@ -746,7 +746,7 @@ MODULE macronova_Pinto_eastman_CNS
     ! g/cm^-3
     rho_bar = 0.14*(ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**3))
     ! unitless
-    kappa_gamma = 0.02  ! 0.1 in Oleg from Wollaeger from Barnes 2016, but updated to 0.02 in 2018 Kasen and Barnes
+    kappa_gamma = 0.1  ! 0.1 in Oleg from Wollaeger from Barnes 2016, but updated to 0.02 in 2018 Kasen and Barnes
     tau_bar_gamma =0.035*(0.1*ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**2))
 
     ! should be unitless
@@ -764,7 +764,7 @@ MODULE macronova_Pinto_eastman_CNS
     frac_alpha = 0.05
     frac_beta = 0.2
     frac_ff = 0.0
-    frac_gamma = 0.4
+    frac_gamma = 0.4  ! 0.4 or 0.5
 
     ! determine individual heating rates from each process
     eps_alpha = frac_alpha*hrate
