@@ -733,7 +733,7 @@ MODULE macronova_Pinto_eastman_CNS
     DOUBLE PRECISION:: tau_bar_gamma, f_bar_gamma, frac_alpha, frac_beta, frac_ff
     DOUBLE PRECISION:: frac_gamma, eps_alpha, eps_beta, eps_ff, eps_gamma, f_bar_ff
     DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity, hrate
-    DOUBLE PRECISION:: time_s, ejecta_mass_g, max_ejecta_velocity_cms
+    DOUBLE PRECISION:: time_s, ejecta_mass_g, max_ejecta_velocity_cms, kappa_gamma
     ! convert inputs to correct units
     time_s = time*day_in_s  ! seconds
     ejecta_mass_g = ejecta_mass*msol  ! grams
@@ -746,6 +746,7 @@ MODULE macronova_Pinto_eastman_CNS
     ! g/cm^-3
     rho_bar = 0.14*(ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**3))
     ! unitless
+    kappa_gamma = 0.02  ! 0.1 in Oleg from Wollaeger from Barnes 2016, but updated to 0.02 in 2018 Kasen and Barnes
     tau_bar_gamma =0.035*(0.1*ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**2))
 
     ! should be unitless
