@@ -467,6 +467,10 @@ class Setzer2022_kilonova(object):
             KNE_parameters, self.min_wave, self.max_wave
         )
 
+    def print_parameters(self):
+        for i in range(12):
+            print(f"Parameter {i+1}: {getattr(self, f'param{i+1}_name')}: {getattr(self, f'param{i+1}')}")
+
 
 class Setzer2022_population_parameter_distribution(object):
     """
