@@ -306,7 +306,7 @@ def construct_opacity_gaussian_process(opacity_data_path,
     hyper_parameters = np.load(hyperparameter_file_path)
     opacity_array_from_SuperNu_fits = read_csv(opacity_data_path, index_col=0)
     grey_opacity_training_data = opacity_array_from_SuperNu_fits["kappa"].values
-    grey_opacity_training_data_uncertainty = opacity_array_from_SuperNu_fits["sigma_kappa"].values
+    grey_opacity_training_data_uncertainty = opacity_array_from_SuperNu_fits["thresholded_sigma_kappa_02"].values
     total_ejecta_masses = opacity_array_from_SuperNu_fits["m_ej"].values
     median_ejecta_velocities = opacity_array_from_SuperNu_fits["v_ej"].values
     electron_fractions = opacity_array_from_SuperNu_fits["Y_e"].values
