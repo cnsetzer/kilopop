@@ -744,21 +744,21 @@ MODULE macronova_Pinto_eastman_CNS
     A_ff = 0.2e-11  ! g cm-3 s
 
     ! g/cm^-3
-    rho_bar = 0.14*(ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**3))
+    rho_bar = 0.14*(ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**3.0))
     ! unitless
     kappa_gamma = 0.1  ! 0.1 in Oleg from Wollaeger from Barnes 2016, but updated to 0.02 in 2018 Kasen and Barnes
-    tau_bar_gamma =0.035*(0.1*ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**2))
+    tau_bar_gamma =0.035*(0.1*ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**2.0))
 
     ! should be unitless
-    eta_bar_alpha = sqrt(A_alpha/(time_s*rho_bar))
-    eta_bar_beta = sqrt(A_beta/(time_s*rho_bar))
-    eta_bar_ff = sqrt(A_ff/(time_s*rho_bar))
+    eta_bar_alpha = dsqrt(A_alpha/(time_s*rho_bar))
+    eta_bar_beta = dsqrt(A_beta/(time_s*rho_bar))
+    eta_bar_ff = dsqrt(A_ff/(time_s*rho_bar))
 
     ! unitless
-    f_bar_alpha = log(1 + 2*((eta_bar_alpha)**2))/(2*((eta_bar_alpha)**2))
-    f_bar_beta = log(1 + 2*((eta_bar_beta)**2))/(2*((eta_bar_beta)**2))
-    f_bar_ff = log(1 + 2*((eta_bar_ff)**2))/(2*((eta_bar_ff)**2))
-    f_bar_gamma = 1.0 - exp(-tau_bar_gamma)
+    f_bar_alpha = dlog(1.0 + 2.0*((eta_bar_alpha)**2.0))/(2.0*((eta_bar_alpha)**2.0))
+    f_bar_beta = dlog(1.0 + 2.0*((eta_bar_beta)**2.0))/(2.0*((eta_bar_beta)**2.0))
+    f_bar_ff = dlog(1.0 + 2.0*((eta_bar_ff)**2.0))/(2.0*((eta_bar_ff)**2.0))
+    f_bar_gamma = 1.0 - dexp(-tau_bar_gamma)
 
     ! Assume constant fractions from Wollaeger et al. 2017, which are approximately the time-averaged values from this reference
     frac_alpha = 0.05
