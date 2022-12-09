@@ -710,7 +710,7 @@ MODULE macronova_Pinto_eastman_CNS
     t_gamma = 0.3*((ejecta_mass/0.01)**(1.0/2.0))*((max_ejecta_velocity/0.2)**(-1.0))
     t_alpha = 3.0*t_e
 
-    f_beta = p_e*((1.0 + time/t_e)**(-1.0)) + p_gamma*(1.0 - exp(-((t_gamma/time)**2.0)))
+    f_beta = p_e*((1.0 + time/t_e)**(-1.0)) + p_gamma*(1.0 - dexp(-((t_gamma/time)**2.0)))
     f_alpha = (1.0 + time/t_alpha)**(-1.5)
 
     ! use Wollaeger et al. 2017 factors to compare against Oleg derivation
