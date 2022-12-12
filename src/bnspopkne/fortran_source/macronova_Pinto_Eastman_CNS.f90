@@ -24,6 +24,11 @@ MODULE macronova_Pinto_eastman_CNS
   !                                         *
   !   CNS 21.09.2022: remove unsued code    *
   !                                         *
+  !   CNS 10.12.2022: update precision in   *
+  !         heating rates thermalisation    *
+  !         efficiency function.            *
+  !                                         *
+  !                                         *
   ! ===> read-in heating-rate file MUST BE  *
   !      WITHOUT EFFICIENCY FACTORS         *
   !                                         *
@@ -703,19 +708,19 @@ MODULE macronova_Pinto_eastman_CNS
     DOUBLE PRECISION:: f_beta, f_alpha, t_alpha, t_gamma, t_e, p_e, p_gamma, Q_tot, Q_beta, Q_alpha
     DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity, hrate
     ! Using approximations from the discussion of Barnes et al. 2018
-    p_e = 0.2
-    p_gamma = 0.5
+    p_e = 0.2d0
+    p_gamma = 0.5d0
 
-    t_e = 12.9*((ejecta_mass/0.01)**(2.0/3.0))*((max_ejecta_velocity/0.2)**(-2.0))
-    t_gamma = 0.3*((ejecta_mass/0.01)**(1.0/2.0))*((max_ejecta_velocity/0.2)**(-1.0))
-    t_alpha = 3.0*t_e
+    t_e = 12.9d0*((ejecta_mass/0.01d0)**(2.0d0/3.0d0))*((max_ejecta_velocity/0.2d0)**(-2.0d0))
+    t_gamma = 0.3d0*((ejecta_mass/0.01d0)**(1.0d0/2.0d0))*((max_ejecta_velocity/0.2d0)**(-1.0d0))
+    t_alpha = 3.0d0*t_e
 
-    f_beta = p_e*((1.0 + time/t_e)**(-1.0)) + p_gamma*(1.0 - dexp(-((t_gamma/time)**2.0)))
-    f_alpha = (1.0 + time/t_alpha)**(-1.5)
+    f_beta = p_e*((1.0d0 + time/t_e)**(-1.0d0)) + p_gamma*(1.0d0 - dexp(-((t_gamma/time)**2.0d0)))
+    f_alpha = (1.0d0 + time/t_alpha)**(-1.5d0)
 
     ! use Wollaeger et al. 2017 factors to compare against Oleg derivation
-    Q_beta = 0.6*hrate
-    Q_alpha = 0.05*hrate
+    Q_beta = 0.6d0*hrate
+    Q_alpha = 0.05d0*hrate
     Q_tot = Q_beta*f_beta + Q_alpha*f_alpha
   END FUNCTION calc_t_dep_therm_hrate
 
@@ -739,15 +744,15 @@ MODULE macronova_Pinto_eastman_CNS
     ejecta_mass_g = ejecta_mass*msol  ! grams
     max_ejecta_velocity_cms = max_ejecta_velocity*clight  ! cm/s
 
-    A_alpha = 1.2e-11  ! g cm-3 s
-    A_beta = 1.3e-11  ! g cm-3 s
-    A_ff = 0.2e-11  ! g cm-3 s
+    A_alpha = 1.2d-11  ! g cm-3 s
+    A_beta = 1.3d-11  ! g cm-3 s
+    A_ff = 0.2d-11  ! g cm-3 s
 
     ! g/cm^-3
-    rho_bar = 0.14*(ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**3.0))
+    rho_bar = 0.14d0*(ejecta_mass_g/((0.5d0*max_ejecta_velocity_cms*time_s)**3.0d0))
     ! unitless
-    kappa_gamma = 0.1  ! 0.1 in Oleg from Wollaeger from Barnes 2016, but updated to 0.02 in 2018 Kasen and Barnes
-    tau_bar_gamma =0.035*(0.1*ejecta_mass_g/((0.5*max_ejecta_velocity_cms*time_s)**2.0))
+    kappa_gamma = 0.1d0  ! 0.1 in Oleg from Wollaeger from Barnes 2016, but updated to 0.02 in 2018 Kasen and Barnes
+    tau_bar_gamma =0.035d0*(0.1d0*ejecta_mass_g/((0.5d0*max_ejecta_velocity_cms*time_s)**2.0d0))
 
     ! should be unitless
     eta_bar_alpha = dsqrt(A_alpha/(time_s*rho_bar))
@@ -755,16 +760,16 @@ MODULE macronova_Pinto_eastman_CNS
     eta_bar_ff = dsqrt(A_ff/(time_s*rho_bar))
 
     ! unitless
-    f_bar_alpha = dlog(1.0 + 2.0*((eta_bar_alpha)**2.0))/(2.0*((eta_bar_alpha)**2.0))
-    f_bar_beta = dlog(1.0 + 2.0*((eta_bar_beta)**2.0))/(2.0*((eta_bar_beta)**2.0))
-    f_bar_ff = dlog(1.0 + 2.0*((eta_bar_ff)**2.0))/(2.0*((eta_bar_ff)**2.0))
-    f_bar_gamma = 1.0 - dexp(-tau_bar_gamma)
+    f_bar_alpha = dlog(1.0d0 + 2.0d0*((eta_bar_alpha)**2.0d0))/(2.0d0*((eta_bar_alpha)**2.0d0))
+    f_bar_beta = dlog(1.0d0 + 2.0d0*((eta_bar_beta)**2.0d0))/(2.0d0*((eta_bar_beta)**2.0d0))
+    f_bar_ff = dlog(1.0d0 + 2.0d0*((eta_bar_ff)**2.0d0))/(2.0d0*((eta_bar_ff)**2.0d0))
+    f_bar_gamma = 1.0d0 - dexp(-tau_bar_gamma)
 
     ! Assume constant fractions from Wollaeger et al. 2017, which are approximately the time-averaged values from this reference
-    frac_alpha = 0.05
-    frac_beta = 0.2
-    frac_ff = 0.0
-    frac_gamma = 0.4  ! 0.4 or 0.5
+    frac_alpha = 0.05d0
+    frac_beta = 0.2d0
+    frac_ff = 0.0d0
+    frac_gamma = 0.4d0  ! 0.4 or 0.5
 
     ! determine individual heating rates from each process
     eps_alpha = frac_alpha*hrate
