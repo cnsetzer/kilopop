@@ -134,11 +134,11 @@ class Setzer2022_kilonova(object):
         self.EOS_path = EOS_path
         if emulator_path is None:
             emulator_path = resource_filename('bnspopkne',
-                                                            "data/testing_paper_kernel_hyperparameters_jref_paper_final_02_091222.npy")
+                                                            "data/paper_kernel_hyperparameters_journal_ref_v1.npy")
         self.emulator_path = emulator_path
         if opacity_data_path is None:
             opacity_data_path = resource_filename('bnspopkne',
-                                                                "data/testing_paper_opacity_data_jref_paper_final_091222.csv")
+                                                                "data/paper_opacity_data_journal_ref_v1.csv")
         self.opacity_data_path = opacity_data_path
 
         # Handle setup of EOS dependent mapping objects and set as class attributes
