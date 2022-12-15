@@ -730,6 +730,7 @@ MODULE macronova_Pinto_eastman_CNS
       !                                                                       *
       ! Implement a time-dependent thermalisation based on Oleg's notes       *
       !                                                                       *
+      ! 15.12.22 CNS: Changed formatting to declare parameters and dble prec. *
       !************************************************************************
 
     IMPLICIT NONE
