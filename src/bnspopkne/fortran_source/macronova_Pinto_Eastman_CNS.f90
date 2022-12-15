@@ -733,43 +733,45 @@ MODULE macronova_Pinto_eastman_CNS
       !************************************************************************
 
     IMPLICIT NONE
-    DOUBLE PRECISION:: A_alpha, A_beta, A_ff, rho_bar, eta_bar_alpha
-    DOUBLE PRECISION:: eta_bar_beta, eta_bar_ff, f_bar_alpha, f_bar_beta, eps_tot
-    DOUBLE PRECISION:: tau_bar_gamma, f_bar_gamma, frac_alpha, frac_beta, frac_ff
-    DOUBLE PRECISION:: frac_gamma, eps_alpha, eps_beta, eps_ff, eps_gamma, f_bar_ff
+
+
+    DOUBLE PRECISION, PARAMETER:: A_alpha = 1.2d-11  ! g cm-3 s
+    DOUBLE PRECISION, PARAMETER:: A_beta = 1.3d-11  ! g cm-3 s
+    DOUBLE PRECISION, PARAMETER:: A_ff = 0.2d-11  ! g cm-3 s
+    ! Assume constant fractions from Wollaeger et al. 2017, which are approximately the time-averaged values from this reference
+    DOUBLE PRECISION, PARAMETER:: frac_alpha = 0.05d0
+    DOUBLE PRECISION, PARAMETER:: frac_beta = 0.2d0
+    DOUBLE PRECISION, PARAMETER:: frac_ff = 0.0d0
+    DOUBLE PRECISION, PARAMETER:: frac_gamma = 0.4d0  ! 0.4 or 0.5
+    DOUBLE PRECISION, PARAMETER:: kappa_gamma = 0.1d0  ! cm^2/g 0.1 in Oleg from Wollaeger from Barnes 2016
+
     DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity, hrate
-    DOUBLE PRECISION:: time_s, ejecta_mass_g, max_ejecta_velocity_cms, kappa_gamma
+
+    DOUBLE PRECISION:: rho_bar, eta_bar_alpha_sq
+    DOUBLE PRECISION:: eta_bar_beta_sq, eta_bar_ff_sq, f_bar_alpha, f_bar_beta, eps_tot
+    DOUBLE PRECISION:: tau_bar_gamma, f_bar_gamma
+    DOUBLE PRECISION:: eps_alpha, eps_beta, eps_ff, eps_gamma, f_bar_ff
+    DOUBLE PRECISION:: time_s, ejecta_mass_g, max_ejecta_velocity_cms
     ! convert inputs to correct units
     time_s = time*day_in_s  ! seconds
     ejecta_mass_g = ejecta_mass*msol  ! grams
     max_ejecta_velocity_cms = max_ejecta_velocity*clight  ! cm/s
 
-    A_alpha = 1.2d-11  ! g cm-3 s
-    A_beta = 1.3d-11  ! g cm-3 s
-    A_ff = 0.2d-11  ! g cm-3 s
-
     ! g/cm^-3
     rho_bar = 0.14d0*(ejecta_mass_g/((0.5d0*max_ejecta_velocity_cms*time_s)**3.0d0))
     ! unitless
-    kappa_gamma = 0.1d0  ! 0.1 in Oleg from Wollaeger from Barnes 2016, but updated to 0.02 in 2018 Kasen and Barnes
     tau_bar_gamma =0.035d0*(0.1d0*ejecta_mass_g/((0.5d0*max_ejecta_velocity_cms*time_s)**2.0d0))
 
     ! should be unitless
-    eta_bar_alpha = dsqrt(A_alpha/(time_s*rho_bar))
-    eta_bar_beta = dsqrt(A_beta/(time_s*rho_bar))
-    eta_bar_ff = dsqrt(A_ff/(time_s*rho_bar))
+    eta_bar_alpha_sq = A_alpha/(time_s*rho_bar)
+    eta_bar_beta_sq = A_beta/(time_s*rho_bar)
+    eta_bar_ff_sq = A_ff/(time_s*rho_bar)
 
     ! unitless
-    f_bar_alpha = dlog(1.0d0 + 2.0d0*((eta_bar_alpha)**2.0d0))/(2.0d0*((eta_bar_alpha)**2.0d0))
-    f_bar_beta = dlog(1.0d0 + 2.0d0*((eta_bar_beta)**2.0d0))/(2.0d0*((eta_bar_beta)**2.0d0))
-    f_bar_ff = dlog(1.0d0 + 2.0d0*((eta_bar_ff)**2.0d0))/(2.0d0*((eta_bar_ff)**2.0d0))
+    f_bar_alpha = dlog(1.0d0 + 2.0d0*(eta_bar_alpha_sq))/(2.0d0*(eta_bar_alpha_sq))
+    f_bar_beta = dlog(1.0d0 + 2.0d0*(eta_bar_beta_sq))/(2.0d0*(eta_bar_beta_sq))
+    f_bar_ff = dlog(1.0d0 + 2.0d0*(eta_bar_ff_sq))/(2.0d0*(eta_bar_ff_sq))
     f_bar_gamma = 1.0d0 - dexp(-tau_bar_gamma)
-
-    ! Assume constant fractions from Wollaeger et al. 2017, which are approximately the time-averaged values from this reference
-    frac_alpha = 0.05d0
-    frac_beta = 0.2d0
-    frac_ff = 0.0d0
-    frac_gamma = 0.4d0  ! 0.4 or 0.5
 
     ! determine individual heating rates from each process
     eps_alpha = frac_alpha*hrate
