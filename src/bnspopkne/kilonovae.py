@@ -468,6 +468,7 @@ class Setzer2022_kilonova(object):
         )
 
     def print_parameters(self):
+        """Util function to print parameters of simulated kN."""
         for i in range(12):
             print(f"Parameter {i+1}: {getattr(self, f'param{i+1}_name')}: {getattr(self, f'param{i+1}')}")
 
