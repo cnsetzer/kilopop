@@ -402,6 +402,8 @@ class Setzer2022_kilonova(object):
         # emulator
         while ((self.param8 < 0.05) or (self.param8 > 0.4) or
                 (self.param11 > 0.08) or (self.param11 < 0.002)):
+            warnings.warn(f'\n The requested kilonova cannot be generated due to ejecta predictions falling outside the emulator\'s range of validity for the following parameters:')
+            self.print_parameters()
             self.param1 = None
             self.param2 = None
             self.param3 = None

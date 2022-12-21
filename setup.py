@@ -36,7 +36,7 @@ if __name__ == "__main__":
     setup(
         name="bnspopkne",
         version="0.3",
-        description="Kilonova and population model used in C. N. Setzer et al. 2022.",
+        description="Kilonova and population model used in C. N. Setzer et al. 2022 arxiv:2205.12286v2.",
         url="http://github.com/cnsetzer/Setzer2022_BNSpopkNe",
         author="Christian N. Setzer",
         author_email="aerosetzer@gmail.com",
