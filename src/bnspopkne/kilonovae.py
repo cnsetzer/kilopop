@@ -497,7 +497,7 @@ class Setzer2022_population_parameter_distribution(object):
         self,
         population_size=50000,
         only_draw_parameters=True,
-        chunk_size=500,
+        chunksize=500,
         **kwargs,
     ):
         """
