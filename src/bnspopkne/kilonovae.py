@@ -4,6 +4,10 @@
 from pkg_resources import resource_filename
 import numpy as np
 import astropy.units as units
+import warnings
+from astropy.utils.exceptions import AstropyDeprecationWarning
+# suppress AstropyDeprecationWarning
+warnings.filterwarnings("ignore", category=AstropyDeprecationWarning)
 from sncosmo import TimeSeriesSource, Model
 from bnspopkne.macronovae_wrapper import create_saee_seds
 from bnspopkne import equation_of_state as eos
@@ -130,11 +134,11 @@ class Setzer2022_kilonova(object):
         self.EOS_path = EOS_path
         if emulator_path is None:
             emulator_path = resource_filename('bnspopkne',
-                                                            "data/max_prob_gpvec_m52kernel.npy")
+                                                            "data/paper_kernel_hyperparameters_journal_ref_v1.npy")
         self.emulator_path = emulator_path
         if opacity_data_path is None:
             opacity_data_path = resource_filename('bnspopkne',
-                                                                "data/emulator_input_opacities_weights_121022.csv")
+                                                                "data/paper_opacity_data_journal_ref_v1.csv")
         self.opacity_data_path = opacity_data_path
 
         # Handle setup of EOS dependent mapping objects and set as class attributes
@@ -398,6 +402,8 @@ class Setzer2022_kilonova(object):
         # emulator
         while ((self.param8 < 0.05) or (self.param8 > 0.4) or
                 (self.param11 > 0.08) or (self.param11 < 0.002)):
+            warnings.warn(f'\n The requested kilonova cannot be generated due to ejecta predictions falling outside the emulator\'s range of validity for the following parameters:')
+            self.print_parameters()
             self.param1 = None
             self.param2 = None
             self.param3 = None
@@ -454,11 +460,19 @@ class Setzer2022_kilonova(object):
             KNE_parameters.append(
                 True
             )  # Flag to use numerical fit nuclear heating rates
+            KNE_parameters.append(
+                True
+            )  # Flag to use numerical fit thermalisation efficiency
             KNE_parameters.append(False)  # Read heating rates variable
             KNE_parameters.append("placeholder string")  # Heating rates file
         self.phase, self.wave, self.flux = create_saee_seds(
             KNE_parameters, self.min_wave, self.max_wave
         )
+
+    def print_parameters(self):
+        """Util function to print parameters of simulated kN."""
+        for i in range(12):
+            print(f"Parameter {i+1}: {getattr(self, f'param{i+1}_name')}: {getattr(self, f'param{i+1}')}")
 
 
 class Setzer2022_population_parameter_distribution(object):
@@ -538,7 +552,7 @@ class Setzer2022_population_parameter_distribution(object):
                 with tqdm(total=int(self.population_size)) as progress_bar:
                     for parameter_dict in p.imap_unordered(self.compute_lightcurve_properties_per_kilonova,
                                                            list(range(self.population_size)),
-                                                           chunksize=chunksize):
+                                                           chunksize=chunk_size):
                         id = parameter_dict['id']
                         self.peak_time[id] = parameter_dict['peak_time']
                         self.peak_absmag_lssti[id] = parameter_dict['peak_absmag_lssti']
