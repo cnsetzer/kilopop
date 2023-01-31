@@ -13,20 +13,21 @@ def compute_equation_4(mass1, mass2, compactness1, compactness2):
     Coughlin M. W., Dietrich T., Margalit B., Metzger B. D., 2019,
     MNRAS: Letters, 489, L91
 
-    Parameters:
+    Parameters
     -----------
-        mass1: float
-            The mass of the primary (more massive) neutron star.
-        mass2: float
-            The mass of the secondary (less massive) neutron star.
-        compactness1: float
-            The compactness of the primary (more massive) neutron star.
-        compactness2: float
-            The compactness of the secondary (less massive) neutron star.
-    Returns:
+    mass1: float
+        The mass of the primary (more massive) neutron star.
+    mass2: float
+        The mass of the secondary (less massive) neutron star.
+    compactness1: float
+        The compactness of the primary (more massive) neutron star.
+    compactness2: float
+        The compactness of the secondary (less massive) neutron star.
+
+    Returns
     --------
-        dynamical_ejecta_mass: float
-            The dynamical ejecta mass from the fit.
+    dynamical_ejecta_mass: float
+        The dynamical ejecta mass from the fit.
     """
     # fit coefficients
     a = -0.0719
@@ -55,20 +56,21 @@ def compute_equation_5(mass1, mass2, compactness1, compactness2):
     Coughlin M. W., Dietrich T., Margalit B., Metzger B. D., 2019,
     MNRAS: Letters, 489, L91
 
-    Parameters:
+    Parameters
     -----------
-        mass1: float
-            The mass of the primary (more massive) neutron star.
-        mass2: float
-            The mass of the secondary (less massive) neutron star.
-        compactness1: float
-            The compactness of the primary (more massive) neutron star.
-        compactness2: float
-            The compactness of the secondary (less massive) neutron star.
-    Returns:
+    mass1: float
+        The mass of the primary (more massive) neutron star.
+    mass2: float
+        The mass of the secondary (less massive) neutron star.
+    compactness1: float
+        The compactness of the primary (more massive) neutron star.
+    compactness2: float
+        The compactness of the secondary (less massive) neutron star.
+
+    Returns
     --------
-        median_ejecta_velocity: float
-            The median ejecta velocity from the fit.
+    median_ejecta_velocity: float
+        The median ejecta velocity from the fit.
     """
     # fit coefficients
     e = -0.3090
@@ -85,16 +87,17 @@ def compute_equation_6(total_binary_mass, prompt_collapse_threshold_mass):
     Compute the remnant disk mass from Radice et al. (2018b) and
     Coughlin et al. (2019), as referenced in the accompanying paper.
 
-    Parameters:
+    Parameters
     -----------
-        total_binary_mass: float or array
-            The total mass [solar masses] of the neutron star binary.
-        prompt_collapse_threshold_mass: float
-            The prompt collapse threshold mass for the given EOS.
-    Returns:
+    total_binary_mass: float or array
+        The total mass [solar masses] of the neutron star binary.
+    prompt_collapse_threshold_mass: float
+        The prompt collapse threshold mass for the given EOS.
+
+    Returns
     --------
-        remnant_disk_mass: float or array
-            The mass [solar masses] of the remnant disk after merger.
+    remnant_disk_mass: float or array
+        The mass [solar masses] of the remnant disk after merger.
     """
     # fit coefficients
     a = -31.335
@@ -119,16 +122,17 @@ def compute_equation_7(tov_mass, EOS_mass_to_rad):
     maximum TOV mass and the radius at 1.6 solar mass for the chosen EOS.
     Based on Bauswein et al. 2013.
 
-    Parameters:
+    Parameters
     -----------
-        tov_mass: float
-            The maximum mass from solving the TOV equations for given EOS.
-        EOS_mass_to_rad: function
-            Interpolator function from provided EOS mass-radius curve.
-    Returns:
+    tov_mass: float
+        The maximum mass from solving the TOV equations for given EOS.
+    EOS_mass_to_rad: function
+        Interpolator function from provided EOS mass-radius curve.
+
+    Returns
     --------
-        prompt_collapse_mass_threshold: float
-            Threshold mass in solar masses for prompt blackhole collapse.
+    prompt_collapse_mass_threshold: float
+        Threshold mass in solar masses for prompt blackhole collapse.
     """
     # fit coefficients
     a = 2.38
@@ -145,19 +149,19 @@ def compute_equation_8(disk_unbinding_efficiency, disk_mass):
     Compute the total secular ejecta mass given the mass of the remnant disk
     and the assumed unbinding efficiency of the secular processes.
 
-    Parameters:
+    Parameters
     -----------
-        disk_unbinding_efficiency: float or array
-            The fraction of remnant disk matter unbound and contributing to the
-            kilonova ejecta mass. [unitless fraction]
-        disk_mass: float or array
-            The mass of the remnant disk after merger. [solar masses]
+    disk_unbinding_efficiency: float or array
+        The fraction of remnant disk matter unbound and contributing to the
+        kilonova ejecta mass. [unitless fraction]
+    disk_mass: float or array
+        The mass of the remnant disk after merger. [solar masses]
 
-    Returns:
+    Returns
     --------
-        secular_ejecta_mass: float or Array
-            The mass of the kilonova from secular ejection processes.
-            [solar masses]
+    secular_ejecta_mass: float or Array
+        The mass of the kilonova from secular ejection processes.
+        [solar masses]
     """
     secular_ejecta_mass = disk_unbinding_efficiency*disk_mass
     return secular_ejecta_mass
@@ -169,17 +173,18 @@ def compute_equation_9(dynamical_ejecta_mass, secular_ejecta_mass):
     Compute the total ejecta mass by simple addition of the ejecta mass from
     the dynamical and secular processes involved in the merger.
 
-    Parameters:
+    Parameters
     -----------
-        dynamical_ejecta_mass: float or Array
-            The ejected mass from dynamical processes. [solar masses]
-        secular_ejecta_mass: float or Array
-            The ejecta mass from secular processes. [solar masses]
-    Returns:
+    dynamical_ejecta_mass: float or Array
+        The ejected mass from dynamical processes. [solar masses]
+    secular_ejecta_mass: float or Array
+        The ejecta mass from secular processes. [solar masses]
+
+    Returns
     --------
-        total_ejecta_mass: float or Array
-            The total amount of mass ejected that contributes to the kilonova
-            emission. [solar masses]
+    total_ejecta_mass: float or Array
+        The total amount of mass ejected that contributes to the kilonova
+        emission. [solar masses]
     """
     total_ejecta_mass = dynamical_ejecta_mass + secular_ejecta_mass
     return total_ejecta_mass
@@ -193,16 +198,16 @@ def compute_equation_10(viewing_angle):
     from performing a least squares fit to the BNS merger data from
     Radice et. al 2018.
 
-    Parameters:
+    Parameters
     -----------
-        viewing_angle: float or ndarray
-            The orientation of the kilonova w.r.t the observer. In radians.
+    viewing_angle: float or ndarray
+        The orientation of the kilonova w.r.t the observer. In radians.
 
-    Returns:
+    Returns
     --------
-        electron_fraction: float or ndarray
-            The mass-weighted average electron fraction of the material at the
-            given viewing_angle or viewing-angle of the observer.
+    electron_fraction: float or ndarray
+        The mass-weighted average electron fraction of the material at the
+        given viewing_angle or viewing-angle of the observer.
     """
     # fit coefficients
     a = 0.22704
@@ -224,22 +229,23 @@ def map_to_dynamical_ejecta(
     to map mass1, mass2, compactness1, compactness2 to dynamical ejecta mass and
     median ejecta velocity.
 
-    Parameters:
+    Parameters
     -----------
-        mass1: float
-            The mass of the primary (more massive) neutron star.
-        mass2: float
-            The mass of the secondary (less massive) neutron star.
-        compactness1: float
-            The compactness of the primary (more massive) neutron star.
-        compactness2: float
-            The compactness of the secondary (less massive) neutron star.
-    Returns:
+    mass1: float
+        The mass of the primary (more massive) neutron star.
+    mass2: float
+        The mass of the secondary (less massive) neutron star.
+    compactness1: float
+        The compactness of the primary (more massive) neutron star.
+    compactness2: float
+        The compactness of the secondary (less massive) neutron star.
+
+    Returns
     --------
-.       dynamical_ejecta_mass: float
-            Dynamical ejecta mass from the fit.
-        median_ejecta_velocity: float
-            The median ejecta velocity of the kilonova dynamical ejecta.
+    dynamical_ejecta_mass: float
+        Dynamical ejecta mass from the fit.
+    median_ejecta_velocity: float
+        The median ejecta velocity of the kilonova dynamical ejecta.
     """
     if dynamical_ejecta_mass is None:
         dynamical_ejecta_mass = compute_equation_4(mass1, mass2, comp1, comp2)
@@ -255,21 +261,21 @@ def compute_secular_ejecta_mass(total_binary_mass, threshold_mass,
     This computes the contribution to the total ejecta mass from secular processes
     following the series of equations referenced in Setzer et al. 2022.
 
-    Parameters:
+    Parameters
     -----------
-        total_binary_mass: float or array
-            The total mass [solar masses] of the neutron star binary.
-        threshold_mass: float or array
-            The mass threshold [solar mass] for prompt collpase after merger.
-        disk_unbinding_efficiency: float or array
-            The percentage of matter unbound from the remnant disk contributing
-            to the radiating ejecta.
+    total_binary_mass: float or array
+        The total mass [solar masses] of the neutron star binary.
+    threshold_mass: float or array
+        The mass threshold [solar mass] for prompt collpase after merger.
+    disk_unbinding_efficiency: float or array
+        The percentage of matter unbound from the remnant disk contributing
+        to the radiating ejecta.
 
-    Returns:
+    Returns
     --------
-        secular_ejecta_mass: float or array
-            The total mass coming from secular processes, post-merger, to add
-            to the total mass comprising the kilonova ejecta.
+    secular_ejecta_mass: float or array
+        The total mass coming from secular processes, post-merger, to add
+        to the total mass comprising the kilonova ejecta.
     """
     disk_mass = compute_equation_6(total_binary_mass, threshold_mass)
     secular_ejecta_mass = compute_equation_8(disk_unbinding_efficiency,
@@ -284,23 +290,23 @@ def construct_opacity_gaussian_process(opacity_data_path,
     grey opacity value for arbitray values of total ejecta mass, median
     ejecta velocity, and electron fraction.
 
-    Parameters:
+    Parameters
     -----------
-        opacity_data_path: string
-            File path for the data from which the grid
-            interpolation is built.
-        hyperparameter_file_path: string
-            File path for the parameters of the Gaussian process from traiing.
+    opacity_data_path: string
+        File path for the data from which the grid
+        interpolation is built.
+    hyperparameter_file_path: string
+        File path for the parameters of the Gaussian process from traiing.
 
-    Returns:
+    Returns
     --------
-        grey_opacity_training_data: nd.array
-            The training data corresponding to the grey opacity values fit
-            from our weighted chi square optimisation.
-        opacity_GP: george.GP instance
-            Trained interpolator function to map
-            (total_ejecta_mass, median_ejecta_velocity, electron_fraction) to
-            grey opacity.
+    grey_opacity_training_data: nd.array
+        The training data corresponding to the grey opacity values fit
+        from our weighted chi square optimisation.
+    opacity_GP: george.GP instance
+        Trained interpolator function to map
+        (total_ejecta_mass, median_ejecta_velocity, electron_fraction) to
+        grey opacity.
     """
     # Import the opacity data, and the hyperparameters from training the GP.
     hyper_parameters = np.load(hyperparameter_file_path)
@@ -336,11 +342,24 @@ def emulate_grey_opacity_from_kilonova_ejecta(
     grey opacity that was fit from simulation data to triplets of ejecta mass,
     ejecta velocity, and electron fraction.
 
-    Returns:
+    Parameters
     ---------------------
-        grey_opacity: ndarray
-            The grey opacity for the instance set of binary and kilonova
-            parameters to generate the kilonovae signal.
+    total_ejecta_mass: float
+        The total ejecta mass from the mereger.
+    median_ejecta_velocity: float
+        The median ejecta velocity of the kilonova ejecta outflow.
+    electron_fraction: float
+        The electron fraction composition of the outflow.
+    grey_opacity_gp: class
+        The constructed Gaussian process emulator.
+    opacity_data: pandas.Dataframe
+        The data on which the GP is conditioned.
+
+    Returns
+    ---------------------
+    grey_opacity: ndarray
+        The grey opacity for the instance set of binary and kilonova
+        parameters to generate the kilonovae signal.
     """
     kilonova_ejecta_predictions = np.empty(shape=(1, 3))
     kilonova_ejecta_predictions[0, 0] = total_ejecta_mass
@@ -372,17 +391,17 @@ class tanaka_mean_fixed(Model):
     def get_value(self, kilonova_ejecta_array):
         """Get value function in george format.
 
-        Parameters:
+        Parameters
         -----------
-            self: class instance
-                Reference to class instance.
-            kilonova_ejecta_array: array
-                Array of kilonova ejecta parameter pairs.
+        self: class instance
+            Reference to class instance.
+        kilonova_ejecta_array: array
+            Array of kilonova ejecta parameter pairs.
 
-        Returns:
+        Returns
         --------
-            mean_function_value: array
-                The mean function value at the given kilonova parameters.
+        mean_function_value: array
+            The mean function value at the given kilonova parameters.
         """
         # initialize
         mean_function_value = np.zeros((len(kilonova_ejecta_array[:, 0]),))

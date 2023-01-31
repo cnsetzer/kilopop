@@ -1,0 +1,9 @@
+setuptools
+numpy==1.23.3
+pandas
+george
+scipy
+astropy
+tqdm
+sncosmo
+sphinx-rtd-theme

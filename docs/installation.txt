@@ -1,0 +1,51 @@
+============
+Installation
+============
+
+--------------------
+FORTRAN Dependencies
+--------------------
+
+This package uses a FORTRAN backend library which generates the luminosity and temperature evolution of
+the grey-body kilonova.
+
+In order to use the FORTRAN library the user must install and link :code:`lapack` and :code:`blas`.
+
+The recommended way for doing this is to use the :code:`gfortran` compiler and download and build the :code:`lapack` from source at
+`this link <https://netlib.org/lapack/#_previous_release>`_. Proceed by following the provided instructions in the tar file.
+
+Then add the location of the installation of the library to your :code:`$LD_LIBRARY_PATH` environment variable. Once this is done,
+you can proceed to install via :code:`pip`.
+
+----------
+Pip
+----------
+  .. code-block:: console
+
+      $ pip install bnspopkne
+
+  Supported python versions: 3.9+.
+
+
+This will install all python requirements for running :code:`bnspopkne`
+
+
+-------------------------------------
+Install :code:`bnspopkne` from source
+-------------------------------------
+
+:code:`bnspopkne` is developed and tested with Python 3.9+. In the
+following, we assume you have a working python installation, `python pip
+<https://packaging.python.org/tutorials/installing-packages/#use-pip-for-installing>`_,
+and `git <https://git-scm.com/>`_.
+
+The FORTRAN Dependencies above still need to be installed, but the installation can then be done as follows:
+
+Clone the repository, install the requirements, and then install the software:
+
+.. code-block:: console
+
+   $ git clone https://github.com/cnsetzer/Setzer2022_BNSpopkNe
+   $ cd Setzer2022_BNSpopkNe/
+   $ pip install -r requirements.txt
+   $ pip install .

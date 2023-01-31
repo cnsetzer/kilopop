@@ -6,10 +6,10 @@ import numpy.f2py as npf2py
 ext = Extension(
     name="macronova2py",
     sources=[
-        "src/bnspopkne/fortran_source/module_physics_constants.f90",
-        "src/bnspopkne/fortran_source/hratelib.f90",
-        "src/bnspopkne/fortran_source/macronova_Pinto_Eastman_CNS.f90",
-        "src/bnspopkne/fortran_source/macronova2py.f90",
+        "bnspopkne/fortran_source/module_physics_constants.f90",
+        "bnspopkne/fortran_source/hratelib.f90",
+        "bnspopkne/fortran_source/macronova_Pinto_Eastman_CNS.f90",
+        "bnspopkne/fortran_source/macronova2py.f90",
     ],
     extra_f90_compile_args=[
         "-cpp",
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     setup(
         name="bnspopkne",
-        version="0.3",
+        version="0.4",
         description="Kilonova and population model used in C. N. Setzer et al. 2022 arxiv:2205.12286v2.",
         url="http://github.com/cnsetzer/Setzer2022_BNSpopkNe",
         author="Christian N. Setzer",
@@ -55,8 +55,7 @@ if __name__ == "__main__":
             # that you indicate whether you support Python 2, Python 3 or both.
             "Programming Language :: Python :: 3.6+",
         ],
-        packages=find_packages(where='src'),
-        package_dir={"": "src"},
+        packages=find_packages(),
         ext_modules=[ext],
         include_package_data=True,
         package_data={'': ['data/*']},

@@ -1,10 +1,17 @@
-.. bnspopkne documentation master file, created by
-   sphinx-quickstart on Fri Sep 16 15:02:51 2022.
+.. Setzer2022_BNSpopkNe documentation master file, created by
+   sphinx-quickstart on Mon Jan 23 14:13:46 2023.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to bnspopkne's documentation!
-=====================================
+Welcome to Setzer2022_BNSpopkNe's documentation!
+================================================
+
+:code:`bnspopkne` is a package to produce binary neutron star kilonovae in the grey-body approximation.
+It can also create populations of these objects useful for forecasting detection and testing observing scenarios.
+Additionally, it uses an emulator for the grey-opacity of the material calibrated against a suite of numerical radiation
+transport simulations with the code :code:`SuperNu`. For more details on the components of this model see the accompanying paper
+`Modelling Populations of Kilonovae <https://ui.adsabs.harvard.edu/abs/2022arXiv220512286S/abstract>`_.
+
 .. automodule:: bnspopkne
     :members:
 
@@ -12,21 +19,11 @@ Welcome to bnspopkne's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   Installation
-   Tutorial
-   Acknowledgements
-   How to Cite
+   installation
+   tutorial/tutorial_notebook_1.ipynb
+   acknowledging
 
 .. currentmodule:: bnspopkne
-
-.. autosummary::
-   :toctree: api
-   :template: custom-module-template.rst
-   :caption: API:
-   :recursive:
-
-
-
 
 
 Indices and tables
@@ -35,3 +32,19 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+API:
+----
+
+.. autosummary::
+   :toctree: api
+   :template: custom-module-template.rst
+   :caption: API:
+   :recursive:
+
+    equation_of_state
+    kilonovae
+    macronovae_wrapper
+    mappings
+    population_priors

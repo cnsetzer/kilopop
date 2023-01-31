@@ -17,24 +17,25 @@ def create_saee_seds(KNE_parameters,
     library to compute the bolometric luminosity evolution for a kilonova given
     the input generating parameters.
 
-    Parameters:
+    Parameters
     -----------
-        KNE_parameters: list
-            List in format to pass to fortran code containing all the parmeter
-            inputs needed for the fortran library to generate at kilonova
-            time-series evolution.
-        min_wave: float (optional)
-            Minimum wavelength in Angstroms over which to simulate spectra.
-        max_wave: float (optional)
-            Maximum wavelength in Angstroms over which to simulate spectra.
-        phases: np.array-like (optional)
-            phases at which to calculate the spectral evolution.
-        wavelengths: np.array-like (optional)
-            Wavelengths at which to compute the thermal spectrum.
-    Returns:
+    KNE_parameters: list
+        List in format to pass to fortran code containing all the parmeter
+        inputs needed for the fortran library to generate at kilonova
+        time-series evolution.
+    min_wave: float (optional)
+        Minimum wavelength in Angstroms over which to simulate spectra.
+    max_wave: float (optional)
+        Maximum wavelength in Angstroms over which to simulate spectra.
+    phases: np.array-like (optional)
+        phases at which to calculate the spectral evolution.
+    wavelengths: np.array-like (optional)
+        Wavelengths at which to compute the thermal spectrum.
+
+    Returns
     --------
-        create_sed_timeseries: function call
-            A function call returning a phase, wavelength, and flux array.
+    create_sed_timeseries: function call
+        A function call returning a phase, wavelength, and flux array.
     """
     Nt = 5000  # internal grid of times over which to generate the luminosity
     n = len(KNE_parameters) - 4  # number of base kN parameters.
@@ -57,33 +58,33 @@ def create_sed_timeseries(
     """
     Function to compute a planck distribution normalized to sigma*T**4/pi
 
-    Parameters:
+    Parameters
     -----------
-        luminosity_array: nd.array
-            Time-series evolution of the bolometric luminosity of the simulated
-            kilonova source. For use with scaling the Planck distribution.
-            Expected shape (n_time, 4).
-        min_wave: float (optional)
-            Minimum wavelength in Angstroms over which to simulate spectra.
-        max_wave: float (optional)
-            Maximum wavelength in Angstroms over which to simulate spectra.
-        phases: np.array-like (optional)
-            phases at which to calculate the spectral evolution.
-        wavelengths: np.array-like (optional)
-            Wavelengths at which to compute the thermal spectrum.
+    luminosity_array: nd.array
+        Time-series evolution of the bolometric luminosity of the simulated
+        kilonova source. For use with scaling the Planck distribution.
+        Expected shape (n_time, 4).
+    min_wave: float (optional)
+        Minimum wavelength in Angstroms over which to simulate spectra.
+    max_wave: float (optional)
+        Maximum wavelength in Angstroms over which to simulate spectra.
+    phases: np.array-like (optional)
+        phases at which to calculate the spectral evolution.
+    wavelengths: np.array-like (optional)
+        Wavelengths at which to compute the thermal spectrum.
 
-    Returns:
+    Returns
     --------
-        phase_days: array
-            Array containing all the phases along the lightcurve evolution at
-            which an SED is defined. This is given in days. Shape is (n_time,).
-        wavelengths: array
-            Values in Angstroms of the covered energy spectrum.
-            Shape is (n_wave,).
-        flux: array
-            Energy per area values for every combination of phase and
-            wavelengths characterizing the lightcurve of the source.
-            [Ergs/s/cm^2/Angstrom]. Shape is (n_time, n_wave).
+    phase_days: array
+        Array containing all the phases along the lightcurve evolution at
+        which an SED is defined. This is given in days. Shape is (n_time,).
+    wavelengths: array
+        Values in Angstroms of the covered energy spectrum.
+        Shape is (n_wave,).
+    flux: array
+        Energy per area values for every combination of phase and
+        wavelengths characterizing the lightcurve of the source.
+        [Ergs/s/cm^2/Angstrom]. Shape is (n_time, n_wave).
     """
     day_in_s = 8.64e4  # one day [s]
     Ang_to_cm = 1.0e-8  # angstrom [cm]
@@ -125,19 +126,19 @@ def compute_planck_function(lambda_cm, temperature):
     """
     Planck function of wavelength.
 
-    Parameters:
+    Parameters
     -----------
-        lambda_cm: nd.array
-            Wavelengths [cm]. Expected shape is (n_wave,).
-        temperature: nd.array
-            Time-series of temperatures [K] for spectra generation.
-            Expected shape is (n_time,).
+    lambda_cm: nd.array
+        Wavelengths [cm]. Expected shape is (n_wave,).
+    temperature: nd.array
+        Time-series of temperatures [K] for spectra generation.
+        Expected shape is (n_time,).
 
-    Returns:
+    Returns
     --------
-        planck_values: nd.array
-            The value of the Planck function for a given temp. and wavelength.
-            Output shape is (n_time, n_wave).
+    planck_values: nd.array
+        The value of the Planck function for a given temp. and wavelength.
+        Output shape is (n_time, n_wave).
     """
     # cutoff argument to which we set Planck function to zero
     planck_arg_limit = 100.0
