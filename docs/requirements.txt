@@ -4,4 +4,4 @@ sphinx_rtd_theme
 nbsphinx
 jinja2>=3.0
 markupsafe>=2.0
--e .
+.
