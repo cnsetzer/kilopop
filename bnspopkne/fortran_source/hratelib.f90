@@ -2,12 +2,10 @@
 !!
 !! module 'hratelib'
 !!
-
 !*****************************************************************************
-!                                                                            *
 !  Module 'hratelib' for computing heating rates in expanding ejecta         *
 !  OK 29.08.2019                                                             *
-!  CNS 12.09.2019 modifications for inclusion into macronova_Pinto_Eastman_CNS                                                  *
+!  CNS 12.09.2019 modification for inclusion into macronova_Pinto_Eastman_CNS*                                                  *
 !*****************************************************************************
 MODULE hratelib
 IMPLICIT NONE
@@ -145,10 +143,9 @@ DOUBLE PRECISION, PARAMETER, DIMENSION(6, 10) :: &
 CONTAINS
 
   !************************************************************************
-  !                                                                       *
   !  Heating rates for arbitrary {v, Ye} at arbitrary time t[s]           *
   !  OK  7.09.2019                                                        *
-  !  CNS 15.09.2019                                                                     *
+  !  CNS 15.09.2019                                                       *
   !************************************************************************
   SUBROUTINE heating_rate_func(v, ye, t, h)
   IMPLICIT NONE

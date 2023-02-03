@@ -157,22 +157,22 @@ MODULE macronova_Pinto_eastman_CNS
       !-- derived values --!
       !--------------------!
       ! [cm/s] maximum velocity, Wollaeger+ (2018), Eq.(12)
-      v_max= v_med*128./63.
+      v_max= v_med*128.0d0/63.0d0
 
       ! [g/cm3] initial central density,Wollaeger+ (2018), Eq.(11)
-      rho0=  315.0*m_ej/(64.0*Pi*(v_max*t0)**3)
+      rho0=  315.0d0*m_ej/(64.0d0*Pi*(v_max*t0)**3)
 
       ! [erg/cm3] energy density scale
-      E0=    sigma*Temp0**4 * 4/clight
+      E0=    sigma*Temp0**4 * 4.0d0/clight
 
       ! [erg/s] energy flux scale
-      F0= 4*Pi*clight*v_max*t0*E0/(3.*kappa*rho0)
+      F0= 4.0d0*Pi*clight*v_max*t0*E0/(3.0d0*kappa*rho0)
 
       ! [s] diffusion timescale
-      tau0=  3.0*kappa*rho0*(v_max*t0)**2/clight
+      tau0=  3.0d0*kappa*rho0*(v_max*t0)**2/clight
 
       ! [t0] timestep size
-      dt=    (t1/t0 - 1.0)/DBLE(Nt-1)
+      dt=    (t1/t0 - 1.0d0)/DBLE(Nt-1)
 
       ! [R(t)] x-spacing (output only)
       dx=    1.0/DBLE(Nx+1)
@@ -182,7 +182,7 @@ MODULE macronova_Pinto_eastman_CNS
       dx3=   dx*dx*dx
 
       ! [erg/s] lum. scale
-      L0= 8.*F0/(1.+2.4*dx)
+      L0= 8.0d0*F0/(1.0d0+2.4d0*dx)
 
       ! current iteration
       it= 0
@@ -211,25 +211,25 @@ MODULE macronova_Pinto_eastman_CNS
 
         IF(n.GE.1)THEN
            ! Int [x^2(1-x^2)^5 h'n h'n, {x, (n-1)*dx, (n+1)*dx}]
-           Tnn(n)= dx*(      (2./3.+n2*2.) &  ! T_nn
-                  + dx2*(     -2.*(1.   +n2*(10. +n2*5.)) &
-                  + dx2*(  20./7.*(1.   +n2*(21. +n2*(35. + n2*7.))) &
-                  + dx2*( -20./9.*(1.   +n2*(36. +n2*(126.+ n2*(84.+n2*9.))))  &
-                  + dx2*(10./11.+n2*(50.+n2*(300.+n2*(420.+n2*(150.+n2*10.)))) &
-                  + dx2*( -2./13.*(1.   +n2*(78. +n2*(715.+ n2*(1716.+n2*(1287.&
-                  + n2*(286.+n2*13.))))))))))))
+           Tnn(n)= dx*(      (2.0d0/3.0d0+n2*2.0d0) &  ! T_nn
+                  + dx2*(     -2.0d0*(1.0d0   +n2*(10.0d0 +n2*5.0d0)) &
+                  + dx2*(  20.0d0/7.0d0*(1.0d0 +n2*(21.0d0 +n2*(35.0d0 + n2*7.0d0))) &
+                  + dx2*( -20.0d0/9.0d0*(1.0d0   +n2*(36.0d0 +n2*(126.0d0+ n2*(84.0d0+n2*9.0d0))))  &
+                  + dx2*(10.0d0/11.0d0+n2*(50.0d0+n2*(300.0d0+n2*(420.0d0+n2*(150.0d0+n2*10.0d0)))) &
+                  + dx2*( -2.0d0/13.0d0*(1.0d0   +n2*(78.0d0 +n2*(715.0d0+ n2*(1716.0d0+n2*(1287.0d0&
+                  + n2*(286.0d0+n2*13.0d0))))))))))))
 
            ! Int [x^2(1-x^2)^4 hn hn, {x, (n-1)*dx, (n+1)*dx}]
            ! (Integrate[x^2 (1 - n + x/d)^2 (1 - x^2)^4, {x, (n - 1) d, n d}] +
            !  Integrate[x^2(1-x^2)^4(-x/d+n+1)^2,{x,n d, (n+1)d}] // Simplify)
            !  /. {n->4,d->0.05}
            !  [-]  0.00113393
-           Tnn(n)= Tnn(n) + 24.*(&
-                   dx3*( 1./15.*(1.+10.*n2) &
-                   + dx2*(-8./105.*(1.+21.*n2+35.*n4) &
-                   + dx2*((1./21.+12./7.*n2+6.*n4+4.*n6) &
-                   + dx2*(-8./495.*(1.+55.*n2+330.*n4+462.*n6+165.*n8) &
-                   + dx2*( 1./429.+2./11.*n2+5./3.*n4+4.*n6+3.*n8+2./3.*n10) )))))
+           Tnn(n)= Tnn(n) + 24.0d0*(&
+                   dx3*( 1.0d0/15.0d0*(1.0d0+10.0d0*n2) &
+                   + dx2*(-8.0d0/105.0d0*(1.0d0 + 21.0d0*n2 + 35.0d0*n4) &
+                   + dx2*((1.0d0/21.0d0 + 12.0d0/7.0d0*n2+6.0d0*n4+4.0d0*n6) &
+                   + dx2*(-8.0d0/495.0d0*(1.0d0+55.0d0*n2+330.0d0*n4+462.0d0*n6+165.0d0*n8) &
+                   + dx2*( 1.0d0/429.0d0+2.0d0/11.0d0*n2+5.0d0/3.0d0*n4+4.0d0*n6+3.0d0*n8+2.0d0/3.0d0*n10) )))))
 
            ! Int [x^2(1-x^2)^8 hn hn, {x, (n-1)*dx, (n+1)*dx}]
            ! (Integrate[x^2 (1 - n + x/d)^2 (1 - x^2)^8, {x, (n - 1) d, n d}] +
@@ -237,62 +237,62 @@ MODULE macronova_Pinto_eastman_CNS
            ! /. { n->14, d-> 0.05}
            ! [-] 0.000959034
            Mnn(n)= &
-                   dx3*(   1./15.  *(1.+n2*10.) &
-                   + dx2*( -16./105. *(1.+n2*(21.+n2*35.)) &
-                   + dx2*(           2./9.+n2*(8.+n2*(28.+n2*56./3.)) &
-                   + dx2*(-112./495. *(1.+n2*(55.+n2*(330+n2*(462.+ n2*165.)))) &
-                   + dx2*(  70./429. *(1.+n2*(78.+n2*(715.+n2*(1716.+ n2*(1287.+286.*n2))))) &
-                   + dx2*( -16./195. *(1.+n2*(105.+n2*(1365.+n2*(5005.+n2*(6435.+n2*(3003.+n2*455.)))))) &
-                   + dx2*(   7./255. *(1.+n2*(136.+n2*(2380.+n2*(12376.+n2*(24310.+n2*(19448.+n2*(6188.+n2*680.))))))) &
-                   + dx2*(dx2/1995.-16./2907.       +&
-                   n2*(dx2*2./19. -16./2907.*171.  +&
-                   n2*(dx2*3.     -16./2907.*3876. +&
-                   n2*(dx2*136./5.-16./2907.*27132.+&
-                   n2*(dx2*102.   -16./2907.*75582.+&
-                   n2*(dx2*884./5.-16./2907.*92378.+&
-                   n2*(dx2*442./3.-16./2907.*50388.+&
-                   n2*(dx2*408./7.-16./2907.*11628.+&
-                   n2*(dx2*51./5. -16./2907.*969.  +&
-                   n2*(dx2*2./3.)))))))))&
+                   dx3*(   1.0d0/15.0d0  *(1.0d0+n2*10.0d0) &
+                   + dx2*( -16.0d0/105.0d0 *(1.0d0+n2*(21.0d0+n2*35.0d0)) &
+                   + dx2*(           2.0d0/9.0d0+n2*(8.0d0+n2*(28.0d0+n2*56.0d0/3.0d0)) &
+                   + dx2*(-112.0d0/495.0d0 *(1.0d0+n2*(55.0d0+n2*(330.0d0+n2*(462.0d0+ n2*165.0d0)))) &
+                   + dx2*(  70.0d0/429.0d0 *(1.0d0+n2*(78.0d0+n2*(715.0d0+n2*(1716.0d0+ n2*(1287.0d0+286.0d0*n2))))) &
+                   + dx2*( -16.0d0/195.0d0 *(1.0d0+n2*(105.0d0+n2*(1365.0d0+n2*(5005.0d0+n2*(6435.0d0+n2*(3003.0d0+n2*455.0d0)))))) &
+                   + dx2*(   7.0d0/255.0d0 *(1.0d0+n2*(136.0d0+n2*(2380.0d0+n2*(12376.0d0+n2*(24310.0d0+n2*(19448.0d0+n2*(6188.0d0+n2*680.0d0))))))) &
+                   + dx2*(dx2/1995.0d0-16.0d0/2907.0d0       +&
+                   n2*(dx2*2.0d0/19.0d0 -16.0d0/2907.0d0*171.0d0  +&
+                   n2*(dx2*3.0d0     -16.0d0/2907.0d0*3876.0d0 +&
+                   n2*(dx2*136.0d0/5.0d0-16.0d0/2907.0d0*27132.0d0+&
+                   n2*(dx2*102.0d0   -16.0d0/2907.0d0*75582.0d0+&
+                   n2*(dx2*884.0d0/5.0d0-16.0d0/2907.0d0*92378.0d0+&
+                   n2*(dx2*442.0d0/3.0d0-16.0d0/2907.0d0*50388.0d0+&
+                   n2*(dx2*408.0d0/7.0d0-16.0d0/2907.0d0*11628.0d0+&
+                   n2*(dx2*51.0d0/5.0d0 -16.0d0/2907.0d0*969.0d0 +&
+                   n2*(dx2*2.0d0/3.0d0)))))))))&
                    ))))))))
 
         ENDIF
 
         ! Tnp(n) is actually T_{n,n+1}
         ! Int [x^2(1-x^2)^5 h'n h'n+1, {x, n*dx, (n+1)*dx}]
-        Tnp(n)=   dx*((DBLE(n)**3 - DBLE(1+n)**3)/3. & ! T_{n,n+1}
+        Tnp(n)=   dx*((DBLE(n)**3 - DBLE(1+n)**3)/3.0d0 & ! T_{n,n+1}
                 + dx2*((DBLE(1+n)**5 - DBLE(n)**5)    &
-                + dx2*((DBLE(n)**7 - DBLE(1+n)**7)*10./7. &
-                + dx2*((DBLE(1+n)**9 - DBLE(n)**9)*10./9. &
-                + dx2*((DBLE(n)**11 - DBLE(1+n)**11)*5./11. &
-                + dx2* (DBLE(1+n)**13 - DBLE(n)**13)/13.)))))
+                + dx2*((DBLE(n)**7 - DBLE(1+n)**7)*10.0d0/7.0d0 &
+                + dx2*((DBLE(1+n)**9 - DBLE(n)**9)*10.0d0/9.0d0 &
+                + dx2*((DBLE(n)**11 - DBLE(1+n)**11)*5.0d0/11.0d0 &
+                + dx2* (DBLE(1+n)**13 - DBLE(n)**13)/13.0d0)))))
 
         ! Int [x^2(1-x^2)^4 hn hn+1, {x, n*dx, (n+1)*dx}]
         ! Integrate[x^2*(1-x^2)^4(-x/d+n+1)(x/d-n),{x,n d, (n+1)d}] // Simplify
         ! > /. {n->18, d->0.05}
         ! [-] 3.42611e-6
-        Tnp(n)= Tnp(n) + 24.0*( &
-                dx3*( 1./60*(3+10*nn1) &
-                + dx2*(-2./105*(5+7*nn1*(4+5*nn1)) &
-                + dx2*( 1./84*(7+6*nn1*(9+7*nn1*(3+2*nn1))) &
-                + dx2*(-2./495*(9+11*nn1*(8+3*nn1*(9+nn1*(12+5*nn1)))) &
-                + dx2*( 1./1716*(11+13*nn1*(10+11*nn1*(2+nn1)*(2+nn1*(3+2*nn1)))) &
+        Tnp(n)= Tnp(n) + 24.0d0*( &
+                dx3*( 1.0d0/60.0d0*(3.0d0+10.0d0*nn1) &
+                + dx2*(-2.0d0/105.0d0*(5.0d0+7.0d0*nn1*(4.0d0+5.0d0*nn1)) &
+                + dx2*( 1.0d0/84.0d0*(7.0d0+6.0d0*nn1*(9.0d0+7.0d0*nn1*(3.0d0+2.0d0*nn1))) &
+                + dx2*(-2.0d0/495.0d0*(9.0d0+11.0d0*nn1*(8.0d0+3.0d0*nn1*(9.0d0+nn1*(12.0d0+5.0d0*nn1)))) &
+                + dx2*( 1.0d0/1716.0d0*(11.0d0+13.0d0*nn1*(10.0d0+11.0d0*nn1*(2.0d0+nn1)*(2.0d0+nn1*(3.0d0+2.0d0*nn1)))) &
                 ))))))
 
         ! Int [x^2(1-x^2)^8 hn hn+1, {x, n*dx, (n+1)*dx}]
         ! Integrate[x^2*(1-x^2)^8(-x/d+n+1)(x/d-n),{x,n d, (n+1)d}] // Simplify
         ! > /. {n->18, d->0.05}
         ! [-]  2.13949e-9
-        Mnp(n)= dx3*(  1./60.  *(3 +10*nn1) &
-                + dx2*( -4./105. *(5 + 7*nn1*(4+5*nn1)) &
-                + dx2*(  1./18.  *(7 + 6*nn1*(9+7*nn1*(3+2*nn1))) &
-                + dx2*(-28./495. *(9 +11*nn1*(8+3*nn1*(9+nn1*(12+5*nn1)))) &
-                + dx2*( 35./858. *(11+13*nn1*(10+11*nn1*(2+nn1)*(2+nn1*(3+2*nn1)))) &
-                + dx2*( -4./195. *(13+nn1*(180+13*nn1*(75+nn1*(200+nn1*(270+7*nn1*(24+5*nn1)))))) &
-                + dx2*(  7./1020.*(15+34*nn1*(7+nn1*(45+nn1*(150+nn1*(275+2*nn1*(135+nn1*(63+10*nn1))))))) &
-                + dx2*( -4./2907.*(17+19*nn1*(16+17*nn1*(7+nn1*(28+nn1*(65+nn1*(88+3*nn1*(22+nn1*(8+nn1)))))))) &
-                + dx2*(  1./7980.*(19+nn1*(378+19*nn1*(168+nn1*(784+nn1*(2205+nn1*&
-                 (3822+nn1*(4004+nn1*(2376+7*nn1*(99+10*nn1))))))))))))))))))
+        Mnp(n)= dx3*(  1.0d0/60.0d0  *(3.0d0 +10.0d0*nn1) &
+                + dx2*( -4.0d0/105.0d0 *(5.0d0 + 7.0d0*nn1*(4.0d0+5.0d0*nn1)) &
+                + dx2*(  1.0d0/18.0d0  *(7.0d0 + 6.0d0*nn1*(9.0d0+7.0d0*nn1*(3.0d0+2.0d0*nn1))) &
+                + dx2*(-28.0d0/495.0d0 *(9.0d0 +11.0d0*nn1*(8.0d0+3.0d0*nn1*(9.0d0+nn1*(12.0d0+5.0d0*nn1)))) &
+                + dx2*( 35.0d0/858.0d0 *(11.0d0+13.0d0*nn1*(10.0d0+11.0d0*nn1*(2.0d0+nn1)*(2.0d0+nn1*(3.0d0+2.0d0*nn1)))) &
+                + dx2*( -4.0d0/195.0d0 *(13.0d0+nn1*(180.0d0+13.0d0*nn1*(75.0d0+nn1*(200.0d0+nn1*(270.0d0+7.0d0*nn1*(24.0d0+5.0d0*nn1)))))) &
+                + dx2*(  7.0d0/1020.0d0*(15.0d0+34.0d0*nn1*(7.0d0+nn1*(45.0d0+nn1*(150.0d0+nn1*(275.0d0+2.0d0*nn1*(135.0d0+nn1*(63.0d0+10.0d0*nn1))))))) &
+                + dx2*( -4.0d0/2907.0d0*(17.0d0+19.0d0*nn1*(16.0d0+17.0d0*nn1*(7.0d0+nn1*(28.0d0+nn1*(65.0d0+nn1*(88.0d0+3.0d0*nn1*(22.0d0+nn1*(8.0d0+nn1)))))))) &
+                + dx2*(  1.0d0/7980.0d0*(19.0d0+nn1*(378.0d0+19.0d0*nn1*(168.0d0+nn1*(784.0d0+nn1*(2205.0d0+nn1*&
+                 (3822.0d0+nn1*(4004.0d0+nn1*(2376.0d0+7.0d0*nn1*(99.0d0+10.0d0*nn1))))))))))))))))))
 
 
       ENDDO !<---------------------------------------------------------- n
@@ -300,8 +300,8 @@ MODULE macronova_Pinto_eastman_CNS
       ! Correct corner diagonal elements (imposing boundary conditions)
       Tnn(1)=  Tnn(1) + Tnp(0)
       Mnn(1)=  Mnn(1) + Mnp(0)
-      Tnn(Nx)= Tnn(Nx)+ Tnp(Nx)/(1. + 2.4*dx)
-      Mnn(Nx)= Mnn(Nx)+ Mnp(Nx)/(1. + 2.4*dx)
+      Tnn(Nx)= Tnn(Nx)+ Tnp(Nx)/(1.0d0 + 2.40d0*dx)
+      Mnn(Nx)= Mnn(Nx)+ Mnp(Nx)/(1.0d0 + 2.40d0*dx)
 
       ! Fill in the matrices AP and BP in the packed form:
       ! Two-dimensional storage of the symmetric matrix A:
@@ -316,8 +316,8 @@ MODULE macronova_Pinto_eastman_CNS
       !
       ! AP = [ a11, a21, a31, a41, a22, a32, a42, a33, a43, a44 ]
       !
-      AP(1:Nx*(Nx+1)/2)= 0.0
-      BP(1:Nx*(Nx+1)/2)= 0.0
+      AP(1:Nx*(Nx+1)/2)= 0.0d0
+      BP(1:Nx*(Nx+1)/2)= 0.0d0
       DO n=1,Nx
          AP(  n + (n-1)*(2*Nx-n)/2)= Tnn(n)  ! A_{nn}
          BP(  n + (n-1)*(2*Nx-n)/2)= Mnn(n)  ! B_{nn}
@@ -435,9 +435,9 @@ MODULE macronova_Pinto_eastman_CNS
          DO n=1,Nx
             x= (DBLE(n)*dx)**2
             n2= DBLE(n*n)
-            Nm2(m)= Nm2(m) + n2*(1.-x)**8 * psi(n,m)**2
-            Dm(m)=  Dm(m)  + n2*(1.-x)**7 * psi(n,m)
-            phi(m)= phi(m) + n2*(1.-x)**8 * psi(n,m)
+            Nm2(m)= Nm2(m) + n2*(1.0d0-x)**8 * psi(n,m)**2
+            Dm(m)=  Dm(m)  + n2*(1.0d0-x)**7 * psi(n,m)
+            phi(m)= phi(m) + n2*(1.0d0-x)**8 * psi(n,m)
          ENDDO
          phi(m)= phi(m) / Nm2(m)
          Nm2(m)= Nm2(m) * dx3
@@ -483,8 +483,8 @@ MODULE macronova_Pinto_eastman_CNS
          READ(uHrate,*) ! skip header
          DO i=1,nLinesHrate
             READ(uHrate,*) x,y
-            t_HR(i)= log(x*day_in_s)
-            HR(i)= log(y)
+            t_HR(i)= dlog(x*day_in_s)
+            HR(i)= dlog(y)
          ENDDO
          CLOSE(uHrate)
       ENDIF
@@ -502,9 +502,9 @@ MODULE macronova_Pinto_eastman_CNS
          DO m=1,mmax
             Lum= Lum + phi(m)*psi(Nx,m)
          ENDDO
-         Lum= ABS(Lum * L0)
-         x= photospheric_radius(2./3.,tm,kappa,rho0,t0, v_max)    ! photospheric radius
-         y= (Lum/(4*Pi*sigma))**0.25 / SQRT(x) ! temperature
+         Lum= DABS(Lum * L0)
+         x= photospheric_radius(2.0d0/3.0d0,tm,kappa,rho0,t0, v_max)    ! photospheric radius
+         y= (Lum/(4.0d0*Pi*sigma))**0.25d0 / DSQRT(x) ! temperature
 
          IF(Lum > 0.)THEN
             luminosity(it+1,1) = tm*t0
@@ -524,28 +524,28 @@ MODULE macronova_Pinto_eastman_CNS
          tm= tm_p + dt
 
          IF (func_hrate) THEN
-            IF (v_med/clight .GT. 0.5) THEN
-                v_med = 0.5*clight
+            IF (v_med/clight .GT. 0.5d0) THEN
+                v_med = 0.5d0*clight
             END IF
-            IF (v_med/clight .LT. 0.05) THEN
-                v_med = 0.05*clight
+            IF (v_med/clight .LT. 0.05d0) THEN
+                v_med = 0.05d0*clight
             END IF
-            CALL heating_rate_func(v_med/clight,ye,t0*(tm_p + 0.5*dt),hrate)
+            CALL heating_rate_func(v_med/clight,ye,t0*(tm_p + 0.5d0*dt),hrate)
             IF (func_therm) THEN
-                hrate = DZ_factor*calc_t_dep_therm_hrate2((t0/day_in_s)*(tm_p + 0.5*dt), m_ej, v_max, hrate)
+                hrate = DZ_factor*calc_t_dep_therm_hrate((t0/day_in_s)*(tm_p + 0.5d0*dt), m_ej, v_max, hrate)
             ELSE
                 hrate = e_th*DZ_factor*hrate
             END IF
         ! Look into adding time-dependent thermalisation
          ELSE
-            hrate = heating_rate(e_th,alpha,tm_p + 0.5*dt, t0, DZ_factor,read_hrate, nLinesHrate,HR, t_HR)
+            hrate = heating_rate(e_th,alpha,tm_p + 0.5d0*dt, t0, DZ_factor,read_hrate, nLinesHrate,HR, t_HR)
          ENDIF
 
          DO m=1,mmax
-            phi(m)= (phi_p(m) * (1.0 - pm(m)*tm_p*0.5*dt)  &
-                 + dt*qm(m)*(tm_p + 0.5*dt) &
+            phi(m)= (phi_p(m) * (1.0d0 - pm(m)*tm_p*0.5d0*dt)  &
+                 + dt*qm(m)*(tm_p + 0.5d0*dt) &
                 *hrate) &
-                 / (1.0 + pm(m)*tm*0.5*dt)
+                 / (1.0d0 + pm(m)*tm*0.5d0*dt)
          ENDDO
          tm_p= tm
          phi_p(1:mmax)= phi(1:mmax)
@@ -593,9 +593,11 @@ MODULE macronova_Pinto_eastman_CNS
 
     IMPLICIT NONE
 
+    INTEGER          ivar
+    DOUBLE PRECISION eps0,ftot,t_day
+    DOUBLE PRECISION:: heating_rate     !< [erg/(g*s)] return value
     DOUBLE PRECISION, PARAMETER :: eps= 1.D-5
     INTEGER, INTENT(IN):: nLinesHrate
-    DOUBLE PRECISION:: heating_rate     !< [erg/(g*s)] return value
     DOUBLE PRECISION,INTENT(IN):: e_th  ! efficiency
     DOUBLE PRECISION,INTENT(IN):: alpha ! exponent
     DOUBLE PRECISION,INTENT(IN):: t     !< time (in units of t0!)
@@ -604,9 +606,6 @@ MODULE macronova_Pinto_eastman_CNS
     LOGICAL, INTENT(IN) :: read_hrate
 
     SAVE
-
-    INTEGER          ivar
-    DOUBLE PRECISION eps0,ftot,t_day
 
     eps0= 2.e10*(t0/day_in_s)**(-alpha) !< [erg/(g*s)] heating rate scale
 
@@ -692,39 +691,12 @@ MODULE macronova_Pinto_eastman_CNS
     DOUBLE PRECISION:: y
     DOUBLE PRECISION,INTENT(IN):: x
 
-    y= 16./315./(x*x) -x*(1./3.-3./5.*x**2+3./7.*x**4-1./9.*x**6)
+    y= 16.0d0/315.0d0/(x*x) -x*(1.0d0/3.0d0-3.0d0/5.0d0*x**2+3.0d0/7.0d0*x**4-1.0d0/9.0d0*x**6)
 
   END FUNCTION mass_func
 
-  FUNCTION calc_t_dep_therm_hrate(time, ejecta_mass, max_ejecta_velocity, hrate) RESULT(Q_tot)
 
-      !************************************************************************
-      !                                                                       *
-      ! Implement a time-dependent thermalisation based on Barnes et al. 2018 *
-      !                                                                       *
-      !************************************************************************
-
-    IMPLICIT NONE
-    DOUBLE PRECISION:: f_beta, f_alpha, t_alpha, t_gamma, t_e, p_e, p_gamma, Q_tot, Q_beta, Q_alpha
-    DOUBLE PRECISION, INTENT(IN):: time, ejecta_mass, max_ejecta_velocity, hrate
-    ! Using approximations from the discussion of Barnes et al. 2018
-    p_e = 0.2d0
-    p_gamma = 0.5d0
-
-    t_e = 12.9d0*((ejecta_mass/0.01d0)**(2.0d0/3.0d0))*((max_ejecta_velocity/0.2d0)**(-2.0d0))
-    t_gamma = 0.3d0*((ejecta_mass/0.01d0)**(1.0d0/2.0d0))*((max_ejecta_velocity/0.2d0)**(-1.0d0))
-    t_alpha = 3.0d0*t_e
-
-    f_beta = p_e*((1.0d0 + time/t_e)**(-1.0d0)) + p_gamma*(1.0d0 - dexp(-((t_gamma/time)**2.0d0)))
-    f_alpha = (1.0d0 + time/t_alpha)**(-1.5d0)
-
-    ! use Wollaeger et al. 2017 factors to compare against Oleg derivation
-    Q_beta = 0.6d0*hrate
-    Q_alpha = 0.05d0*hrate
-    Q_tot = Q_beta*f_beta + Q_alpha*f_alpha
-  END FUNCTION calc_t_dep_therm_hrate
-
-  FUNCTION calc_t_dep_therm_hrate2(time, ejecta_mass, max_ejecta_velocity, hrate) RESULT(eps_tot)
+  FUNCTION calc_t_dep_therm_hrate(time, ejecta_mass, max_ejecta_velocity, hrate) RESULT(eps_tot)
 
       !************************************************************************
       !                                                                       *
@@ -750,28 +722,31 @@ MODULE macronova_Pinto_eastman_CNS
 
     DOUBLE PRECISION:: rho_bar, eta_bar_alpha_sq
     DOUBLE PRECISION:: eta_bar_beta_sq, eta_bar_ff_sq, f_bar_alpha, f_bar_beta, eps_tot
-    DOUBLE PRECISION:: tau_bar_gamma, f_bar_gamma
+    DOUBLE PRECISION:: tau_bar_gamma, f_bar_gamma, half_vel_t
     DOUBLE PRECISION:: eps_alpha, eps_beta, eps_ff, eps_gamma, f_bar_ff
-    DOUBLE PRECISION:: time_s, ejecta_mass_g, max_ejecta_velocity_cms
+    DOUBLE PRECISION:: time_s, ejecta_mass_g, max_ejecta_velocity_cms, rho_bar_t
     ! convert inputs to correct units
     time_s = time*day_in_s  ! seconds
     ejecta_mass_g = ejecta_mass*msol  ! grams
     max_ejecta_velocity_cms = max_ejecta_velocity*clight  ! cm/s
 
+    half_vel_t = 0.5d0*max_ejecta_velocity_cms*time_s
     ! g/cm^-3
-    rho_bar = 0.14d0*(ejecta_mass_g/((0.5d0*max_ejecta_velocity_cms*time_s)**3.0d0))
+    rho_bar = 0.14d0*(ejecta_mass_g/((half_vel_t)**3.0d0))
     ! unitless
-    tau_bar_gamma =0.035d0*(0.1d0*ejecta_mass_g/((0.5d0*max_ejecta_velocity_cms*time_s)**2.0d0))
+    tau_bar_gamma =0.035d0*(0.1d0*ejecta_mass_g/((half_vel_t)**2.0d0))
+
+    rho_bar_t = time_s*rho_bar
 
     ! should be unitless
-    eta_bar_alpha_sq = A_alpha/(time_s*rho_bar)
-    eta_bar_beta_sq = A_beta/(time_s*rho_bar)
-    eta_bar_ff_sq = A_ff/(time_s*rho_bar)
+    eta_bar_alpha_sq = 2.0d0*A_alpha/(rho_bar_t)
+    eta_bar_beta_sq = 2.0d0*A_beta/(rho_bar_t)
+    eta_bar_ff_sq = 2.0d0*A_ff/(rho_bar_t)
 
     ! unitless
-    f_bar_alpha = dlog(1.0d0 + 2.0d0*(eta_bar_alpha_sq))/(2.0d0*(eta_bar_alpha_sq))
-    f_bar_beta = dlog(1.0d0 + 2.0d0*(eta_bar_beta_sq))/(2.0d0*(eta_bar_beta_sq))
-    f_bar_ff = dlog(1.0d0 + 2.0d0*(eta_bar_ff_sq))/(2.0d0*(eta_bar_ff_sq))
+    f_bar_alpha = dlog(1.0d0 + eta_bar_alpha_sq)/(eta_bar_alpha_sq)
+    f_bar_beta = dlog(1.0d0 + eta_bar_beta_sq)/(eta_bar_beta_sq)
+    f_bar_ff = dlog(1.0d0 + eta_bar_ff_sq)/(eta_bar_ff_sq)
     f_bar_gamma = 1.0d0 - dexp(-tau_bar_gamma)
 
     ! determine individual heating rates from each process
@@ -781,7 +756,7 @@ MODULE macronova_Pinto_eastman_CNS
     eps_gamma = frac_gamma*hrate
     ! combine for total heating rate
     eps_tot = f_bar_alpha*eps_alpha + f_bar_beta*eps_beta + f_bar_ff*eps_ff + f_bar_gamma*eps_gamma
-  END FUNCTION calc_t_dep_therm_hrate2
+  END FUNCTION calc_t_dep_therm_hrate
 
 
   FUNCTION photospheric_radius(tau,tm,kappa,rho0,t0, v_max) RESULT(x)
@@ -801,16 +776,16 @@ MODULE macronova_Pinto_eastman_CNS
 
     y= tau * (tm*tm) / (rho0*kappa*v_max*t0)
     IF (y.GT.10.0) THEN
-       x= 4./SQRT(315.*y)
+       x= 4.0d0/DSQRT(315.0d0*y)
     ELSE
-       x= 0.5
+       x= 0.5d0
     ENDIF
 
     iter: DO i=1,20
        x1= x
-       x=  x + (mass_func(x)-y)*x/(2.*mass_func(x)+x*(1.-x*x)**3)
-       IF (x.LT.0) x= 4./SQRT(315.*y)
-       IF (x.GT.1) x= 0.5
+       x=  x + (mass_func(x)-y)*x/(2.0d0*mass_func(x)+x*(1.0d0-x*x)**3)
+       IF (x.LT.0) x= 4.0d0/DSQRT(315.0d0*y)
+       IF (x.GT.1) x= 0.5d0
     ENDDO iter
 
     x= x*v_max*tm*t0
