@@ -157,7 +157,7 @@ CONTAINS
   INTEGER:: i1,i2,j1,j2
   DOUBLE PRECISION:: v1, v2, y1, y2, fv, fy, f11, f12, f21, f22
   DOUBLE PRECISION:: e0,alp,t0,sig,alp1,t1,sig1,C1,C2,tau1,tau2
-  DOUBLE PRECISION:: a, b
+  DOUBLE PRECISION:: a, b, arg1, arg2, val1, val2
   DOUBLE PRECISION, PARAMETER:: oneoverpi = .5d0/acos(0d0)
 
      IF (v.LT.V_GRID(1).OR.v.GT.V_GRID(SIZE(V_GRID))) STOP "ERROR: v outside the grid"
@@ -218,11 +218,28 @@ CONTAINS
      tau2= f11*TAU2_GRID(i1,j1) + f12*TAU2_GRID(i1,j2) &
          + f21*TAU2_GRID(i2,j1) + f22*TAU2_GRID(i2,j2)
 
-     a= .5d0 - oneoverpi*atan((t - t0)/sig)
-     b= .5d0 + oneoverpi*atan((t - t1)/sig1)
-     h= e0*1e18*(a**alp * b**alp1) &
-      + exp(C1 - t/tau1*1d-3) + exp(C2 - t/tau2*1d-5)
+     a= .5d0 - oneoverpi*datan((t - t0)/sig)
+     b= .5d0 + oneoverpi*datan((t - t1)/sig1)
 
+     arg1 = C1 - t/tau1*1d-3
+     If (arg1 .LT. -100.0d0) THEN
+          val1 = 0.0d0
+     ELSE IF (arg1 .GT. 150.0d0) THEN
+          val1 = dexp(150.0d0)
+     ELSE
+          val1 = dexp(arg1)
+     END IF
+
+     arg2 = C2 - t/tau2*1d-5
+     If (arg2 .LT. -100.0) THEN
+          val2 = 0.0d0
+     ELSE IF (arg2 .GT. 150.0d0) THEN
+          val2 = dexp(150.0d0)
+     ELSE
+          val2 = dexp(arg2)
+     END IF
+
+     h = e0*1e18*(a**alp * b**alp1) + val1 + val2
   END SUBROUTINE heating_rate_func
 
 ENDMODULE hratelib
