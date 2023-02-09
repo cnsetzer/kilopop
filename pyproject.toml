@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools >= 61.0", "numpy"] # PEP 621 compliant
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bnspopkne"
+version = "0.4"
+description = "Kilonova and population model used in C. N. Setzer et al. 2022 arxiv:2205.12286v2."
+authors = [{ name = "Christian N. Setzer", email = "aerosetzer@gmail.com" }]
+license = { file = "LICENSE.md" }
+classifiers=[
+    # How mature is this project? Common values are
+    #   3 - Alpha
+    #   4 - Beta
+    #   5 - Production/Stable
+    "Development Status :: 4 - Beta",
+    # Indicate who your project is intended for
+    "Intended Audience :: Astronomers",
+    # Pick your license as you wish (should match "license" above)
+    "License :: OSI Approved :: GNU General Public License v3",
+    # Specify the Python versions you support here. In particular, ensure
+    # that you indicate whether you support Python 2, Python 3 or both.
+    "Programming Language :: Python :: 3.9+",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy==1.23.3",
+    "pandas",
+    "george",
+    "scipy",
+    "astropy",
+    "tqdm",
+    "sncosmo",
+]
+
+[project.optional-dependencies]
+docs = ["sphinx", "sphinx_rtd_theme", "nbsphinx", "pandoc"]
+
+[project.urls]
+homepage = "http://github.com/cnsetzer/Setzer2022_BNSpopkNe"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+mypkg = ["*.csv", "*.npy"]
