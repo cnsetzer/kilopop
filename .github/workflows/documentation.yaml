@@ -10,6 +10,8 @@ jobs:
         run: |
           sudo apt install pandoc
           python3 -m pip install .[docs]
+        env:
+          LD_LIBRARY_PATH: "DUMMY"
       - name: Sphinx build
         run: |
           sphinx-build docs _build
