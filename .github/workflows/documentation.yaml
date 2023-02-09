@@ -9,6 +9,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt install pandoc
+          python3 -m pip install --upgrade pip
           python3 -m pip install .[docs]
         env:
           LD_LIBRARY_PATH: "DUMMY"
