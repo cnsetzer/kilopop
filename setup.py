@@ -3,6 +3,8 @@ import os
 from setuptools import find_packages
 import numpy.f2py as npf2py
 
+assert "LD_LIBRARY_PATH" in os.environ.keys(), "Did you add lapack to LD_LIBRARY_PATH?"
+
 ext = Extension(
     name="macronova2py",
     sources=[
@@ -22,6 +24,7 @@ ext = Extension(
         "-fdefault-double-8",
         "-fdefault-real-8",
         "-fopenmp",
+        "-ffree-line-length-512",
     ],
     libraries=["lapack", "blas"],
     library_dirs=[
@@ -31,32 +34,4 @@ ext = Extension(
 )
 
 
-if __name__ == "__main__":
-
-    setup(
-        name="bnspopkne",
-        version="0.4",
-        description="Kilonova and population model used in C. N. Setzer et al. 2022 arxiv:2205.12286v2.",
-        url="http://github.com/cnsetzer/Setzer2022_BNSpopkNe",
-        author="Christian N. Setzer",
-        author_email="aerosetzer@gmail.com",
-        license="GNU General Public License v3",
-        classifiers=[
-            # How mature is this project? Common values are
-            #   3 - Alpha
-            #   4 - Beta
-            #   5 - Production/Stable
-            "Development Status :: 4 - Beta",
-            # Indicate who your project is intended for
-            "Intended Audience :: Astronomers",
-            # Pick your license as you wish (should match "license" above)
-            "License :: OSI Approved :: GNU General Public License v3",
-            # Specify the Python versions you support here. In particular, ensure
-            # that you indicate whether you support Python 2, Python 3 or both.
-            "Programming Language :: Python :: 3.6+",
-        ],
-        packages=find_packages(),
-        ext_modules=[ext],
-        include_package_data=True,
-        package_data={'': ['data/*']},
-    )
+setup(ext_modules=[ext])
