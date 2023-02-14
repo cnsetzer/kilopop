@@ -35,6 +35,7 @@ dependencies = [
 
 [project.optional-dependencies]
 docs = ["sphinx", "sphinx_rtd_theme", "nbsphinx", "pandoc"]
+tests = ["coverage"]
 
 [project.urls]
 homepage = "http://github.com/cnsetzer/Setzer2022_BNSpopkNe"

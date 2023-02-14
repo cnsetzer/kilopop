@@ -6,18 +6,39 @@ on:
   pull_request:
   
 jobs:
-  docs:
+  test:
     runs-on: ubuntu-latest
+    permissions:
+      # Gives the action the necessary permissions for publishing new
+      # comments in pull requests.
+      pull-requests: write
+      # Gives the action the necessary permissions for pushing data to the
+      # python-coverage-comment-action branch, and for editing existing
+      # comments (to avoid publishing multiple comments in the same PR)
+      contents: write
+    strategy:
+      # You can use PyPy versions in python-version.
+      # For example, pypy-2.7 and pypy-3.8
+      matrix:
+        python-version: ["3.9", "3.10"]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           sudo apt install pandoc
           python3 -m pip install --upgrade pip
-          python3 -m pip install .
+          python3 -m pip install .[tests]
         env:
           LD_LIBRARY_PATH: "DUMMY"
       - name: Test
         run: |
-          python3 -m unittest discover -s ./tests/
+          coverage run -m unittest discover -s ./tests/
+
+      - name: "Upload coverage data"
+        uses: actions/upload-artifact@v3
+        with:
+          name: covdata
+          path: .coverage.*
