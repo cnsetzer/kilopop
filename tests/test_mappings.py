@@ -34,8 +34,11 @@ class test_mappings(unittest.TestCase):
         self.assertAlmostEqual(result, 0.3363, None, 'Should be ', 0.0001)
 
     def test_gaussian_process_emulator(self):
-
-        self.assertAlmostEqual
+        kn_inst = kilonova()
+        gp = kn_inst.__class__.grey_opacity_emulator
+        data = kn_inst.__class__.opacity_data
+        grey_opacity = mappings.emulate_grey_opacity_from_kilonova_ejecta(0.05, 0.22, 0.35, gp, data)
+        self.assertAlmostEqual(grey_opacity, 5.0, None, 'Should be ', 5.0)
 
 
 if __name__ == '__main__':

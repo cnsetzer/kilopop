@@ -9,6 +9,12 @@ class test_macronova_engine(unittest.TestCase):
     def setUpClass(cls):
         with open(resource_filename('bnspopkne', "data/KNE_parameters.pkl"), "rb") as input:
             cls._kne_parameters = pickle.load(input)
+        with open(resource_filename('bnspopkne', "data/phase.pkl"), "rb") as input:
+            cls._known_phase = pickle.load(input)
+        with open(resource_filename('bnspopkne', "data/wave.pkl"), "rb") as input:
+            cls._known_wave = pickle.load(input)
+        with open(resource_filename('bnspopkne', "data/flux.pkl"), "rb") as input:
+            cls._known_flux = pickle.load(input)
 
     def test_planck_function(self):
         # checking peak value is reproduced
@@ -25,9 +31,9 @@ class test_macronova_engine(unittest.TestCase):
         """
         # load known solution
         phase, wave, flux = mw.create_saee_seds(cls._kne_parameters)
-        self.assertAlmostEqual(phase, known_phase, None, "", )
-        self.assertAlmostEqual(wave, known_wave, None, "", )
-        self.assertAlmostEqual(flux, known_flux, None, "", )
+        self.assertAlmostEqual(phase, cls._known_phase, None, "Should be", 0.01)
+        self.assertAlmostEqual(wave, cls._known_wave, None, "Should be", 0.01)
+        self.assertAlmostEqual(flux, cls._known_flux, None, "Should be", 0.01)
 
 
 if __name__ == '__main__':

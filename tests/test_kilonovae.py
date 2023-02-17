@@ -19,9 +19,9 @@ class test_kne(unittest.TestCase):
         for key, value in paper_ranges.items():
             getattr(pop_instance, key)
 
-    @unittest.skipIf(condition, "This is a very slow test, skipping.")
     def test_derived_properties_of_populations(self):
-        return
+        pop_instance = population(population_size=1000, only_draw_parameters=False)
+        paper_ranges = {}
 
 
 if __name__ == '__main__':

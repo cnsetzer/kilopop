@@ -111,6 +111,6 @@ def draw_masses_from_EOS_bounds_with_mass_ratio_cut(
                                       mass_lower_bound=mass_lower_bound,
                                       output_shape=output_shape)
     mass2 = draw_mass_from_EOS_bounds(mass1,
-                                      mass_lower_bound=max(mass1*mass_ratio_cut, 1.0),
+                                      mass_lower_bound=np.amax(mass1*mass_ratio_cut, axis=0 ,initial=1.0),
                                       output_shape=output_shape)
     return mass1, mass2
