@@ -521,7 +521,7 @@ class Setzer2022_population_parameter_distribution(object):
             Flag whether to generate only the parameter distributions, or to
             also simulate the lightcurves and derive the properties presented in
             the paper. Default is True.
-        chunk_size: int (optional)
+        chunksize: int (optional)
             If computing properties from the lightcurves this option will
             batch the computation into chunks for multiprocessing. Default is 500.
         """
@@ -564,7 +564,7 @@ class Setzer2022_population_parameter_distribution(object):
                 with tqdm(total=int(self.population_size)) as progress_bar:
                     for parameter_dict in p.imap_unordered(self.compute_lightcurve_properties_per_kilonova,
                                                            list(range(self.population_size)),
-                                                           chunksize=chunk_size):
+                                                           chunksize=chunksize):
                         id = parameter_dict['id']
                         self.peak_time[id] = parameter_dict['peak_time']
                         self.peak_absmag_lssti[id] = parameter_dict['peak_absmag_lssti']

@@ -1,5 +1,6 @@
 import unittest
 import pickle
+import numpy as np
 from pkg_resources import resource_filename
 from bnspopkne import macronovae_wrapper as mw
 
@@ -25,7 +26,7 @@ class test_macronova_engine(unittest.TestCase):
         # checking if within .01% of the known value
         self.assertAlmostEqual(result, peak_10k, None, "", 0.0001*peak_10k)
 
-    def test_create_seds(self, cls):
+    def test_create_seds(self):
         """Test the SED creation functionality.
         Inadvertenty this also tests create_sed_timeseries.
         """
