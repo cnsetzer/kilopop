@@ -123,6 +123,8 @@ class Setzer2022_kilonova(object):
             self.id = np.random.randint(0, high=2**31)
         else:
             self.id = int(float(id))
+
+        self.population = kwargs.pop('population', False)
         # set instance attributes from inputs
         self.number_of_parameters = 12
         self.min_wave = float(min_wave)
@@ -411,8 +413,9 @@ class Setzer2022_kilonova(object):
         # emulator
         while ((self.param8 < 0.05) or (self.param8 > 0.4) or
                 (self.param11 > 0.08) or (self.param11 < 0.002)):
-            warnings.warn(f'\n The requested kilonova cannot be generated due to ejecta predictions falling outside the emulator\'s range of validity for the following parameters:')
-            self.print_parameters()
+            if self.population is False:
+                warnings.warn(f'\n The requested kilonova cannot be generated due to ejecta predictions falling outside the emulator\'s range of validity for the following parameters:')
+                self.print_parameters()
             self.param1 = None
             self.param2 = None
             self.param3 = None
@@ -546,7 +549,7 @@ class Setzer2022_population_parameter_distribution(object):
         # populate the parameter distributions
         if only_draw_parameters:
             for i in tqdm(range(self.population_size)):
-                kilonova = Setzer2022_kilonova(only_draw_parameters=only_draw_parameters, **kwargs)
+                kilonova = Setzer2022_kilonova(only_draw_parameters=only_draw_parameters, population=True, **kwargs)
                 for k in range(self.number_of_parameters):
                     getattr(self, f"param{k + 1}")[i] = (
                                             getattr(kilonova, f"param{k + 1}"))
@@ -588,7 +591,7 @@ class Setzer2022_population_parameter_distribution(object):
         """
         parameter_dict = (dict.fromkeys([getattr(self, f"param{i+1}_name")
                           for i in range(self.number_of_parameters)], None))
-        kilonova = Setzer2022_kilonova(only_draw_parameters=False, **kwargs)
+        kilonova = Setzer2022_kilonova(only_draw_parameters=False, population=True, **kwargs)
         times = np.linspace(0.0, kilonova.model.maxtime(), 5001)
         lightcurve_abs_i = kilonova.model.bandmag('lssti', "ab", time=times)
         peak_abs_lssti = kilonova.model.source.peakmag('lssti', 'ab', sampling=0.01)
