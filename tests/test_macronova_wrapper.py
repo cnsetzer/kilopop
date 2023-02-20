@@ -32,9 +32,9 @@ class test_macronova_engine(unittest.TestCase):
         """
         # load known solution
         phase, wave, flux = mw.create_saee_seds(self._kne_parameters)
-        self.assertAlmostEqual(phase, self._known_phase, None, "Should be", 0.01)
-        self.assertAlmostEqual(wave, self._known_wave, None, "Should be", 0.01)
-        self.assertAlmostEqual(flux, self._known_flux, None, "Should be", 0.01)
+        np.testing.assert_allclose(phase, self._known_phase, 0.01, err_msg='Should be equal:', verbose=True)
+        np.testing.assert_allclose(wave, self._known_wave, 0.01, err_msg='Should be equal:', verbose=True)
+        np.testing.assert_allclose(flux, self._known_flux, 0.01, err_msg='Should be equal:', verbose=True)
 
 
 if __name__ == '__main__':

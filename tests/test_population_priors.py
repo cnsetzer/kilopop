@@ -20,7 +20,7 @@ class test_population(unittest.TestCase):
             self.assertTrue(1.0 <= res <= 2.05)
 
     def test_mass_from_EOS_bounds_with_mass_ratio_cut(self):
-        result1, result2 = population_priors.draw_masses_from_EOS_bounds_with_mass_ratio_cut(2.05, mass_ratio_cut=2.0/3.0, output_shape=10)
+        result1, result2 = population_priors.draw_masses_from_EOS_bounds_with_mass_ratio_cut(2.05, mass_ratio_cut=2.0/5.0, output_shape=10)
         for res in result1:
             self.assertTrue(1.0 <= res <= 2.05)
         for i, res2 in enumerate(result2):
