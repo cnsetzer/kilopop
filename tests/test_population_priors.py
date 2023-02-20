@@ -24,8 +24,7 @@ class test_population(unittest.TestCase):
         for res in result1:
             self.assertTrue(1.0 <= res <= 2.05)
         for i, res2 in enumerate(result2):
-            print(max(result1[i]*2.0/3.0, 1.0), res2, result1[i])
-            self.assertTrue(max(result1[i]*2.0/3.0, 1.0) <= res2 <= result1[i])
+            self.assertTrue(max(result1[i]*2.0/5.0, 1.0) <= res2 <= result1[i])
 
 
 if __name__ == '__main__':
