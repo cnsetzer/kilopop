@@ -223,7 +223,6 @@ class Setzer2022_kilonova(object):
             self.dist_mpc = 1.0e-5
             self.t0 = 0.0  # Currently always start the model at zero phase
             self.tmax = self.model.maxtime()
- #           _ = self.model.bandmag('lssti', "ab", time=np.array([1.0]))
 
     def draw_parameters(self):
         """Draw parameters not populated by the user.
