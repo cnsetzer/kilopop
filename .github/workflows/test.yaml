@@ -37,6 +37,8 @@ jobs:
       - name: Test
         run: |
           coverage run -m unittest discover -s ./tests/
+        env:
+          SNCOSMO_DATA_DIR: "/home/runner/.astropy/cache/sncosmo
 
       - name: "Upload coverage data"
         uses: actions/upload-artifact@v3
