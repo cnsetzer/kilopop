@@ -34,6 +34,9 @@ jobs:
           python3 -m pip install .[tests]
         env:
           LD_LIBRARY_PATH: "DUMMY"
+      - name: Create folder
+        run: |
+          mkdir -p /home/runner/.astropy/cache/sncosmo
       - name: Test
         run: |
           coverage run -m unittest discover -s ./tests/
