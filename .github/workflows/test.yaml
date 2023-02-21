@@ -19,8 +19,8 @@ jobs:
     strategy:
       # You can use PyPy versions in python-version.
       # For example, pypy-2.7 and pypy-3.8
+      max-parallel: 1
       matrix:
-        max-parallel: 1
         python-version: ["3.9", "3.10"]
     steps:
       - uses: actions/checkout@v3
