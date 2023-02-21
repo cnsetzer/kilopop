@@ -18,24 +18,24 @@ class test_kne(unittest.TestCase):
         kilo_instance = kilonova()
         self.assertIsInstance(kilo_instance, kilonova)
         for key, value in self._paper_ranges.items():
-            inst_val = getattr(pop_instance, key)
-            self.assertTrue((value[0] <= inst_val) & (inst_val <= value[1]))
+            inst_val = getattr(kilo_instance, key)
+            self.assertTrue((value[0] <= inst_val) & (inst_val <= value[1]), msg=f"The value for {key} is {inst_val}, which is not in the range of {value[0]} to {value[1]}")
 
 
     def test_kilonova_population(self):
         pop_instance = population()
         for key, value in self._paper_ranges.items():
             inst_val = getattr(pop_instance, key)
-            self.assertTrue(all((value[0] <= inst_val) & (inst_val <= value[1])))
+            self.assertTrue(all((value[0] <= inst_val) & (inst_val <= value[1])), msg=f"The value for {key} is {inst_val}, which is not in the range of {value[0]} to {value[1]}")
 
     def test_derived_properties_of_populations(self):
         pop_instance = population(population_size=1000, only_draw_parameters=False)
         for key, value in self._paper_ranges.items():
             inst_val = getattr(pop_instance, key)
-            self.assertTrue(all((value[0] <= inst_val) & (inst_val <= value[1])))
+            self.assertTrue(all((value[0] <= inst_val) & (inst_val <= value[1])), msg=f"The value for {key} is {inst_val}, which is not in the range of {value[0]} to {value[1]}")
         for key, value in self._paper_derived.items():
             inst_val = getattr(pop_instance, key)
-            self.assertTrue(all((value[0] <= inst_val) & (inst_val <= value[1])))
+            self.assertTrue(all((value[0] <= inst_val) & (inst_val <= value[1])), msg=f"The value for {key} is {inst_val}, which is not in the range of {value[0]} to {value[1]}")
 
 
 if __name__ == '__main__':
