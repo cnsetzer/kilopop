@@ -231,7 +231,7 @@ CONTAINS
      END IF
 
      arg2 = C2 - t/tau2*1d-5
-     If (arg2 .LT. -100.0) THEN
+     If (arg2 .LT. -100.0d0) THEN
           val2 = 0.0d0
      ELSE IF (arg2 .GT. 150.0d0) THEN
           val2 = dexp(150.0d0)
@@ -239,7 +239,7 @@ CONTAINS
           val2 = dexp(arg2)
      END IF
 
-     h = e0*1e18*(a**alp * b**alp1) + val1 + val2
+     h = e0*1.0d18*(a**alp * b**alp1) + val1 + val2
   END SUBROUTINE heating_rate_func
 
 ENDMODULE hratelib

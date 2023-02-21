@@ -1,4 +1,4 @@
-MODULE macronova_Pinto_eastman_CNS
+MODULE macronova_Pinto_Eastman_CNS
 
   !******************************************
   !                                         *
@@ -407,7 +407,7 @@ MODULE macronova_Pinto_eastman_CNS
       ENDIF
 
       ! -4- Prepare the LT matrix (B = L*L^T)
-      LT(1,1)= 0.0
+      LT(1,1)= 0.0d0
       LT(2,1)= BP(1)
       DO n=2,Nx
          LT(1,n)= BP(n + (n-2)*(2*Nx-n+1)/2) ! {n,n-1}
@@ -429,9 +429,9 @@ MODULE macronova_Pinto_eastman_CNS
 
       ! --- eigenvalues normalization and projections; initial state
       DO m=1,Nx
-         Nm2(m)= 0.0
-         Dm(m)=  0.0
-         phi(m)= 0.0
+         Nm2(m)= 0.0d0
+         Dm(m)=  0.0d0
+         phi(m)= 0.0d0
          DO n=1,Nx
             x= (DBLE(n)*dx)**2
             n2= DBLE(n*n)
@@ -492,13 +492,13 @@ MODULE macronova_Pinto_eastman_CNS
       !-------------------------!
       !-- Main evolution loop --!
       !-------------------------!
-      tm=   1.0
+      tm=   1.0d0
       tm_p= tm
       phi_p(1:mmax)= phi(1:mmax)
 
       main_evolution_loop: DO it=0,Nt
          ! --- output t[s] - L[erg/s] - T[K] - R[cm] ------
-         Lum= 0.0
+         Lum= 0.0d0
          DO m=1,mmax
             Lum= Lum + phi(m)*psi(Nx,m)
          ENDDO
@@ -596,7 +596,7 @@ MODULE macronova_Pinto_eastman_CNS
     INTEGER          ivar
     DOUBLE PRECISION eps0,ftot,t_day
     DOUBLE PRECISION:: heating_rate     !< [erg/(g*s)] return value
-    DOUBLE PRECISION, PARAMETER :: eps= 1.D-5
+    DOUBLE PRECISION, PARAMETER :: eps= 1.0d-5
     INTEGER, INTENT(IN):: nLinesHrate
     DOUBLE PRECISION,INTENT(IN):: e_th  ! efficiency
     DOUBLE PRECISION,INTENT(IN):: alpha ! exponent
@@ -607,7 +607,7 @@ MODULE macronova_Pinto_eastman_CNS
 
     SAVE
 
-    eps0= 2.e10*(t0/day_in_s)**(-alpha) !< [erg/(g*s)] heating rate scale
+    eps0= 2.0d10*(t0/day_in_s)**(-alpha) !< [erg/(g*s)] heating rate scale
 
     IF (read_hrate) THEN
        heating_rate= exp(linear_interp(log(t*t0),t_HR,HR,nLinesHrate))
@@ -622,7 +622,7 @@ MODULE macronova_Pinto_eastman_CNS
     IF(.NOT.read_hrate)THEN
        ftot= e_th ! the one from input file
     ELSE
-       IF(DZ_factor > 1.0 + eps)THEN
+       IF(DZ_factor > 1.0d0 + eps)THEN
           ivar= 2
        ELSE
           ivar= 1
@@ -703,6 +703,7 @@ MODULE macronova_Pinto_eastman_CNS
       ! Implement a time-dependent thermalisation based on Oleg's notes       *
       !                                                                       *
       ! 15.12.22 CNS: Changed formatting to declare parameters and dble prec. *
+      !                                                                       *
       !************************************************************************
 
     IMPLICIT NONE
@@ -756,6 +757,7 @@ MODULE macronova_Pinto_eastman_CNS
     eps_gamma = frac_gamma*hrate
     ! combine for total heating rate
     eps_tot = f_bar_alpha*eps_alpha + f_bar_beta*eps_beta + f_bar_ff*eps_ff + f_bar_gamma*eps_gamma
+
   END FUNCTION calc_t_dep_therm_hrate
 
 
@@ -775,7 +777,7 @@ MODULE macronova_Pinto_eastman_CNS
     INTEGER:: i
 
     y= tau * (tm*tm) / (rho0*kappa*v_max*t0)
-    IF (y.GT.10.0) THEN
+    IF (y.GT.10.0d0) THEN
        x= 4.0d0/DSQRT(315.0d0*y)
     ELSE
        x= 0.5d0
@@ -818,7 +820,7 @@ MODULE macronova_Pinto_eastman_CNS
     DOUBLE PRECISION, INTENT(OUT):: f_tot ! fitted average efficiency
 
     INTEGER,          PARAMETER :: nvec= 14
-    DOUBLE PRECISION, PARAMETER :: ftot_fix= 0.5
+    DOUBLE PRECISION, PARAMETER :: ftot_fix= 0.5d0
 
 
     DOUBLE PRECISION tvec(nvec),fvec(nvec),y2(nvec)
@@ -836,72 +838,72 @@ MODULE macronova_Pinto_eastman_CNS
     !-----------------------!
     CASE(1)
        ! time vector [days]
-       tvec(1)=   0.32464790685222789
-       tvec(2)=   0.51453225751684539
-       tvec(3)=   0.81547867224009707
-       tvec(4)=   1.2924465962305569
-       tvec(5)=   2.0483898119853476
-       tvec(6)=   3.2464790685222789
-       tvec(7)=   5.1453225751684535
-       tvec(8)=   8.1547867224009707
-       tvec(9)=   12.924465962305566
-       tvec(10)=  20.483898119853475
-       tvec(11)=  32.464790685222788
-       tvec(12)=  51.453225751684585
-       tvec(13)=  81.547867224009821
-       tvec(14)= 129.24465962305572
+       tvec(1)=   0.32464790685222789d0
+       tvec(2)=   0.51453225751684539d0
+       tvec(3)=   0.81547867224009707d0
+       tvec(4)=   1.2924465962305569d0
+       tvec(5)=   2.0483898119853476d0
+       tvec(6)=   3.2464790685222789d0
+       tvec(7)=   5.1453225751684535d0
+       tvec(8)=   8.1547867224009707d0
+       tvec(9)=   12.924465962305566d0
+       tvec(10)=  20.483898119853475d0
+       tvec(11)=  32.464790685222788d0
+       tvec(12)=  51.453225751684585d0
+       tvec(13)=  81.547867224009821d0
+       tvec(14)= 129.24465962305572d0
 
        ! efficiency vector
-       fvec(1)=    0.68130602017301889
-       fvec(2)=    0.67411024354860460
-       fvec(3)=    0.66603434160559860
-       fvec(4)=    0.66125114158990717
-       fvec(5)=    0.64752942779906753
-       fvec(6)=    0.56476272381257997
-       fvec(7)=    0.43858356212845145
-       fvec(8)=    0.33320034385805763
-       fvec(9)=    0.25248013940862857
-       fvec(10)=   0.20205909671179934
-       fvec(11)=   0.16185787817594169
-       fvec(12)=   0.12420294745382035
-       fvec(13)=   6.6055034918415953E-002
-       fvec(14)=   3.2651573001217751E-002
+       fvec(1)=    0.68130602017301889d0
+       fvec(2)=    0.67411024354860460d0
+       fvec(3)=    0.66603434160559860d0
+       fvec(4)=    0.66125114158990717d0
+       fvec(5)=    0.64752942779906753d0
+       fvec(6)=    0.56476272381257997d0
+       fvec(7)=    0.43858356212845145d0
+       fvec(8)=    0.33320034385805763d0
+       fvec(9)=    0.25248013940862857d0
+       fvec(10)=   0.20205909671179934d0
+       fvec(11)=   0.16185787817594169d0
+       fvec(12)=   0.12420294745382035d0
+       fvec(13)=   6.6055034918415953D-002
+       fvec(14)=   3.2651573001217751D-002
 
     !------------------------!
     !-- original data DZ31 --!
     !------------------------!
     CASE(2)
        ! time vector [days]
-       tvec(1)=   0.32464790685222789
-       tvec(2)=   0.51453225751684539
-       tvec(3)=   0.81547867224009707
-       tvec(4)=   1.2924465962305569
-       tvec(5)=   2.0483898119853476
-       tvec(6)=   3.2464790685222789
-       tvec(7)=   5.1453225751684535
-       tvec(8)=   8.1547867224009707
-       tvec(9)=   12.924465962305566
-       tvec(10)=  20.483898119853475
-       tvec(11)=  32.464790685222788
-       tvec(12)=  51.453225751684585
-       tvec(13)=  81.547867224009821
-       tvec(14)= 129.24465962305572
+       tvec(1)=   0.32464790685222789d0
+       tvec(2)=   0.51453225751684539d0
+       tvec(3)=   0.81547867224009707d0
+       tvec(4)=   1.2924465962305569d0
+       tvec(5)=   2.0483898119853476d0
+       tvec(6)=   3.2464790685222789d0
+       tvec(7)=   5.1453225751684535d0
+       tvec(8)=   8.1547867224009707d0
+       tvec(9)=   12.924465962305566d0
+       tvec(10)=  20.483898119853475d0
+       tvec(11)=  32.464790685222788d0
+       tvec(12)=  51.453225751684585d0
+       tvec(13)=  81.547867224009821d0
+       tvec(14)= 129.24465962305572d0
 
        ! efficiency vector
-       fvec(1)=    0.72496093096935588
-       fvec(2)=    0.72970590959526771
-       fvec(3)=    0.73559449462877358
-       fvec(4)=    0.74935511733570204
-       fvec(5)=    0.76287302392115630
-       fvec(6)=    0.72631878901518698
-       fvec(7)=    0.66831161898858304
-       fvec(8)=    0.59647454241251674
-       fvec(9)=    0.52950421400956926
-       fvec(10)=   0.46696994547145909
-       fvec(11)=   0.35804896949618614
-       fvec(12)=   0.23832932982081834
-       fvec(13)=   0.13867081443154802
-       fvec(14)=   4.8199279580718062E-002
+       fvec(1)=    0.72496093096935588d0
+       fvec(2)=    0.72970590959526771d0
+       fvec(3)=    0.73559449462877358d0
+       fvec(4)=    0.74935511733570204d0
+       fvec(5)=    0.76287302392115630d0
+       fvec(6)=    0.72631878901518698d0
+       fvec(7)=    0.66831161898858304d0
+       fvec(8)=    0.59647454241251674d0
+       fvec(9)=    0.52950421400956926d0
+       fvec(10)=   0.46696994547145909d0
+       fvec(11)=   0.35804896949618614d0
+       fvec(12)=   0.23832932982081834d0
+       fvec(13)=   0.13867081443154802d0
+       fvec(14)=   4.8199279580718062D-002
 
     END SELECT
 
@@ -965,30 +967,30 @@ MODULE macronova_Pinto_eastman_CNS
     INTEGER                       :: i,k
     DOUBLE PRECISION              :: p,qn,sig,un,u(NMAX)
 
-    IF (yp1 > .99e30) THEN
-       y2(1)= 0.
-       u(1)=  0.
+    IF (yp1 > .99d30) THEN
+       y2(1)= 0.0d0
+       u(1)=  0.0d0
     ELSE
-       y2(1)=-0.5
-       u(1)=  (3./(x(2)-x(1)))*((y(2)-y(1))/(x(2)-x(1))-yp1)
+       y2(1)=-0.5d0
+       u(1)=  (3.0d0/(x(2)-x(1)))*((y(2)-y(1))/(x(2)-x(1))-yp1)
     ENDIF
 
     DO i=2,n-1
        sig=   (x(i)-x(i-1))/(x(i+1)-x(i-1))
-       p=     sig*y2(i-1) + 2.
-       y2(i)= (sig - 1.)/p
-       u(i)=  (6.*((y(i+1)-y(i))/(x(i+1)-x(i))-(y(i)-y(i-1))/(x(i)-x(i-1)))/(x(i+1)-x(i-1))-sig*u(i-1))/p
+       p=     sig*y2(i-1) + 2.0d0
+       y2(i)= (sig - 1.0d0)/p
+       u(i)=  (6.0d0*((y(i+1)-y(i))/(x(i+1)-x(i))-(y(i)-y(i-1))/(x(i)-x(i-1)))/(x(i+1)-x(i-1))-sig*u(i-1))/p
     ENDDO
 
-    IF (ypn > .99e30) THEN
-       qn= 0.
-       un= 0.
+    IF (ypn > .99d30) THEN
+       qn= 0.0d0
+       un= 0.0d0
     ELSE
-       qn= 0.5
-       un= (3./(x(n)-x(n-1)))*(ypn-(y(n)-y(n-1))/(x(n)-x(n-1)))
+       qn= 0.5d0
+       un= (3.0d0/(x(n)-x(n-1)))*(ypn-(y(n)-y(n-1))/(x(n)-x(n-1)))
     ENDIF
 
-    y2(n)= (un-qn*u(n-1))/(qn*y2(n-1)+1.)
+    y2(n)= (un-qn*u(n-1))/(qn*y2(n-1)+1.0d0)
     DO k=n-1,1,-1
        y2(k)= y2(k)*y2(k+1) + u(k)
     ENDDO
@@ -1043,9 +1045,9 @@ MODULE macronova_Pinto_eastman_CNS
 
     a= (xa(khi)-x)/h
     b= (x-xa(klo))/h
-    y= a*ya(klo)+b*ya(khi)+((a**3-a)*y2a(klo)+(b**3-b)*y2a(khi))*(h**2)/6.
+    y= a*ya(klo)+b*ya(khi)+((a**3.0d0-a)*y2a(klo)+(b**3.0d0-b)*y2a(khi))*(h**2)/6.0d0
 
 
   END SUBROUTINE splint
 
-END MODULE macronova_Pinto_eastman_CNS
+END MODULE macronova_Pinto_Eastman_CNS

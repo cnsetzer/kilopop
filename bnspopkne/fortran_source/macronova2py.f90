@@ -1,6 +1,6 @@
 MODULE macronova2py
 
-USE macronova_Pinto_eastman_CNS
+USE macronova_Pinto_Eastman_CNS
 USE physics_constants
 
 
