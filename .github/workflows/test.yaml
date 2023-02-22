@@ -47,6 +47,8 @@ jobs:
       - name: Create coverage data
         run: |
           python -m coverage report
+        env:
+          COVERAGE_FILE: .kilopop_coverage
 
       - name: "Upload coverage data"
         uses: actions/upload-artifact@v3
