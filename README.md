@@ -1,4 +1,7 @@
-bnspopkne
+kilopop
+
+![](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/cnsetzer/f1a27976965673422ac94bc1afb240d3/raw/covbadge.json)
+
 
 This package produces kilonovae following the population model presented in Setzer et al. 2023.
 
