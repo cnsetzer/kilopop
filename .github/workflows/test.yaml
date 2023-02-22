@@ -39,9 +39,10 @@ jobs:
           mkdir -p /home/runner/.astropy/cache/sncosmo
       - name: Test
         run: |
-          python -m coverage run -m unittest discover -s ./tests/
+          python -m coverage run -p -m unittest discover -s ./tests/
         env:
           SNCOSMO_DATA_DIR: "/home/runner/.astropy/cache/sncosmo"
+          COVERAGE_FILE: .kilopop_coverage
 
       - name: Create coverage data
         run: |
@@ -51,4 +52,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: covdata
-          path: .coverage.*
+          path: .kilopop_coverage*
