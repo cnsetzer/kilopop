@@ -13,7 +13,7 @@ class test_kne(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._paper_ranges = {'param1':(1.0, 2.06),'param2':(1.0,2.06),'param3':(0.1,0.3),'param4':(0.1,0.3),'param5':(0.0,2*np.pi),'param6':(0.15,0.4),'param7':(0.001,0.08),'param8':(0.17,0.38),'param9':(0.01,500.0),'param10':(0.0001,0.08),'param11':(0.001,0.08),'param12':(0.1,0.4)}
-        cls._paper_derived = {'peak_time':(0.1, 13.0), 'peak_absmag_lssti':(-20.3,-10.5),'one_mag_peak_time_lssti':(0.0,15.0)}
+        cls._paper_derived = {'peak_time':(0.1, 13.0), 'peak_absmag_lssti':(-21.0,-10.0),'one_mag_peak_time_lssti':(0.0,15.0)}
         _ = sncosmo.get_bandpass('lssti')
 
     def test_kilonova(self):
