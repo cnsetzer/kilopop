@@ -30,8 +30,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt install pandoc
-          python3 -m pip install --upgrade pip
-          python3 -m pip install .[tests]
+          python -m pip install --upgrade pip
+          python -m pip install .[tests]
         env:
           LD_LIBRARY_PATH: "DUMMY"
       - name: Create folder
@@ -66,8 +66,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt install pandoc
-          python3 -m pip install --upgrade pip
-          python3 -m pip install .[tests]
+          python -m pip install --upgrade pip
+          python -m pip install .[tests]
         env:
           LD_LIBRARY_PATH: "DUMMY"
 
@@ -78,9 +78,9 @@ jobs:
 
       - name: Combine coverage
         run: |
-          python -m coverage combine
-          python -m coverage html --skip-covered --skip-empty
-          python -m coverage report
+          python -m coverage combine -q
+          python -m coverage report -m --skip-covered
+          python -m coverage json
           export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY

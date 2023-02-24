@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kilopop"
-version = "0.4"
+version = "1.0"
 description = "Kilonova and population model used in C. N. Setzer et al. 2022 arxiv:2205.12286v2."
 authors = [{ name = "Christian N. Setzer", email = "aerosetzer@gmail.com" }]
 license = { file = "LICENSE.md" }
