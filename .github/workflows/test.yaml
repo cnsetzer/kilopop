@@ -43,14 +43,6 @@ jobs:
         env:
           SNCOSMO_DATA_DIR: "/home/runner/.astropy/cache/sncosmo"
           COVERAGE_FILE: .kilopop_coverage
-
-      - name: Create coverage data
-        run: |
-          python -m coverage combine
-          python -m coverage report
-        env:
-          COVERAGE_FILE: .kilopop_coverage
-
       - name: "Upload coverage data"
         uses: actions/upload-artifact@v3
         with:
@@ -71,7 +63,7 @@ jobs:
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload HTML report if check failed.
+      - name: Upload HTML report
         uses: actions/upload-artifact@v2
         with:
           name: html-report
