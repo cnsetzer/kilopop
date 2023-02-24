@@ -3,7 +3,7 @@ requires = ["setuptools >= 61.0", "numpy"] # PEP 621 compliant
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bnspopkne"
+name = "kilopop"
 version = "0.4"
 description = "Kilonova and population model used in C. N. Setzer et al. 2022 arxiv:2205.12286v2."
 authors = [{ name = "Christian N. Setzer", email = "aerosetzer@gmail.com" }]
@@ -38,7 +38,7 @@ docs = ["sphinx", "sphinx_rtd_theme", "nbsphinx", "pandoc"]
 tests = ["coverage"]
 
 [project.urls]
-homepage = "http://github.com/cnsetzer/Setzer2022_BNSpopkNe"
+homepage = "http://github.com/cnsetzer/kilopop"
 
 [tool.setuptools.packages.find]
 where = ["."]

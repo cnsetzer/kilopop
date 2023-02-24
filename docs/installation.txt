@@ -22,19 +22,19 @@ Pip
 ----------
   .. code-block:: console
 
-      $ pip install bnspopkne
+      $ pip install kilopop
 
   Supported python versions: 3.9+.
 
 
-This will install all python requirements for running :code:`bnspopkne`
+This will install all python requirements for running :code:`kilopop`
 
 
 -------------------------------------
-Install :code:`bnspopkne` from source
+Install :code:`kilopop` from source
 -------------------------------------
 
-:code:`bnspopkne` is developed and tested with Python 3.9+. In the
+:code:`kilopop` is developed and tested with Python 3.9+. In the
 following, we assume you have a working python installation, `python pip
 <https://packaging.python.org/tutorials/installing-packages/#use-pip-for-installing>`_,
 and `git <https://git-scm.com/>`_.
@@ -45,7 +45,7 @@ Clone the repository, install the requirements, and then install the software:
 
 .. code-block:: console
 
-   $ git clone https://github.com/cnsetzer/Setzer2022_BNSpopkNe
-   $ cd Setzer2022_BNSpopkNe/
+   $ git clone https://github.com/cnsetzer/Setzer2022_kilopop
+   $ cd Setzer2022_kilopop/
    $ pip install -r requirements.txt
    $ pip install .

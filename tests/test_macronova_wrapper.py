@@ -2,19 +2,19 @@ import unittest
 import pickle
 import numpy as np
 from pkg_resources import resource_filename
-from bnspopkne import macronovae_wrapper as mw
+from kilopop import macronovae_wrapper as mw
 
 
 class test_macronova_engine(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with open(resource_filename('bnspopkne', "data/KNE_parameters.pkl"), "rb") as input:
+        with open(resource_filename('kilopop', "data/KNE_parameters.pkl"), "rb") as input:
             cls._kne_parameters = pickle.load(input)
-        with open(resource_filename('bnspopkne', "data/phase.pkl"), "rb") as input:
+        with open(resource_filename('kilopop', "data/phase.pkl"), "rb") as input:
             cls._known_phase = pickle.load(input)
-        with open(resource_filename('bnspopkne', "data/wave.pkl"), "rb") as input:
+        with open(resource_filename('kilopop', "data/wave.pkl"), "rb") as input:
             cls._known_wave = pickle.load(input)
-        with open(resource_filename('bnspopkne', "data/flux.pkl"), "rb") as input:
+        with open(resource_filename('kilopop', "data/flux.pkl"), "rb") as input:
             cls._known_flux = pickle.load(input)
 
     def test_planck_function(self):

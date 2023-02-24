@@ -2,7 +2,7 @@
 Acknowledging
 =====================
 
-Thank you for using :code:`bnspopkne`!
+Thank you for using :code:`kilopop`!
 
 Please cite the paper which describes the population modelling done with this package.
 

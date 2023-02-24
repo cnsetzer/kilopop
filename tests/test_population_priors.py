@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from bnspopkne import population_priors
+from kilopop import population_priors
 
 
 class test_population(unittest.TestCase):

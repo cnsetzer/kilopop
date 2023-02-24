@@ -8,10 +8,10 @@ assert "LD_LIBRARY_PATH" in os.environ.keys(), "Did you add lapack to LD_LIBRARY
 ext = Extension(
     name="macronova2py",
     sources=[
-        "bnspopkne/fortran_source/module_physics_constants.f90",
-        "bnspopkne/fortran_source/hratelib.f90",
-        "bnspopkne/fortran_source/macronova_Pinto_Eastman_CNS.f90",
-        "bnspopkne/fortran_source/macronova2py.f90",
+        "kilopop/fortran_source/module_physics_constants.f90",
+        "kilopop/fortran_source/hratelib.f90",
+        "kilopop/fortran_source/macronova_Pinto_Eastman_CNS.f90",
+        "kilopop/fortran_source/macronova2py.f90",
     ],
     extra_f90_compile_args=[
         "-cpp",

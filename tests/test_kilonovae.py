@@ -5,8 +5,8 @@
 import unittest
 import numpy as np
 import sncosmo
-from bnspopkne.kilonovae import Setzer2022_kilonova as kilonova
-from bnspopkne.kilonovae import Setzer2022_population_parameter_distribution as population
+from kilopop.kilonovae import bns_kilonova as kilonova
+from kilopop.kilonovae import bns_kilonovae_population_distribution as population
 
 
 class test_kne(unittest.TestCase):

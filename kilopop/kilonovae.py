@@ -9,15 +9,15 @@ from astropy.utils.exceptions import AstropyDeprecationWarning
 # suppress AstropyDeprecationWarning
 warnings.filterwarnings("ignore", category=AstropyDeprecationWarning)
 from sncosmo import TimeSeriesSource, Model
-from bnspopkne.macronovae_wrapper import create_saee_seds
-from bnspopkne import equation_of_state as eos
-from bnspopkne import mappings
-from bnspopkne import population_priors
+from kilopop.macronovae_wrapper import create_saee_seds
+from kilopop import equation_of_state as eos
+from kilopop import mappings
+from kilopop import population_priors
 from tqdm import tqdm
 from multiprocessing import Pool
 
 
-class Setzer2022_kilonova(object):
+class bns_kilonova(object):
     """
     Top-level class for kilonovae transients based on Rosswog, et. al 2017
     semi-analytic model for kilonovae spectral energy distributions. With
@@ -133,14 +133,14 @@ class Setzer2022_kilonova(object):
         self.mass_ratio_threshold = mass_ratio_threshold
         # Set default data directories
         if EOS_path is None:
-            EOS_path = resource_filename('bnspopkne', "data/mr_sfho_full_right.csv")
+            EOS_path = resource_filename('kilopop', "data/mr_sfho_full_right.csv")
         self.EOS_path = EOS_path
         if emulator_path is None:
-            emulator_path = resource_filename('bnspopkne',
+            emulator_path = resource_filename('kilopop',
                                                             "data/paper_kernel_hyperparameters_journal_ref_v1.npy")
         self.emulator_path = emulator_path
         if opacity_data_path is None:
-            opacity_data_path = resource_filename('bnspopkne',
+            opacity_data_path = resource_filename('kilopop',
                                                                 "data/paper_opacity_data_journal_ref_v1.csv")
         self.opacity_data_path = opacity_data_path
 
@@ -487,7 +487,7 @@ class Setzer2022_kilonova(object):
             print(f"Parameter {i+1}: {getattr(self, f'param{i+1}_name')}: {getattr(self, f'param{i+1}')}")
 
 
-class Setzer2022_population_parameter_distribution(object):
+class bns_kilonovae_population_distribution(object):
     """
     Class to construct population from Setzer et al. 2022.
 
@@ -499,7 +499,7 @@ class Setzer2022_population_parameter_distribution(object):
 
     Returns
     --------
-    Setzer2022_population_parameter_distribution: class instance
+    bns_kilonovae_population_distribution: class instance
         Attributes of the class object are self.paramsi where i is in
         range(12) and are arrays of the distributions corresponding to each
         parameter.
@@ -549,7 +549,7 @@ class Setzer2022_population_parameter_distribution(object):
         # populate the parameter distributions
         if only_draw_parameters:
             for i in tqdm(range(self.population_size)):
-                kilonova = Setzer2022_kilonova(only_draw_parameters=only_draw_parameters, population=True, **kwargs)
+                kilonova = bns_kilonova(only_draw_parameters=only_draw_parameters, population=True, **kwargs)
                 for k in range(self.number_of_parameters):
                     getattr(self, f"param{k + 1}")[i] = (
                                             getattr(kilonova, f"param{k + 1}"))
@@ -591,7 +591,7 @@ class Setzer2022_population_parameter_distribution(object):
         """
         parameter_dict = (dict.fromkeys([getattr(self, f"param{i+1}_name")
                           for i in range(self.number_of_parameters)], None))
-        kilonova = Setzer2022_kilonova(only_draw_parameters=False, population=True, **kwargs)
+        kilonova = bns_kilonova(only_draw_parameters=False, population=True, **kwargs)
         times = np.linspace(0.0, kilonova.model.maxtime(), 5001)
         lightcurve_abs_i = kilonova.model.bandmag('lssti', "ab", time=times)
         peak_abs_lssti = kilonova.model.source.peakmag('lssti', 'ab', sampling=0.01)
