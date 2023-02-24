@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kilopop.mappings &mdash; Kilopop beta documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Kilopop
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/tutorial_notebook_1.html">Tutorial: Basic functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledging.html">Acknowledging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.equation_of_state.html">kilopop.equation_of_state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.kilonovae.html">kilopop.kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.macronovae_wrapper.html">kilopop.macronovae_wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.mappings.html">kilopop.mappings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.population_priors.html">kilopop.population_priors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Kilopop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">kilopop.mappings</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kilopop.mappings</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module which contains mappings between intrinsic population parameters and</span>
+<span class="sd"> kilonova parameters.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">george</span>
+<span class="kn">from</span> <span class="nn">george.modeling</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">read_csv</span>
+
+
+<div class="viewcode-block" id="compute_equation_4"><a class="viewcode-back" href="../../api/kilopop.mappings.compute_equation_4.html#kilopop.mappings.compute_equation_4">[docs]</a><span class="k">def</span> <span class="nf">compute_equation_4</span><span class="p">(</span><span class="n">mass1</span><span class="p">,</span> <span class="n">mass2</span><span class="p">,</span> <span class="n">compactness1</span><span class="p">,</span> <span class="n">compactness2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Compute equation 4 in Setzer et al. 2022.</span>
+
+<span class="sd">    Coughlin M. W., Dietrich T., Margalit B., Metzger B. D., 2019,</span>
+<span class="sd">    MNRAS: Letters, 489, L91</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    mass1: float</span>
+<span class="sd">        The mass of the primary (more massive) neutron star.</span>
+<span class="sd">    mass2: float</span>
+<span class="sd">        The mass of the secondary (less massive) neutron star.</span>
+<span class="sd">    compactness1: float</span>
+<span class="sd">        The compactness of the primary (more massive) neutron star.</span>
+<span class="sd">    compactness2: float</span>
+<span class="sd">        The compactness of the secondary (less massive) neutron star.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    dynamical_ejecta_mass: float</span>
+<span class="sd">        The dynamical ejecta mass from the fit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># fit coefficients</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.0719</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.2116</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.42</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.905</span>
+    <span class="n">dynamical_ejecta_mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span>
+        <span class="mf">10.0</span><span class="p">,</span>
+        <span class="p">(</span>
+            <span class="p">((</span><span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">compactness1</span><span class="p">)</span> <span class="o">*</span> <span class="n">mass1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">compactness1</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">mass2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">((</span><span class="n">mass1</span> <span class="o">/</span> <span class="n">mass2</span><span class="p">),</span> <span class="n">n</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="o">+</span> <span class="p">(</span>
+            <span class="p">((</span><span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">compactness2</span><span class="p">)</span> <span class="o">*</span> <span class="n">mass2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">compactness2</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">mass1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">((</span><span class="n">mass2</span> <span class="o">/</span> <span class="n">mass1</span><span class="p">),</span> <span class="n">n</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">dynamical_ejecta_mass</span></div>
+
+
+<div class="viewcode-block" id="compute_equation_5"><a class="viewcode-back" href="../../api/kilopop.mappings.compute_equation_5.html#kilopop.mappings.compute_equation_5">[docs]</a><span class="k">def</span> <span class="nf">compute_equation_5</span><span class="p">(</span><span class="n">mass1</span><span class="p">,</span> <span class="n">mass2</span><span class="p">,</span> <span class="n">compactness1</span><span class="p">,</span> <span class="n">compactness2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute equation 5 in Setzer et al. 2022.</span>
+
+<span class="sd">    Coughlin M. W., Dietrich T., Margalit B., Metzger B. D., 2019,</span>
+<span class="sd">    MNRAS: Letters, 489, L91</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    mass1: float</span>
+<span class="sd">        The mass of the primary (more massive) neutron star.</span>
+<span class="sd">    mass2: float</span>
+<span class="sd">        The mass of the secondary (less massive) neutron star.</span>
+<span class="sd">    compactness1: float</span>
+<span class="sd">        The compactness of the primary (more massive) neutron star.</span>
+<span class="sd">    compactness2: float</span>
+<span class="sd">        The compactness of the secondary (less massive) neutron star.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    median_ejecta_velocity: float</span>
+<span class="sd">        The median ejecta velocity from the fit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># fit coefficients</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.3090</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.879</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="mf">0.657</span>
+    <span class="n">median_ejecta_velocity</span> <span class="o">=</span> <span class="p">(((</span><span class="n">e</span> <span class="o">*</span> <span class="n">mass1</span> <span class="o">*</span> <span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="n">compactness1</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">mass2</span><span class="p">))</span> <span class="o">+</span> <span class="n">g</span><span class="o">/</span><span class="mf">2.0</span>
+                              <span class="o">+</span> <span class="p">((</span><span class="n">e</span> <span class="o">*</span> <span class="n">mass2</span> <span class="o">*</span> <span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="n">compactness2</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">mass1</span><span class="p">))</span> <span class="o">+</span> <span class="n">g</span><span class="o">/</span><span class="mf">2.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">median_ejecta_velocity</span></div>
+
+
+<div class="viewcode-block" id="compute_equation_6"><a class="viewcode-back" href="../../api/kilopop.mappings.compute_equation_6.html#kilopop.mappings.compute_equation_6">[docs]</a><span class="k">def</span> <span class="nf">compute_equation_6</span><span class="p">(</span><span class="n">total_binary_mass</span><span class="p">,</span> <span class="n">prompt_collapse_threshold_mass</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute equation 6 from Setzer et al. 2022.</span>
+
+<span class="sd">    Compute the remnant disk mass from Radice et al. (2018b) and</span>
+<span class="sd">    Coughlin et al. (2019), as referenced in the accompanying paper.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    total_binary_mass: float or array</span>
+<span class="sd">        The total mass [solar masses] of the neutron star binary.</span>
+<span class="sd">    prompt_collapse_threshold_mass: float</span>
+<span class="sd">        The prompt collapse threshold mass for the given EOS.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    remnant_disk_mass: float or array</span>
+<span class="sd">        The mass [solar masses] of the remnant disk after merger.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># fit coefficients</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="mf">31.335</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.9760</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="mf">1.0474</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="mf">0.05957</span>
+    <span class="n">remnant_disk_mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span>
+                                <span class="mf">10.0</span><span class="p">,</span> <span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span>
+                                 <span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="p">(</span><span class="n">total_binary_mass</span> <span class="o">/</span>
+                                  <span class="n">prompt_collapse_threshold_mass</span><span class="p">))</span> <span class="o">/</span> <span class="n">d</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="c1"># lower limit of .1% of a solar mass</span>
+    <span class="k">if</span> <span class="n">remnant_disk_mass</span> <span class="o">&lt;</span> <span class="mf">1.0e-3</span><span class="p">:</span>
+        <span class="n">remnant_disk_mass</span> <span class="o">=</span> <span class="mf">1.0e-3</span>
+    <span class="k">return</span> <span class="n">remnant_disk_mass</span></div>
+
+
+<div class="viewcode-block" id="compute_equation_7"><a class="viewcode-back" href="../../api/kilopop.mappings.compute_equation_7.html#kilopop.mappings.compute_equation_7">[docs]</a><span class="k">def</span> <span class="nf">compute_equation_7</span><span class="p">(</span><span class="n">tov_mass</span><span class="p">,</span> <span class="n">EOS_mass_to_rad</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute equation 7 from Setzer et al. 2022.</span>
+
+<span class="sd">    Function to calculate the prompt collapse threshold mass, given the</span>
+<span class="sd">    maximum TOV mass and the radius at 1.6 solar mass for the chosen EOS.</span>
+<span class="sd">    Based on Bauswein et al. 2013.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    tov_mass: float</span>
+<span class="sd">        The maximum mass from solving the TOV equations for given EOS.</span>
+<span class="sd">    EOS_mass_to_rad: function</span>
+<span class="sd">        Interpolator function from provided EOS mass-radius curve.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    prompt_collapse_mass_threshold: float</span>
+<span class="sd">        Threshold mass in solar masses for prompt blackhole collapse.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># fit coefficients</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">2.38</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">3.606</span>
+    <span class="n">radius_1_6_msol</span> <span class="o">=</span> <span class="n">EOS_mass_to_rad</span><span class="p">(</span><span class="mf">1.6</span><span class="p">)</span>
+    <span class="n">prompt_collapse_mass_threshold</span> <span class="o">=</span> <span class="p">((</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="o">*</span>
+                                      <span class="p">(</span><span class="n">tov_mass</span> <span class="o">/</span> <span class="n">radius_1_6_msol</span><span class="p">))</span> <span class="o">*</span> <span class="n">tov_mass</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">prompt_collapse_mass_threshold</span></div>
+
+
+<div class="viewcode-block" id="compute_equation_8"><a class="viewcode-back" href="../../api/kilopop.mappings.compute_equation_8.html#kilopop.mappings.compute_equation_8">[docs]</a><span class="k">def</span> <span class="nf">compute_equation_8</span><span class="p">(</span><span class="n">disk_unbinding_efficiency</span><span class="p">,</span> <span class="n">disk_mass</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute equation 8 from Setzer et al. 2022.</span>
+
+<span class="sd">    Compute the total secular ejecta mass given the mass of the remnant disk</span>
+<span class="sd">    and the assumed unbinding efficiency of the secular processes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    disk_unbinding_efficiency: float or array</span>
+<span class="sd">        The fraction of remnant disk matter unbound and contributing to the</span>
+<span class="sd">        kilonova ejecta mass. [unitless fraction]</span>
+<span class="sd">    disk_mass: float or array</span>
+<span class="sd">        The mass of the remnant disk after merger. [solar masses]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    secular_ejecta_mass: float or Array</span>
+<span class="sd">        The mass of the kilonova from secular ejection processes.</span>
+<span class="sd">        [solar masses]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">secular_ejecta_mass</span> <span class="o">=</span> <span class="n">disk_unbinding_efficiency</span><span class="o">*</span><span class="n">disk_mass</span>
+    <span class="k">return</span> <span class="n">secular_ejecta_mass</span></div>
+
+
+<div class="viewcode-block" id="compute_equation_9"><a class="viewcode-back" href="../../api/kilopop.mappings.compute_equation_9.html#kilopop.mappings.compute_equation_9">[docs]</a><span class="k">def</span> <span class="nf">compute_equation_9</span><span class="p">(</span><span class="n">dynamical_ejecta_mass</span><span class="p">,</span> <span class="n">secular_ejecta_mass</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute equation 9 from Setzer et al. 2022.</span>
+
+<span class="sd">    Compute the total ejecta mass by simple addition of the ejecta mass from</span>
+<span class="sd">    the dynamical and secular processes involved in the merger.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    dynamical_ejecta_mass: float or Array</span>
+<span class="sd">        The ejected mass from dynamical processes. [solar masses]</span>
+<span class="sd">    secular_ejecta_mass: float or Array</span>
+<span class="sd">        The ejecta mass from secular processes. [solar masses]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    total_ejecta_mass: float or Array</span>
+<span class="sd">        The total amount of mass ejected that contributes to the kilonova</span>
+<span class="sd">        emission. [solar masses]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_ejecta_mass</span> <span class="o">=</span> <span class="n">dynamical_ejecta_mass</span> <span class="o">+</span> <span class="n">secular_ejecta_mass</span>
+    <span class="k">return</span> <span class="n">total_ejecta_mass</span></div>
+
+
+<div class="viewcode-block" id="compute_equation_10"><a class="viewcode-back" href="../../api/kilopop.mappings.compute_equation_10.html#kilopop.mappings.compute_equation_10">[docs]</a><span class="k">def</span> <span class="nf">compute_equation_10</span><span class="p">(</span><span class="n">viewing_angle</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute equation 10 from Setzer et al. 2022.</span>
+
+<span class="sd">    Fit function that determines the average electron fraction of the</span>
+<span class="sd">    material directly in the line of sight of the observer. Determined</span>
+<span class="sd">    from performing a least squares fit to the BNS merger data from</span>
+<span class="sd">    Radice et. al 2018.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    viewing_angle: float or ndarray</span>
+<span class="sd">        The orientation of the kilonova w.r.t the observer. In radians.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    electron_fraction: float or ndarray</span>
+<span class="sd">        The mass-weighted average electron fraction of the material at the</span>
+<span class="sd">        given viewing_angle or viewing-angle of the observer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># fit coefficients</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mf">0.22704</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.16147</span>
+    <span class="n">electron_fraction</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">viewing_angle</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span>
+    <span class="k">return</span> <span class="n">electron_fraction</span></div>
+
+
+<div class="viewcode-block" id="map_to_dynamical_ejecta"><a class="viewcode-back" href="../../api/kilopop.mappings.map_to_dynamical_ejecta.html#kilopop.mappings.map_to_dynamical_ejecta">[docs]</a><span class="k">def</span> <span class="nf">map_to_dynamical_ejecta</span><span class="p">(</span>
+    <span class="n">mass1</span><span class="p">,</span>
+    <span class="n">comp1</span><span class="p">,</span>
+    <span class="n">mass2</span><span class="p">,</span>
+    <span class="n">comp2</span><span class="p">,</span>
+    <span class="n">dynamical_ejecta_mass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">median_ejecta_velocity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper for fit functions from various references: Coughlin et. al 2018</span>
+<span class="sd">    to map mass1, mass2, compactness1, compactness2 to dynamical ejecta mass and</span>
+<span class="sd">    median ejecta velocity.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    mass1: float</span>
+<span class="sd">        The mass of the primary (more massive) neutron star.</span>
+<span class="sd">    mass2: float</span>
+<span class="sd">        The mass of the secondary (less massive) neutron star.</span>
+<span class="sd">    compactness1: float</span>
+<span class="sd">        The compactness of the primary (more massive) neutron star.</span>
+<span class="sd">    compactness2: float</span>
+<span class="sd">        The compactness of the secondary (less massive) neutron star.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    dynamical_ejecta_mass: float</span>
+<span class="sd">        Dynamical ejecta mass from the fit.</span>
+<span class="sd">    median_ejecta_velocity: float</span>
+<span class="sd">        The median ejecta velocity of the kilonova dynamical ejecta.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dynamical_ejecta_mass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dynamical_ejecta_mass</span> <span class="o">=</span> <span class="n">compute_equation_4</span><span class="p">(</span><span class="n">mass1</span><span class="p">,</span> <span class="n">mass2</span><span class="p">,</span> <span class="n">comp1</span><span class="p">,</span> <span class="n">comp2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">median_ejecta_velocity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">median_ejecta_velocity</span> <span class="o">=</span> <span class="n">compute_equation_5</span><span class="p">(</span><span class="n">mass1</span><span class="p">,</span> <span class="n">mass2</span><span class="p">,</span> <span class="n">comp1</span><span class="p">,</span> <span class="n">comp2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dynamical_ejecta_mass</span><span class="p">,</span> <span class="n">median_ejecta_velocity</span></div>
+
+
+<div class="viewcode-block" id="compute_secular_ejecta_mass"><a class="viewcode-back" href="../../api/kilopop.mappings.compute_secular_ejecta_mass.html#kilopop.mappings.compute_secular_ejecta_mass">[docs]</a><span class="k">def</span> <span class="nf">compute_secular_ejecta_mass</span><span class="p">(</span><span class="n">total_binary_mass</span><span class="p">,</span> <span class="n">threshold_mass</span><span class="p">,</span>
+                                <span class="n">disk_unbinding_efficiency</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the total secular ejecta mass.</span>
+
+<span class="sd">    This computes the contribution to the total ejecta mass from secular processes</span>
+<span class="sd">    following the series of equations referenced in Setzer et al. 2022.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    total_binary_mass: float or array</span>
+<span class="sd">        The total mass [solar masses] of the neutron star binary.</span>
+<span class="sd">    threshold_mass: float or array</span>
+<span class="sd">        The mass threshold [solar mass] for prompt collpase after merger.</span>
+<span class="sd">    disk_unbinding_efficiency: float or array</span>
+<span class="sd">        The percentage of matter unbound from the remnant disk contributing</span>
+<span class="sd">        to the radiating ejecta.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    secular_ejecta_mass: float or array</span>
+<span class="sd">        The total mass coming from secular processes, post-merger, to add</span>
+<span class="sd">        to the total mass comprising the kilonova ejecta.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">disk_mass</span> <span class="o">=</span> <span class="n">compute_equation_6</span><span class="p">(</span><span class="n">total_binary_mass</span><span class="p">,</span> <span class="n">threshold_mass</span><span class="p">)</span>
+    <span class="n">secular_ejecta_mass</span> <span class="o">=</span> <span class="n">compute_equation_8</span><span class="p">(</span><span class="n">disk_unbinding_efficiency</span><span class="p">,</span>
+                                             <span class="n">disk_mass</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">secular_ejecta_mass</span></div>
+
+
+<div class="viewcode-block" id="construct_opacity_gaussian_process"><a class="viewcode-back" href="../../api/kilopop.mappings.construct_opacity_gaussian_process.html#kilopop.mappings.construct_opacity_gaussian_process">[docs]</a><span class="k">def</span> <span class="nf">construct_opacity_gaussian_process</span><span class="p">(</span><span class="n">opacity_data_path</span><span class="p">,</span>
+                                       <span class="n">hyperparameter_file_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper function to build the gaussian process instance for obtaining a</span>
+<span class="sd">    grey opacity value for arbitray values of total ejecta mass, median</span>
+<span class="sd">    ejecta velocity, and electron fraction.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    opacity_data_path: string</span>
+<span class="sd">        File path for the data from which the grid</span>
+<span class="sd">        interpolation is built.</span>
+<span class="sd">    hyperparameter_file_path: string</span>
+<span class="sd">        File path for the parameters of the Gaussian process from traiing.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    grey_opacity_training_data: nd.array</span>
+<span class="sd">        The training data corresponding to the grey opacity values fit</span>
+<span class="sd">        from our weighted chi square optimisation.</span>
+<span class="sd">    opacity_GP: george.GP instance</span>
+<span class="sd">        Trained interpolator function to map</span>
+<span class="sd">        (total_ejecta_mass, median_ejecta_velocity, electron_fraction) to</span>
+<span class="sd">        grey opacity.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Import the opacity data, and the hyperparameters from training the GP.</span>
+    <span class="n">hyper_parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">hyperparameter_file_path</span><span class="p">)</span>
+    <span class="n">opacity_array_from_SuperNu_fits</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">opacity_data_path</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">grey_opacity_training_data</span> <span class="o">=</span> <span class="n">opacity_array_from_SuperNu_fits</span><span class="p">[</span><span class="s2">&quot;kappa&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">grey_opacity_training_data_uncertainty</span> <span class="o">=</span> <span class="n">opacity_array_from_SuperNu_fits</span><span class="p">[</span><span class="s2">&quot;thresholded_sigma_kappa_02&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">total_ejecta_masses</span> <span class="o">=</span> <span class="n">opacity_array_from_SuperNu_fits</span><span class="p">[</span><span class="s2">&quot;m_ej&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">median_ejecta_velocities</span> <span class="o">=</span> <span class="n">opacity_array_from_SuperNu_fits</span><span class="p">[</span><span class="s2">&quot;v_ej&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">electron_fractions</span> <span class="o">=</span> <span class="n">opacity_array_from_SuperNu_fits</span><span class="p">[</span><span class="s2">&quot;Y_e&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">kilonova_ejecta_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">total_ejecta_masses</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_ejecta_masses</span>
+    <span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">median_ejecta_velocities</span>
+    <span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">electron_fractions</span>
+
+    <span class="n">kernel_choice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">grey_opacity_training_data</span><span class="p">)</span> <span class="o">*</span> <span class="n">george</span><span class="o">.</span><span class="n">kernels</span><span class="o">.</span><span class="n">Matern52Kernel</span><span class="p">(</span>
+        <span class="n">metric</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="n">ndim</span><span class="o">=</span><span class="mi">3</span>
+    <span class="p">)</span>
+
+    <span class="n">opacity_GP</span> <span class="o">=</span> <span class="n">george</span><span class="o">.</span><span class="n">GP</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">tanaka_mean_fixed</span><span class="p">(),</span> <span class="n">kernel</span><span class="o">=</span><span class="n">kernel_choice</span><span class="p">)</span>
+    <span class="n">opacity_GP</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">,</span> <span class="n">grey_opacity_training_data_uncertainty</span><span class="p">)</span>
+    <span class="n">opacity_GP</span><span class="o">.</span><span class="n">set_parameter_vector</span><span class="p">(</span><span class="n">hyper_parameters</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">grey_opacity_training_data</span><span class="p">,</span> <span class="n">opacity_GP</span></div>
+
+
+<div class="viewcode-block" id="emulate_grey_opacity_from_kilonova_ejecta"><a class="viewcode-back" href="../../api/kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta.html#kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta">[docs]</a><span class="k">def</span> <span class="nf">emulate_grey_opacity_from_kilonova_ejecta</span><span class="p">(</span>
+    <span class="n">total_ejecta_mass</span><span class="p">,</span> <span class="n">median_ejecta_velocity</span><span class="p">,</span> <span class="n">electron_fraction</span><span class="p">,</span>
+    <span class="n">grey_opacity_gp</span><span class="p">,</span> <span class="n">opacity_data</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Map kilonova ejecta properties to grey opacity with emulator.</span>
+
+<span class="sd">    Use an interpolation instance or other function to calculate the corresponding</span>
+<span class="sd">    grey opacity that was fit from simulation data to triplets of ejecta mass,</span>
+<span class="sd">    ejecta velocity, and electron fraction.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    total_ejecta_mass: float</span>
+<span class="sd">        The total ejecta mass from the mereger.</span>
+<span class="sd">    median_ejecta_velocity: float</span>
+<span class="sd">        The median ejecta velocity of the kilonova ejecta outflow.</span>
+<span class="sd">    electron_fraction: float</span>
+<span class="sd">        The electron fraction composition of the outflow.</span>
+<span class="sd">    grey_opacity_gp: class</span>
+<span class="sd">        The constructed Gaussian process emulator.</span>
+<span class="sd">    opacity_data: pandas.Dataframe</span>
+<span class="sd">        The data on which the GP is conditioned.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    grey_opacity: ndarray</span>
+<span class="sd">        The grey opacity for the instance set of binary and kilonova</span>
+<span class="sd">        parameters to generate the kilonovae signal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kilonova_ejecta_predictions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">kilonova_ejecta_predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_ejecta_mass</span>
+    <span class="n">kilonova_ejecta_predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">median_ejecta_velocity</span>
+    <span class="n">kilonova_ejecta_predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">electron_fraction</span>
+
+    <span class="n">grey_opacity_mean</span><span class="p">,</span> <span class="n">grey_opacity_variance</span> <span class="o">=</span> <span class="n">grey_opacity_gp</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+        <span class="n">opacity_data</span><span class="p">,</span> <span class="n">kilonova_ejecta_predictions</span><span class="p">,</span> <span class="n">return_var</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="c1"># enforce grey opacity thresholding</span>
+    <span class="n">grey_opacity</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+    <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">grey_opacity</span> <span class="o">&lt;</span> <span class="mf">0.1</span> <span class="ow">and</span> <span class="n">iteration</span> <span class="o">&lt;</span> <span class="mi">10000</span><span class="p">:</span>
+        <span class="n">grey_opacity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">grey_opacity_mean</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                        <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">grey_opacity_variance</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="c1"># currently threshold on 0.1</span>
+    <span class="k">if</span> <span class="n">grey_opacity</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
+        <span class="n">grey_opacity</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="k">return</span> <span class="n">grey_opacity</span></div>
+
+
+<div class="viewcode-block" id="tanaka_mean_fixed"><a class="viewcode-back" href="../../api/kilopop.mappings.tanaka_mean_fixed.html#kilopop.mappings.tanaka_mean_fixed">[docs]</a><span class="k">class</span> <span class="nc">tanaka_mean_fixed</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct piece-wise mean function model based on Tanaka et al. 2019.</span>
+
+<span class="sd">    Mean model class to be used with the Gaussian process model of the opacity</span>
+<span class="sd">    surface. This is based on the work of Tanaka et. al 2019.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="tanaka_mean_fixed.get_value"><a class="viewcode-back" href="../../api/kilopop.mappings.tanaka_mean_fixed.html#kilopop.mappings.tanaka_mean_fixed.get_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kilonova_ejecta_array</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get value function in george format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        self: class instance</span>
+<span class="sd">            Reference to class instance.</span>
+<span class="sd">        kilonova_ejecta_array: array</span>
+<span class="sd">            Array of kilonova ejecta parameter pairs.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        mean_function_value: array</span>
+<span class="sd">            The mean function value at the given kilonova parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># initialize</span>
+        <span class="n">mean_function_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]),))</span>
+        <span class="c1"># low electron fraction region</span>
+        <span class="n">mean_function_value</span><span class="p">[</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">25.0</span>
+        <span class="c1"># transition region (linear interpolation)</span>
+        <span class="n">mean_function_value</span><span class="p">[(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">&amp;</span>
+                            <span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.25</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(((</span><span class="o">-</span><span class="mf">21.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.05</span><span class="p">))</span> <span class="o">*</span> <span class="n">kilonova_ejecta_array</span><span class="p">[</span>
+                             <span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.25</span><span class="p">),</span> <span class="mi">2</span>
+                            <span class="p">]</span> <span class="o">+</span> <span class="mf">109.0</span><span class="p">)</span>
+        <span class="c1"># mid electron fraction region</span>
+        <span class="n">mean_function_value</span><span class="p">[(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.25</span><span class="p">)</span> <span class="o">&amp;</span>
+                            <span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.35</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">4.0</span>
+        <span class="c1"># second transition (linear interpolation)</span>
+        <span class="n">mean_function_value</span><span class="p">[(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.35</span><span class="p">)</span> <span class="o">&amp;</span>
+                            <span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.4</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(((</span><span class="o">-</span><span class="mf">3.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.05</span><span class="p">))</span> <span class="o">*</span> <span class="n">kilonova_ejecta_array</span><span class="p">[</span>
+                             <span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.35</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.4</span><span class="p">),</span> <span class="mi">2</span>
+                            <span class="p">]</span> <span class="o">+</span> <span class="mf">25.0</span><span class="p">)</span>
+        <span class="c1"># high electron fraction region</span>
+        <span class="n">mean_function_value</span><span class="p">[</span><span class="n">kilonova_ejecta_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">return</span> <span class="n">mean_function_value</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Christian N. Setzer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

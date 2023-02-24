@@ -1,0 +1,6 @@
+kilopop.mappings.construct\_opacity\_gaussian\_process
+======================================================
+
+.. currentmodule:: kilopop.mappings
+
+.. autofunction:: construct_opacity_gaussian_process

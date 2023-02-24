@@ -1,0 +1,36 @@
+﻿kilopop.kilonovae
+=================
+
+.. currentmodule:: kilopop.kilonovae
+
+.. automodule:: kilopop.kilonovae
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      
+      bns_kilonova
+      
+      bns_kilonovae_population_distribution
+   
+   
+
+   
+   
+   
+
+
+

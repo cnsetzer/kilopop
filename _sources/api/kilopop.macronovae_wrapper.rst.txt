@@ -1,0 +1,37 @@
+﻿kilopop.macronovae\_wrapper
+===========================
+
+.. currentmodule:: kilopop.macronovae_wrapper
+
+.. automodule:: kilopop.macronovae_wrapper
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      
+      compute_planck_function
+      
+      create_saee_seds
+      
+      create_sed_timeseries
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

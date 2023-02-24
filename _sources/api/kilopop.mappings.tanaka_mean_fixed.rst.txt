@@ -1,0 +1,52 @@
+kilopop.mappings.tanaka\_mean\_fixed
+====================================
+
+.. currentmodule:: kilopop.mappings
+
+.. autoclass:: tanaka_mean_fixed
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+   .. automethod:: __call__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~tanaka_mean_fixed.__init__
+      ~tanaka_mean_fixed.check_parameter_vector
+      ~tanaka_mean_fixed.compute_gradient
+      ~tanaka_mean_fixed.freeze_all_parameters
+      ~tanaka_mean_fixed.freeze_parameter
+      ~tanaka_mean_fixed.get_gradient
+      ~tanaka_mean_fixed.get_parameter
+      ~tanaka_mean_fixed.get_parameter_bounds
+      ~tanaka_mean_fixed.get_parameter_dict
+      ~tanaka_mean_fixed.get_parameter_names
+      ~tanaka_mean_fixed.get_parameter_vector
+      ~tanaka_mean_fixed.get_value
+      ~tanaka_mean_fixed.log_prior
+      ~tanaka_mean_fixed.parameter_sort
+      ~tanaka_mean_fixed.set_parameter
+      ~tanaka_mean_fixed.set_parameter_vector
+      ~tanaka_mean_fixed.thaw_all_parameters
+      ~tanaka_mean_fixed.thaw_parameter
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~tanaka_mean_fixed.full_size
+      ~tanaka_mean_fixed.parameter_names
+      ~tanaka_mean_fixed.parameter_vector
+      ~tanaka_mean_fixed.vector_size
+   
+   

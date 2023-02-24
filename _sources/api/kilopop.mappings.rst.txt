@@ -1,0 +1,62 @@
+﻿kilopop.mappings
+================
+
+.. currentmodule:: kilopop.mappings
+
+.. automodule:: kilopop.mappings
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      
+      compute_equation_10
+      
+      compute_equation_4
+      
+      compute_equation_5
+      
+      compute_equation_6
+      
+      compute_equation_7
+      
+      compute_equation_8
+      
+      compute_equation_9
+      
+      compute_secular_ejecta_mass
+      
+      construct_opacity_gaussian_process
+      
+      emulate_grey_opacity_from_kilonova_ejecta
+      
+      map_to_dynamical_ejecta
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      
+      tanaka_mean_fixed
+   
+   
+
+   
+   
+   
+
+
+

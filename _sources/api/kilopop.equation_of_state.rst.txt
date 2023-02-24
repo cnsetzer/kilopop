@@ -1,0 +1,39 @@
+﻿kilopop.equation\_of\_state
+===========================
+
+.. currentmodule:: kilopop.equation_of_state
+
+.. automodule:: kilopop.equation_of_state
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      
+      compute_compactnesses_from_EOS
+      
+      get_EOS_table
+      
+      get_max_EOS_mass
+      
+      get_radius_interpolator_from_EOS
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kilopop.macronovae_wrapper &mdash; Kilopop beta documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Kilopop
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/tutorial_notebook_1.html">Tutorial: Basic functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledging.html">Acknowledging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.equation_of_state.html">kilopop.equation_of_state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.kilonovae.html">kilopop.kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.macronovae_wrapper.html">kilopop.macronovae_wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.mappings.html">kilopop.mappings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.population_priors.html">kilopop.population_priors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Kilopop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">kilopop.macronovae_wrapper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kilopop.macronovae_wrapper</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Public module which computes the thermal spectra from a given set of</span>
+<span class="sd">kilonova parameters. Wrapper to the FORTRAN library for the SAEE model. &quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span> <span class="nn">macronova2py</span> <span class="kn">import</span> <span class="n">macronova2py</span> <span class="k">as</span> <span class="n">m2p</span>
+<span class="kn">from</span> <span class="nn">astropy.constants</span> <span class="kn">import</span> <span class="n">h</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">sigma_sb</span><span class="p">,</span> <span class="n">k_B</span><span class="p">,</span> <span class="n">pc</span>
+
+
+<div class="viewcode-block" id="create_saee_seds"><a class="viewcode-back" href="../../api/kilopop.macronovae_wrapper.create_saee_seds.html#kilopop.macronovae_wrapper.create_saee_seds">[docs]</a><span class="k">def</span> <span class="nf">create_saee_seds</span><span class="p">(</span><span class="n">KNE_parameters</span><span class="p">,</span>
+                     <span class="n">min_wave</span><span class="o">=</span><span class="mf">500.0</span><span class="p">,</span>
+                     <span class="n">max_wave</span><span class="o">=</span><span class="mf">12000.0</span><span class="p">,</span>
+                     <span class="n">phases</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">wavelengths</span><span class="o">=</span><span class="kc">None</span>
+                     <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function which prepares the inputs from the python code to the fortran</span>
+<span class="sd">    library to compute the bolometric luminosity evolution for a kilonova given</span>
+<span class="sd">    the input generating parameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    KNE_parameters: list</span>
+<span class="sd">        List in format to pass to fortran code containing all the parmeter</span>
+<span class="sd">        inputs needed for the fortran library to generate at kilonova</span>
+<span class="sd">        time-series evolution.</span>
+<span class="sd">    min_wave: float (optional)</span>
+<span class="sd">        Minimum wavelength in Angstroms over which to simulate spectra.</span>
+<span class="sd">    max_wave: float (optional)</span>
+<span class="sd">        Maximum wavelength in Angstroms over which to simulate spectra.</span>
+<span class="sd">    phases: np.array-like (optional)</span>
+<span class="sd">        phases at which to calculate the spectral evolution.</span>
+<span class="sd">    wavelengths: np.array-like (optional)</span>
+<span class="sd">        Wavelengths at which to compute the thermal spectrum.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    create_sed_timeseries: function call</span>
+<span class="sd">        A function call returning a phase, wavelength, and flux array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Nt</span> <span class="o">=</span> <span class="mi">5000</span>  <span class="c1"># internal grid of times over which to generate the luminosity</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">KNE_parameters</span><span class="p">)</span> <span class="o">-</span> <span class="mi">4</span>  <span class="c1"># number of base kN parameters.</span>
+    <span class="n">MNE_parameters</span> <span class="o">=</span> <span class="n">KNE_parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">]</span>  <span class="c1"># sub select parameters</span>
+    <span class="n">func_hrate</span> <span class="o">=</span> <span class="n">KNE_parameters</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>  <span class="c1"># flag to use functional heating rate</span>
+    <span class="n">func_therm</span> <span class="o">=</span> <span class="n">KNE_parameters</span><span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># flag to use functional thermalisation</span>
+    <span class="n">read_hrate</span> <span class="o">=</span> <span class="n">KNE_parameters</span><span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>  <span class="c1"># flag to read heating rates.</span>
+    <span class="n">heating_rates_file</span> <span class="o">=</span> <span class="n">KNE_parameters</span><span class="p">[</span><span class="n">n</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># file to read from.</span>
+    <span class="n">luminosity_array</span> <span class="o">=</span> <span class="n">m2p</span><span class="o">.</span><span class="n">calculate_luminosity</span><span class="p">(</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">MNE_parameters</span><span class="p">,</span> <span class="n">func_hrate</span><span class="p">,</span> <span class="n">func_therm</span><span class="p">,</span> <span class="n">read_hrate</span><span class="p">,</span> <span class="n">heating_rates_file</span><span class="p">,</span> <span class="n">Nt</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">create_sed_timeseries</span><span class="p">(</span><span class="n">luminosity_array</span><span class="p">,</span>
+                          <span class="n">min_wave</span><span class="p">,</span> <span class="n">max_wave</span><span class="p">,</span> <span class="n">phases</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_sed_timeseries"><a class="viewcode-back" href="../../api/kilopop.macronovae_wrapper.create_sed_timeseries.html#kilopop.macronovae_wrapper.create_sed_timeseries">[docs]</a><span class="k">def</span> <span class="nf">create_sed_timeseries</span><span class="p">(</span>
+    <span class="n">luminosity_array</span><span class="p">,</span> <span class="n">min_wave</span><span class="o">=</span><span class="mf">500.0</span><span class="p">,</span> <span class="n">max_wave</span><span class="o">=</span><span class="mf">12000.0</span><span class="p">,</span> <span class="n">phases</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">wavelengths</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to compute a planck distribution normalized to sigma*T**4/pi</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    luminosity_array: nd.array</span>
+<span class="sd">        Time-series evolution of the bolometric luminosity of the simulated</span>
+<span class="sd">        kilonova source. For use with scaling the Planck distribution.</span>
+<span class="sd">        Expected shape (n_time, 4).</span>
+<span class="sd">    min_wave: float (optional)</span>
+<span class="sd">        Minimum wavelength in Angstroms over which to simulate spectra.</span>
+<span class="sd">    max_wave: float (optional)</span>
+<span class="sd">        Maximum wavelength in Angstroms over which to simulate spectra.</span>
+<span class="sd">    phases: np.array-like (optional)</span>
+<span class="sd">        phases at which to calculate the spectral evolution.</span>
+<span class="sd">    wavelengths: np.array-like (optional)</span>
+<span class="sd">        Wavelengths at which to compute the thermal spectrum.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    phase_days: array</span>
+<span class="sd">        Array containing all the phases along the lightcurve evolution at</span>
+<span class="sd">        which an SED is defined. This is given in days. Shape is (n_time,).</span>
+<span class="sd">    wavelengths: array</span>
+<span class="sd">        Values in Angstroms of the covered energy spectrum.</span>
+<span class="sd">        Shape is (n_wave,).</span>
+<span class="sd">    flux: array</span>
+<span class="sd">        Energy per area values for every combination of phase and</span>
+<span class="sd">        wavelengths characterizing the lightcurve of the source.</span>
+<span class="sd">        [Ergs/s/cm^2/Angstrom]. Shape is (n_time, n_wave).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">day_in_s</span> <span class="o">=</span> <span class="mf">8.64e4</span>  <span class="c1"># one day [s]</span>
+    <span class="n">Ang_to_cm</span> <span class="o">=</span> <span class="mf">1.0e-8</span>  <span class="c1"># angstrom [cm]</span>
+    <span class="c1"># extract values from luminosity_array</span>
+    <span class="n">phase</span> <span class="o">=</span> <span class="n">luminosity_array</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># times [seconds]</span>
+    <span class="n">luminosity</span> <span class="o">=</span> <span class="n">luminosity_array</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># luminosities [erg/s]</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">luminosity_array</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>  <span class="c1"># Temperatures [K]</span>
+
+    <span class="c1"># if phases specificed, interpolate solution to those times</span>
+    <span class="k">if</span> <span class="n">phases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">luminosity_interpolator</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">luminosity</span><span class="p">)</span>
+        <span class="n">luminosity</span> <span class="o">=</span> <span class="n">luminosity_interpolator</span><span class="p">(</span><span class="n">phases</span> <span class="o">*</span> <span class="n">day_in_s</span><span class="p">)</span>
+        <span class="n">temperature_interpolator</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
+        <span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature_interpolator</span><span class="p">(</span><span class="n">phases</span> <span class="o">*</span> <span class="n">day_in_s</span><span class="p">)</span>
+        <span class="n">phase_days</span> <span class="o">=</span> <span class="n">phases</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">phase_days</span> <span class="o">=</span> <span class="n">phase</span> <span class="o">/</span> <span class="n">day_in_s</span>
+    <span class="c1"># if wavelengths not provided, setup wavelength array</span>
+    <span class="k">if</span> <span class="n">wavelengths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_wave</span><span class="p">,</span> <span class="n">max_wave</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>  <span class="c1"># Angstrom</span>
+    <span class="c1"># distance scaling to 10pc at which spectra is computed</span>
+    <span class="n">distance_scaling</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">*</span> <span class="n">pc</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span>
+    <span class="c1"># scaling coefficient for the spectra from luminosity solution</span>
+    <span class="n">flux_coefficient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">luminosity</span><span class="p">,</span>
+                                 <span class="p">(</span><span class="mf">4.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">distance_scaling</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma_sb</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span>
+                                  <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
+    <span class="c1"># output flux f [erg s^-1 cm^-2 Ang.^-1]</span>
+    <span class="n">lam_cm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">wavelengths</span><span class="p">,</span> <span class="n">Ang_to_cm</span><span class="p">)</span>
+    <span class="c1"># output is ergs / s /cm^3</span>
+    <span class="n">planck_values</span> <span class="o">=</span> <span class="n">compute_planck_function</span><span class="p">(</span><span class="n">lam_cm</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span>
+    <span class="c1"># rescale spectrum with luminosity-derived coefficient</span>
+    <span class="n">flux</span> <span class="o">=</span> <span class="p">(</span><span class="n">planck_values</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">flux_coefficient</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="c1"># convert to ergs/s /cm^2 /Angstrom</span>
+    <span class="n">flux</span> <span class="o">*=</span> <span class="n">Ang_to_cm</span>
+    <span class="k">return</span> <span class="n">phase_days</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">,</span> <span class="n">flux</span></div>
+
+
+<div class="viewcode-block" id="compute_planck_function"><a class="viewcode-back" href="../../api/kilopop.macronovae_wrapper.compute_planck_function.html#kilopop.macronovae_wrapper.compute_planck_function">[docs]</a><span class="k">def</span> <span class="nf">compute_planck_function</span><span class="p">(</span><span class="n">lambda_cm</span><span class="p">,</span> <span class="n">temperature</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Planck function of wavelength.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    lambda_cm: nd.array</span>
+<span class="sd">        Wavelengths [cm]. Expected shape is (n_wave,).</span>
+<span class="sd">    temperature: nd.array</span>
+<span class="sd">        Time-series of temperatures [K] for spectra generation.</span>
+<span class="sd">        Expected shape is (n_time,).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    planck_values: nd.array</span>
+<span class="sd">        The value of the Planck function for a given temp. and wavelength.</span>
+<span class="sd">        Output shape is (n_time, n_wave).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># cutoff argument to which we set Planck function to zero</span>
+    <span class="n">planck_arg_limit</span> <span class="o">=</span> <span class="mf">100.0</span>
+    <span class="c1"># utilize linear algebra for fast generation, i.e., broadcasting</span>
+    <span class="n">lambda_cm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">lambda_cm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># pre-compute exponent argument for Planck function</span>
+    <span class="n">planck_arg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">c</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                           <span class="p">(</span><span class="n">k_B</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">temperature</span> <span class="o">*</span> <span class="n">lambda_cm</span><span class="p">))</span>
+    <span class="c1"># construct wavelength array for each temperature</span>
+    <span class="n">lam_planck</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">lambda_cm</span><span class="p">,</span> <span class="p">(</span><span class="n">planck_arg</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c1"># initialize Planck function array</span>
+    <span class="n">planck_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">planck_arg</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="c1"># compute Planck function</span>
+    <span class="n">planck_values</span><span class="p">[</span><span class="n">planck_arg</span> <span class="o">&lt;=</span> <span class="n">planck_arg_limit</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
+        <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">h</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">cgs</span><span class="o">.</span><span class="n">value</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">lam_planck</span><span class="p">[</span><span class="n">planck_arg</span> <span class="o">&lt;=</span> <span class="n">planck_arg_limit</span><span class="p">],</span> <span class="mi">5</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">planck_arg</span><span class="p">[</span><span class="n">planck_arg</span> <span class="o">&lt;=</span> <span class="n">planck_arg_limit</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">planck_values</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Christian N. Setzer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+kilopop.macronovae\_wrapper.create\_saee\_seds
+==============================================
+
+.. currentmodule:: kilopop.macronovae_wrapper
+
+.. autofunction:: create_saee_seds

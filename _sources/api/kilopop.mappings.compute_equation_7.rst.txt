@@ -1,0 +1,6 @@
+kilopop.mappings.compute\_equation\_7
+=====================================
+
+.. currentmodule:: kilopop.mappings
+
+.. autofunction:: compute_equation_7

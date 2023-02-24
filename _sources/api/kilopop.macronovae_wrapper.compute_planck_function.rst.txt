@@ -1,0 +1,6 @@
+kilopop.macronovae\_wrapper.compute\_planck\_function
+=====================================================
+
+.. currentmodule:: kilopop.macronovae_wrapper
+
+.. autofunction:: compute_planck_function

@@ -1,0 +1,6 @@
+kilopop.population\_priors.draw\_viewing\_angle
+===============================================
+
+.. currentmodule:: kilopop.population_priors
+
+.. autofunction:: draw_viewing_angle

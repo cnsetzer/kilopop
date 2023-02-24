@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kilopop.equation_of_state &mdash; Kilopop beta documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="kilopop.equation_of_state.compute_compactnesses_from_EOS" href="kilopop.equation_of_state.compute_compactnesses_from_EOS.html" />
+    <link rel="prev" title="Acknowledging" href="../acknowledging.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Kilopop
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/tutorial_notebook_1.html">Tutorial: Basic functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledging.html">Acknowledging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">kilopop.equation_of_state</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.equation_of_state.compute_compactnesses_from_EOS.html">kilopop.equation_of_state.compute_compactnesses_from_EOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.equation_of_state.get_EOS_table.html">kilopop.equation_of_state.get_EOS_table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.equation_of_state.get_max_EOS_mass.html">kilopop.equation_of_state.get_max_EOS_mass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.equation_of_state.get_radius_interpolator_from_EOS.html">kilopop.equation_of_state.get_radius_interpolator_from_EOS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.kilonovae.html">kilopop.kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.macronovae_wrapper.html">kilopop.macronovae_wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.mappings.html">kilopop.mappings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.population_priors.html">kilopop.population_priors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Kilopop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">kilopop.equation_of_state</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/kilopop.equation_of_state.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="module-kilopop.equation_of_state">
+<span id="kilopop-equation-of-state"></span><h1>kilopop.equation_of_state<a class="headerlink" href="#module-kilopop.equation_of_state" title="Permalink to this heading"></a></h1>
+<p>Module for equation of state dependent properties of the model.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="kilopop.equation_of_state.compute_compactnesses_from_EOS.html#kilopop.equation_of_state.compute_compactnesses_from_EOS" title="kilopop.equation_of_state.compute_compactnesses_from_EOS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_compactnesses_from_EOS</span></code></a>(mass, ...)</p></td>
+<td><p>Calucate the neutron star stellar compactness.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kilopop.equation_of_state.get_EOS_table.html#kilopop.equation_of_state.get_EOS_table" title="kilopop.equation_of_state.get_EOS_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_EOS_table</span></code></a>([EOS_path])</p></td>
+<td><p>Read in the Equation of state table.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="kilopop.equation_of_state.get_max_EOS_mass.html#kilopop.equation_of_state.get_max_EOS_mass" title="kilopop.equation_of_state.get_max_EOS_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_max_EOS_mass</span></code></a>(EOS_table)</p></td>
+<td><p>Obtain the maximum supported neutron star mass from the given EOS.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kilopop.equation_of_state.get_radius_interpolator_from_EOS.html#kilopop.equation_of_state.get_radius_interpolator_from_EOS" title="kilopop.equation_of_state.get_radius_interpolator_from_EOS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_radius_interpolator_from_EOS</span></code></a>(EOS_table)</p></td>
+<td><p>Read the radius table and create interpolator function.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../acknowledging.html" class="btn btn-neutral float-left" title="Acknowledging" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kilopop.equation_of_state.compute_compactnesses_from_EOS.html" class="btn btn-neutral float-right" title="kilopop.equation_of_state.compute_compactnesses_from_EOS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Christian N. Setzer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

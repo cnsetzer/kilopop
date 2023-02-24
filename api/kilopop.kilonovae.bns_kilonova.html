@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kilopop.kilonovae.bns_kilonova &mdash; Kilopop beta documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="kilopop.kilonovae.bns_kilonovae_population_distribution" href="kilopop.kilonovae.bns_kilonovae_population_distribution.html" />
+    <link rel="prev" title="kilopop.kilonovae" href="kilopop.kilonovae.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Kilopop
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/tutorial_notebook_1.html">Tutorial: Basic functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledging.html">Acknowledging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="kilopop.equation_of_state.html">kilopop.equation_of_state</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="kilopop.kilonovae.html">kilopop.kilonovae</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">kilopop.kilonovae.bns_kilonova</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova"><code class="docutils literal notranslate"><span class="pre">bns_kilonova</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.__init__"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.__call__"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.__call__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.create_spectral_timeseries"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.create_spectral_timeseries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.draw_from_binary_population"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.draw_from_binary_population()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.draw_parameters"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.draw_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.emulate_grey_opacity"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.emulate_grey_opacity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.enforce_emulator_bounds"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.enforce_emulator_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.map_mass_to_compactness"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.map_mass_to_compactness()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.map_to_kilonova_ejecta"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.map_to_kilonova_ejecta()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.print_parameters"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.print_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.phase"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.phase</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.wave"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.wave</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.flux"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.flux</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param1"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param1</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param2"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param3"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param3</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param4"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param4</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param5"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param5</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param6"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param6</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param7"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param7</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param8"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param8</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.self.param9"><code class="docutils literal notranslate"><span class="pre">bns_kilonova.self.param9</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.kilonovae.bns_kilonovae_population_distribution.html">kilopop.kilonovae.bns_kilonovae_population_distribution</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.macronovae_wrapper.html">kilopop.macronovae_wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.mappings.html">kilopop.mappings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.population_priors.html">kilopop.population_priors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Kilopop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="kilopop.kilonovae.html">kilopop.kilonovae</a></li>
+      <li class="breadcrumb-item active">kilopop.kilonovae.bns_kilonova</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/kilopop.kilonovae.bns_kilonova.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="kilopop-kilonovae-bns-kilonova">
+<h1>kilopop.kilonovae.bns_kilonova<a class="headerlink" href="#kilopop-kilonovae-bns-kilonova" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kilopop.kilonovae.</span></span><span class="sig-name descname"><span class="pre">bns_kilonova</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mass1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compactness1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compactness2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewing_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">electron_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamical_ejecta_mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">median_ejecta_velocity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grey_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">secular_ejecta_mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_ejecta_mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disk_unbinding_efficiency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass_ratio_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transient_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_wave</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_wave</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EOS_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity_data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emulator_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_draw_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Top-level class for kilonovae transients based on Rosswog, et. al 2017
+semi-analytic model for kilonovae spectral energy distributions. With
+added mappings and population priors to generate kilonovae consistent with
+a broad binary neutron star population.</p>
+<p>Note: all input parameters are optional. If none are provided a kilonova
+will be generated by drawing parameters from the population priors used
+in our accompanying paper, Setzer et al. 2022.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mass1</strong> (<em>float</em>) – The gravitational mass of the first neutron star.</p></li>
+<li><p><strong>mass2</strong> (<em>float</em>) – The gravitational mass of the second neutron star.</p></li>
+<li><p><strong>compactness1</strong> (<em>float</em>) – The stellar compactness of the first neutron star.</p></li>
+<li><p><strong>compactness2</strong> (<em>float</em>) – The stellar compactness of the second neutron star.</p></li>
+<li><p><strong>viewing_angle</strong> (<em>float</em>) – The viewing angle of the observer with respect to the merger.</p></li>
+<li><p><strong>electron_fraction</strong> (<em>float</em>) – The electron fraction along the line of sight of the observer.</p></li>
+<li><p><strong>dynamical_ejecta_mass</strong> (<em>float</em>) – The dynamic ejecta mass of the expanding kilonova material.</p></li>
+<li><p><strong>median_ejecta_velocity</strong> (<em>float</em>) – The mean ejecta velocity of the expanding kilonova material.</p></li>
+<li><p><strong>grey_opacity</strong> (<em>float</em>) – The grey opacity of the material along the line of sight of the
+observer.</p></li>
+<li><p><strong>secular_ejecta_mass</strong> (<em>float</em>) – The secular ejecta mass of the expanding kilonova material.</p></li>
+<li><p><strong>total_ejecta_mass</strong> (<em>float</em>) – The total ejecta mass of the expanding kilonova material.</p></li>
+<li><p><strong>disk_unbinding_efficiency</strong> (<em>float</em>) – The fractional percentage of matter unbound by disk winds.</p></li>
+<li><p><strong>mass_ratio_threshold</strong> (<em>float</em>) – The lower bound on mass-ratio for which to simulate the binary.</p></li>
+<li><p><strong>transient_duration</strong> (<em>float</em><em> [</em><em>days</em><em>]</em>) – The maximal length of time over which to generate the kilonova signal.
+Default is 15 days.</p></li>
+<li><p><strong>min_wave</strong> (<em>float</em><em> [</em><em>Angstroms</em><em>]</em>) – The minimum wavelength of the simulated source-frame spectral timeseries.</p></li>
+<li><p><strong>max_wave</strong> (<em>float</em><em> [</em><em>Angstroms</em><em>]</em>) – The maximum wavelength of the simulated source-frame spectral timeseries.</p></li>
+<li><p><strong>EOS_path</strong> (<em>string</em>) – The location of EOS mass vs. radius data for computation of TOV mass,
+translation between neutron star mass and radius, and computation of
+the stellar compactness of the component neutron stars.</p></li>
+<li><p><strong>opacity_data_path</strong> (<em>string</em>) – The location of the inferred grey opacity training data for use with
+the Gaussian process emulator.</p></li>
+<li><p><strong>emulator_path</strong> (<em>string</em>) – The file location of the emulator data needed to reconstruct the
+Gaussian process emulator for mapping ejecta parameters to grey opacity.</p></li>
+<li><p><strong>id</strong> (<em>int</em>) – Unique ID to associate with specific generated instance of a kilonova.
+Useful for simulation purposes.</p></li>
+<li><p><strong>only_draw_parameters</strong> (<em>Boolean</em>) – Flag indicating if the spectral timeseries should also be generated
+for the correspondingly provided or drawn parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>object</strong> – Instance of this class of kilonovae.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>class instance</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mass1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compactness1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compactness2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewing_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">electron_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamical_ejecta_mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">median_ejecta_velocity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grey_opacity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">secular_ejecta_mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_ejecta_mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disk_unbinding_efficiency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass_ratio_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transient_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_wave</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_wave</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EOS_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity_data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emulator_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_draw_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.__call__" title="Permalink to this definition"></a></dt>
+<dd><p>Call self as a function.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.__init__" title="kilopop.kilonovae.bns_kilonova.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([mass1, mass2, compactness1, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.create_spectral_timeseries" title="kilopop.kilonovae.bns_kilonova.create_spectral_timeseries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_spectral_timeseries</span></code></a>([KNE_parameters])</p></td>
+<td><p>Create the spectral energy density timeseries for this kilonova instance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.draw_from_binary_population" title="kilopop.kilonovae.bns_kilonova.draw_from_binary_population"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_from_binary_population</span></code></a>()</p></td>
+<td><p>Draw from the population priors on masses and inclination.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.draw_parameters" title="kilopop.kilonovae.bns_kilonova.draw_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_parameters</span></code></a>()</p></td>
+<td><p>Draw parameters not populated by the user.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.emulate_grey_opacity" title="kilopop.kilonovae.bns_kilonova.emulate_grey_opacity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">emulate_grey_opacity</span></code></a>()</p></td>
+<td><p>Wrapper function to emulate the grey opacity as the last step in populating the transient instance with kilonova parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.enforce_emulator_bounds" title="kilopop.kilonovae.bns_kilonova.enforce_emulator_bounds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enforce_emulator_bounds</span></code></a>()</p></td>
+<td><p>Impose emulator boundary conditions for validity.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.map_mass_to_compactness" title="kilopop.kilonovae.bns_kilonova.map_mass_to_compactness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_mass_to_compactness</span></code></a>()</p></td>
+<td><p>Wrapper function to the equation of state mappings.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.map_to_kilonova_ejecta" title="kilopop.kilonovae.bns_kilonova.map_to_kilonova_ejecta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_to_kilonova_ejecta</span></code></a>()</p></td>
+<td><p>Wrapper function to compute all of the kilonova ejecta, apart from emulation of the grey opacity given the ejecta parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#kilopop.kilonovae.bns_kilonova.print_parameters" title="kilopop.kilonovae.bns_kilonova.print_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_parameters</span></code></a>()</p></td>
+<td><p>Util function to print parameters of simulated kN.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">EOS_mass_to_rad</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">grey_opacity_emulator</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">opacity_data</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">threshold_mass</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tov_mass</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.create_spectral_timeseries">
+<span class="sig-name descname"><span class="pre">create_spectral_timeseries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">KNE_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.create_spectral_timeseries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.create_spectral_timeseries" title="Permalink to this definition"></a></dt>
+<dd><p>Create the spectral energy density timeseries for this kilonova
+instance.</p>
+<p>First layer wrapper function to FORTRAN library that computes the
+kilonova SED evolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>KNE_parameters</strong> (<em>list</em>) – List of parameters needed to generate the kilonova SED. List format
+input instead of inputting mej, vej, etc. separately. Default=None.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.phase">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">phase</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.phase" title="Permalink to this definition"></a></dt>
+<dd><p>The phases in days where the kilonova SEDs are defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.wave">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">wave</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.wave" title="Permalink to this definition"></a></dt>
+<dd><p>The discrete wavelengths at which fluxes are defined for a
+given phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.flux">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">flux</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.flux" title="Permalink to this definition"></a></dt>
+<dd><p>The flux values for each combination of phase and wavelength.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.draw_from_binary_population">
+<span class="sig-name descname"><span class="pre">draw_from_binary_population</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.draw_from_binary_population"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.draw_from_binary_population" title="Permalink to this definition"></a></dt>
+<dd><p>Draw from the population priors on masses and inclination. Wrapper
+to population functions to populate instance parameters with draws from
+the population distributions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.draw_parameters">
+<span class="sig-name descname"><span class="pre">draw_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.draw_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.draw_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Draw parameters not populated by the user.</p>
+<p>Wrapper function to sample the generating parameter distributions from
+Setzer et al 2022.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param1">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param1</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param1" title="Permalink to this definition"></a></dt>
+<dd><p>The gravitational mass of the first neutron star.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param2">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param2</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param2" title="Permalink to this definition"></a></dt>
+<dd><p>The gravitational mass of the second neutron star.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param3">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param3</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param3" title="Permalink to this definition"></a></dt>
+<dd><p>The stellar compactness of the first neutron star.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param4">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param4</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param4" title="Permalink to this definition"></a></dt>
+<dd><p>The stellar compactness of the second neutron star.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param5">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param5</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param5" title="Permalink to this definition"></a></dt>
+<dd><p>The viewing angle of the observer with respect to the merger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param6">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param6</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param6" title="Permalink to this definition"></a></dt>
+<dd><p>The electron fraction along the line of sight of the observer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param7">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param7</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param7" title="Permalink to this definition"></a></dt>
+<dd><p>The total ejecta mass of the expanding kilonova material.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param8">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param8</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param8" title="Permalink to this definition"></a></dt>
+<dd><p>The mean ejecta velocity of the expanding kilonova material.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.self.param9">
+<span class="sig-prename descclassname"><span class="pre">self.</span></span><span class="sig-name descname"><span class="pre">param9</span></span><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.self.param9" title="Permalink to this definition"></a></dt>
+<dd><p>The grey opacity of the material along the line of sight of the
+observer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.emulate_grey_opacity">
+<span class="sig-name descname"><span class="pre">emulate_grey_opacity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.emulate_grey_opacity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.emulate_grey_opacity" title="Permalink to this definition"></a></dt>
+<dd><p>Wrapper function to emulate the grey opacity as the last step in
+populating the transient instance with kilonova parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.enforce_emulator_bounds">
+<span class="sig-name descname"><span class="pre">enforce_emulator_bounds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.enforce_emulator_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.enforce_emulator_bounds" title="Permalink to this definition"></a></dt>
+<dd><p>Impose emulator boundary conditions for validity.</p>
+<p>Imposes the boundary conditions we are limited to by our training data
+for the Gaussian process emulator.</p>
+<p>If the drawn parameters not fall with the bounds re-draw consistently
+from the population.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.map_mass_to_compactness">
+<span class="sig-name descname"><span class="pre">map_mass_to_compactness</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.map_mass_to_compactness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.map_mass_to_compactness" title="Permalink to this definition"></a></dt>
+<dd><p>Wrapper function to the equation of state mappings.
+Using the inverse function interpolated from the given EOS mass-radius
+table, compute the compactness for a given mass.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.map_to_kilonova_ejecta">
+<span class="sig-name descname"><span class="pre">map_to_kilonova_ejecta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.map_to_kilonova_ejecta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.map_to_kilonova_ejecta" title="Permalink to this definition"></a></dt>
+<dd><p>Wrapper function to compute all of the kilonova ejecta, apart from
+emulation of the grey opacity given the ejecta parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kilopop.kilonovae.bns_kilonova.print_parameters">
+<span class="sig-name descname"><span class="pre">print_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/kilonovae.html#bns_kilonova.print_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.kilonovae.bns_kilonova.print_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Util function to print parameters of simulated kN.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="kilopop.kilonovae.html" class="btn btn-neutral float-left" title="kilopop.kilonovae" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kilopop.kilonovae.bns_kilonovae_population_distribution.html" class="btn btn-neutral float-right" title="kilopop.kilonovae.bns_kilonovae_population_distribution" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Christian N. Setzer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

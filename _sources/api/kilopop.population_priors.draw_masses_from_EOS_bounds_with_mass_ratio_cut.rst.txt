@@ -1,0 +1,6 @@
+kilopop.population\_priors.draw\_masses\_from\_EOS\_bounds\_with\_mass\_ratio\_cut
+==================================================================================
+
+.. currentmodule:: kilopop.population_priors
+
+.. autofunction:: draw_masses_from_EOS_bounds_with_mass_ratio_cut

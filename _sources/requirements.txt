@@ -1,0 +1,7 @@
+numpy
+sphinx==6.1.3
+sphinx_rtd_theme
+nbsphinx
+jinja2>=3.0
+markupsafe>=2.0
+.

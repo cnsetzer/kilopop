@@ -1,0 +1,6 @@
+kilopop.macronovae\_wrapper.create\_sed\_timeseries
+===================================================
+
+.. currentmodule:: kilopop.macronovae_wrapper
+
+.. autofunction:: create_sed_timeseries

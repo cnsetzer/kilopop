@@ -1,0 +1,6 @@
+kilopop.population\_priors.draw\_disk\_unbinding\_efficiency
+============================================================
+
+.. currentmodule:: kilopop.population_priors
+
+.. autofunction:: draw_disk_unbinding_efficiency

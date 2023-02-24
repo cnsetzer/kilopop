@@ -1,0 +1,44 @@
+kilopop.kilonovae.bns\_kilonova
+===============================
+
+.. currentmodule:: kilopop.kilonovae
+
+.. autoclass:: bns_kilonova
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   .. automethod:: __init__
+   .. automethod:: __call__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~bns_kilonova.__init__
+      ~bns_kilonova.create_spectral_timeseries
+      ~bns_kilonova.draw_from_binary_population
+      ~bns_kilonova.draw_parameters
+      ~bns_kilonova.emulate_grey_opacity
+      ~bns_kilonova.enforce_emulator_bounds
+      ~bns_kilonova.map_mass_to_compactness
+      ~bns_kilonova.map_to_kilonova_ejecta
+      ~bns_kilonova.print_parameters
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~bns_kilonova.EOS_mass_to_rad
+      ~bns_kilonova.grey_opacity_emulator
+      ~bns_kilonova.opacity_data
+      ~bns_kilonova.threshold_mass
+      ~bns_kilonova.tov_mass
+   
+   

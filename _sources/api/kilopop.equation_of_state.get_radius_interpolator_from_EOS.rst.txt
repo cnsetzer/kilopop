@@ -1,0 +1,6 @@
+kilopop.equation\_of\_state.get\_radius\_interpolator\_from\_EOS
+================================================================
+
+.. currentmodule:: kilopop.equation_of_state
+
+.. autofunction:: get_radius_interpolator_from_EOS

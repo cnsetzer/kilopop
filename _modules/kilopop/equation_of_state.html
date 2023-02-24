@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kilopop.equation_of_state &mdash; Kilopop beta documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Kilopop
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/tutorial_notebook_1.html">Tutorial: Basic functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledging.html">Acknowledging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.equation_of_state.html">kilopop.equation_of_state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.kilonovae.html">kilopop.kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.macronovae_wrapper.html">kilopop.macronovae_wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.mappings.html">kilopop.mappings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.population_priors.html">kilopop.population_priors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Kilopop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">kilopop.equation_of_state</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kilopop.equation_of_state</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module for equation of state dependent properties of the model.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">astropy.constants</span> <span class="kn">import</span> <span class="n">c</span><span class="p">,</span> <span class="n">G</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">read_csv</span>
+
+
+<div class="viewcode-block" id="get_EOS_table"><a class="viewcode-back" href="../../api/kilopop.equation_of_state.get_EOS_table.html#kilopop.equation_of_state.get_EOS_table">[docs]</a><span class="k">def</span> <span class="nf">get_EOS_table</span><span class="p">(</span><span class="n">EOS_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read in the Equation of state table.</span>
+
+<span class="sd">    Wrapper function to read the given Equation of State mass vs. radius</span>
+<span class="sd">    diagram as pre-computed with a TOV-solver for use with this program.</span>
+<span class="sd">    The format of the mass vs. radius data should be (radius, grav_mass,</span>
+<span class="sd">    baryonic_mass,...)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    EOS_path: str</span>
+<span class="sd">        The location of the file containing the mass vs. radius data. The</span>
+<span class="sd">        provided data should be in the form of a labeled column csv.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    EOS_data: pandas.dataframe</span>
+<span class="sd">        Dataframe containing the relationship between mass and radius</span>
+<span class="sd">        for the given EOS.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">EOS_data</span> <span class="o">=</span> <span class="n">read_csv</span><span class="p">(</span><span class="n">EOS_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">EOS_data</span></div>
+
+
+<div class="viewcode-block" id="get_radius_interpolator_from_EOS"><a class="viewcode-back" href="../../api/kilopop.equation_of_state.get_radius_interpolator_from_EOS.html#kilopop.equation_of_state.get_radius_interpolator_from_EOS">[docs]</a><span class="k">def</span> <span class="nf">get_radius_interpolator_from_EOS</span><span class="p">(</span><span class="n">EOS_table</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the radius table and create interpolator function.</span>
+
+<span class="sd">    Wrapper function to create the interpolation function from the provided</span>
+<span class="sd">    EOS data to evaluate the mass vs. radius relation for arbitray mass.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    EOS_table: pandas DataFrame</span>
+<span class="sd">        Data table of the gravitational mass vs. radius curve.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    radius_interpolator: scipy.interpolate instance</span>
+<span class="sd">        Function which interpolates mass vs. radius for given EOS.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="n">EOS_table</span><span class="p">[</span><span class="s2">&quot;grav_mass&quot;</span><span class="p">]</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">EOS_table</span><span class="p">[</span><span class="s2">&quot;radius&quot;</span><span class="p">]</span>
+    <span class="n">radius_interpolator</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">mass</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">radius_interpolator</span></div>
+
+
+<div class="viewcode-block" id="get_max_EOS_mass"><a class="viewcode-back" href="../../api/kilopop.equation_of_state.get_max_EOS_mass.html#kilopop.equation_of_state.get_max_EOS_mass">[docs]</a><span class="k">def</span> <span class="nf">get_max_EOS_mass</span><span class="p">(</span><span class="n">EOS_table</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtain the maximum supported neutron star mass from the given EOS.</span>
+
+<span class="sd">    Wrapper function to find the Max TOV mass of the given EOS.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    EOS_table: pandas DataFrame</span>
+<span class="sd">        Data table of the gravitational mass vs. radius curve.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    tov_mass: float</span>
+<span class="sd">        The maximum mass supported by the given EOS.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tov_mass</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">EOS_table</span><span class="p">[</span><span class="s2">&quot;grav_mass&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tov_mass</span></div>
+
+
+<div class="viewcode-block" id="compute_compactnesses_from_EOS"><a class="viewcode-back" href="../../api/kilopop.equation_of_state.compute_compactnesses_from_EOS.html#kilopop.equation_of_state.compute_compactnesses_from_EOS">[docs]</a><span class="k">def</span> <span class="nf">compute_compactnesses_from_EOS</span><span class="p">(</span><span class="n">mass</span><span class="p">,</span> <span class="n">EOS_mass_to_rad</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calucate the neutron star stellar compactness.</span>
+
+<span class="sd">    Using the equation for compactness from neutron star mass and radius</span>
+<span class="sd">    compute the compactnesses for both of the component stars in the system.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    mass: float</span>
+<span class="sd">        The gravitational mass in solar masses.</span>
+<span class="sd">    EOS_mass_to_rad: function</span>
+<span class="sd">        Interpolator function from provided EOS mass-radius curve.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    compactness: float</span>
+<span class="sd">        The stellar compactness of the neutron star.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">EOS_mass_to_rad</span><span class="p">(</span><span class="n">mass</span><span class="p">)</span>  <span class="c1"># units km</span>
+    <span class="n">compactness</span> <span class="o">=</span> <span class="p">((</span><span class="n">G</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;km3 / (M_sun s2)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">mass</span><span class="p">)</span> <span class="o">/</span>
+                   <span class="p">(((</span><span class="n">c</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;km/s&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">radius</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">compactness</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Christian N. Setzer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

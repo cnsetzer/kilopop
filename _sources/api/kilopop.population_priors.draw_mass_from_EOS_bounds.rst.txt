@@ -1,0 +1,6 @@
+kilopop.population\_priors.draw\_mass\_from\_EOS\_bounds
+========================================================
+
+.. currentmodule:: kilopop.population_priors
+
+.. autofunction:: draw_mass_from_EOS_bounds

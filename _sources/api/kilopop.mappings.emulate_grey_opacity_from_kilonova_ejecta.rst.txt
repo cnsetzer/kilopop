@@ -1,0 +1,6 @@
+kilopop.mappings.emulate\_grey\_opacity\_from\_kilonova\_ejecta
+===============================================================
+
+.. currentmodule:: kilopop.mappings
+
+.. autofunction:: emulate_grey_opacity_from_kilonova_ejecta

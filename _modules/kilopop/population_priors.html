@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kilopop.population_priors &mdash; Kilopop beta documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Kilopop
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/tutorial_notebook_1.html">Tutorial: Basic functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledging.html">Acknowledging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.equation_of_state.html">kilopop.equation_of_state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.kilonovae.html">kilopop.kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.macronovae_wrapper.html">kilopop.macronovae_wrapper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.mappings.html">kilopop.mappings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/kilopop.population_priors.html">kilopop.population_priors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Kilopop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">kilopop.population_priors</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kilopop.population_priors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Public module for drawing population parameters.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="draw_disk_unbinding_efficiency"><a class="viewcode-back" href="../../api/kilopop.population_priors.draw_disk_unbinding_efficiency.html#kilopop.population_priors.draw_disk_unbinding_efficiency">[docs]</a><span class="k">def</span> <span class="nf">draw_disk_unbinding_efficiency</span><span class="p">(</span><span class="n">output_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the disk unbinding efficiency.</span>
+
+<span class="sd">    The unbinding efficiency is drawn from a uniform distribution over the</span>
+<span class="sd">    range of values encountered in the literature of long-term GRMHD simulations</span>
+<span class="sd">    of the remnant accretion disk around a neutron star merger remnant. See</span>
+<span class="sd">    the paper for references to Metzger et al. 2008; Siegel &amp; Metzger 2018;</span>
+<span class="sd">    Miller et al. 2019; Fernández et al. 2019.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    output_shape: float or tuple</span>
+<span class="sd">        The shape/size of the efficiency values to draw.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    disk_unbinding_efficiency: float or ndarray</span>
+<span class="sd">        The fraction of matter unbound from the accretion disk contributing</span>
+<span class="sd">        to the total radiating ejecta mass of the kilonova.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">disk_unbinding_efficiency</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">output_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">disk_unbinding_efficiency</span></div>
+
+
+<div class="viewcode-block" id="draw_viewing_angle"><a class="viewcode-back" href="../../api/kilopop.population_priors.draw_viewing_angle.html#kilopop.population_priors.draw_viewing_angle">[docs]</a><span class="k">def</span> <span class="nf">draw_viewing_angle</span><span class="p">(</span><span class="n">output_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the observer viewing-angle.</span>
+
+<span class="sd">    Function draw the observer angle at which the kilonovae is observed. This</span>
+<span class="sd">    is drawn assuming uniform distribution of binary orbital plane alignment in</span>
+<span class="sd">    the Universe and making the equivalence of the observer angle and the polar</span>
+<span class="sd">    angle of the kNe, due to assumed axisymmetry about the normal axis to the</span>
+<span class="sd">    binary merger plane.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    output_shape: float or tuple</span>
+<span class="sd">        The shape/size of the array to be created of viewing_angles</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    viewing_angle: float or ndarray</span>
+<span class="sd">        The observer viewing angle, i.e., inclination, with respect to the</span>
+<span class="sd">        binary merger plane.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Viewing angle compute as a uniform distribution over the half-sphere due</span>
+    <span class="c1"># to planar symmetry of the viewing angle in our model.</span>
+    <span class="n">viewing_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random_sample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">output_shape</span><span class="p">))</span>
+    <span class="c1"># in radians</span>
+    <span class="k">return</span> <span class="n">viewing_angle</span></div>
+
+
+<div class="viewcode-block" id="draw_mass_from_EOS_bounds"><a class="viewcode-back" href="../../api/kilopop.population_priors.draw_mass_from_EOS_bounds.html#kilopop.population_priors.draw_mass_from_EOS_bounds">[docs]</a><span class="k">def</span> <span class="nf">draw_mass_from_EOS_bounds</span><span class="p">(</span><span class="n">maximum_mass_bound</span><span class="p">,</span> <span class="n">mass_lower_bound</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample a uniform distribution for the mass.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    maximum_mass_bound: float</span>
+<span class="sd">        The maximum mass from which to draw the distribution. Typically,</span>
+<span class="sd">        this is the TOV mass associated with the EOS. [solar masses]</span>
+<span class="sd">    mass_lower_bound: float</span>
+<span class="sd">        The minimum mass of the distribution, default 1.0 [solar mass].</span>
+<span class="sd">    output_shape: float or tuple</span>
+<span class="sd">        The number and array shaping structure for the draws.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    source_frame_grav_mass: float</span>
+<span class="sd">        The gravitational mass of the neutron star in the source frame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">source_frame_grav_mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">mass_lower_bound</span><span class="p">,</span>
+                                               <span class="n">high</span><span class="o">=</span><span class="n">maximum_mass_bound</span><span class="p">,</span>
+                                               <span class="n">size</span><span class="o">=</span><span class="n">output_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">source_frame_grav_mass</span></div>
+
+
+<div class="viewcode-block" id="draw_masses_from_EOS_bounds_with_mass_ratio_cut"><a class="viewcode-back" href="../../api/kilopop.population_priors.draw_masses_from_EOS_bounds_with_mass_ratio_cut.html#kilopop.population_priors.draw_masses_from_EOS_bounds_with_mass_ratio_cut">[docs]</a><span class="k">def</span> <span class="nf">draw_masses_from_EOS_bounds_with_mass_ratio_cut</span><span class="p">(</span>
+    <span class="n">maximum_mass_bound</span><span class="p">,</span> <span class="n">mass_lower_bound</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">mass_ratio_cut</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="o">/</span><span class="mf">5.0</span><span class="p">),</span> <span class="n">output_shape</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Draw neutron star component mass in the source frame given constraints.</span>
+
+<span class="sd">    Draw the neutron star component masses assuming a uniform prior over</span>
+<span class="sd">    the range of masses, as used by LIGO&#39;s BNS compact binary waveform search,</span>
+<span class="sd">    but with a maximum mass set by the chosen EOS.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    maximum_mass_bound: float</span>
+<span class="sd">        The maximum TOV mass for the given EOS.</span>
+<span class="sd">    mass_lower_bound: float</span>
+<span class="sd">        The lower bound on the allowable mass of the neutron star.</span>
+<span class="sd">    mass_ratio_cut: float</span>
+<span class="sd">        The mass ratio constraint to apply to the mass sampling.</span>
+<span class="sd">    output_shape: float or tuple</span>
+<span class="sd">        The number and array shaping structure for the draws of masses.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    mass1: float</span>
+<span class="sd">        The source-frame gravitational mass of the first neutron star</span>
+<span class="sd">        [solar masses].</span>
+<span class="sd">    mass2: float</span>
+<span class="sd">        The source-frame gravitational mass of the second neutron star</span>
+<span class="sd">        [solar masses].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mass1</span> <span class="o">=</span> <span class="n">draw_mass_from_EOS_bounds</span><span class="p">(</span><span class="n">maximum_mass_bound</span><span class="p">,</span>
+                                      <span class="n">mass_lower_bound</span><span class="o">=</span><span class="n">mass_lower_bound</span><span class="p">,</span>
+                                      <span class="n">output_shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">)</span>
+    <span class="n">mass2</span> <span class="o">=</span> <span class="n">draw_mass_from_EOS_bounds</span><span class="p">(</span><span class="n">mass1</span><span class="p">,</span>
+                                      <span class="n">mass_lower_bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">mass1</span><span class="o">*</span><span class="n">mass_ratio_cut</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+                                      <span class="n">output_shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mass1</span><span class="p">,</span> <span class="n">mass2</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Christian N. Setzer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

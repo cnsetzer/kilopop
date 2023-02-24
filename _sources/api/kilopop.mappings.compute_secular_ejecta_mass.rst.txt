@@ -1,0 +1,6 @@
+kilopop.mappings.compute\_secular\_ejecta\_mass
+===============================================
+
+.. currentmodule:: kilopop.mappings
+
+.. autofunction:: compute_secular_ejecta_mass

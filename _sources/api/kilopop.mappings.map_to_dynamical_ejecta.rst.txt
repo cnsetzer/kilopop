@@ -1,0 +1,6 @@
+kilopop.mappings.map\_to\_dynamical\_ejecta
+===========================================
+
+.. currentmodule:: kilopop.mappings
+
+.. autofunction:: map_to_dynamical_ejecta

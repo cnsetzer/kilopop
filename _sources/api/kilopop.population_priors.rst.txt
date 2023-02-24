@@ -1,0 +1,39 @@
+﻿kilopop.population\_priors
+==========================
+
+.. currentmodule:: kilopop.population_priors
+
+.. automodule:: kilopop.population_priors
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      
+      draw_disk_unbinding_efficiency
+      
+      draw_mass_from_EOS_bounds
+      
+      draw_masses_from_EOS_bounds_with_mass_ratio_cut
+      
+      draw_viewing_angle
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

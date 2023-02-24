@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta &mdash; Kilopop beta documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="kilopop.mappings.map_to_dynamical_ejecta" href="kilopop.mappings.map_to_dynamical_ejecta.html" />
+    <link rel="prev" title="kilopop.mappings.construct_opacity_gaussian_process" href="kilopop.mappings.construct_opacity_gaussian_process.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Kilopop
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/tutorial_notebook_1.html">Tutorial: Basic functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../acknowledging.html">Acknowledging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="kilopop.equation_of_state.html">kilopop.equation_of_state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.kilonovae.html">kilopop.kilonovae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.macronovae_wrapper.html">kilopop.macronovae_wrapper</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="kilopop.mappings.html">kilopop.mappings</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.compute_equation_10.html">kilopop.mappings.compute_equation_10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.compute_equation_4.html">kilopop.mappings.compute_equation_4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.compute_equation_5.html">kilopop.mappings.compute_equation_5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.compute_equation_6.html">kilopop.mappings.compute_equation_6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.compute_equation_7.html">kilopop.mappings.compute_equation_7</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.compute_equation_8.html">kilopop.mappings.compute_equation_8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.compute_equation_9.html">kilopop.mappings.compute_equation_9</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.compute_secular_ejecta_mass.html">kilopop.mappings.compute_secular_ejecta_mass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.construct_opacity_gaussian_process.html">kilopop.mappings.construct_opacity_gaussian_process</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta"><code class="docutils literal notranslate"><span class="pre">emulate_grey_opacity_from_kilonova_ejecta()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.map_to_dynamical_ejecta.html">kilopop.mappings.map_to_dynamical_ejecta</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kilopop.mappings.tanaka_mean_fixed.html">kilopop.mappings.tanaka_mean_fixed</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kilopop.population_priors.html">kilopop.population_priors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Kilopop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="kilopop.mappings.html">kilopop.mappings</a></li>
+      <li class="breadcrumb-item active">kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="kilopop-mappings-emulate-grey-opacity-from-kilonova-ejecta">
+<h1>kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta<a class="headerlink" href="#kilopop-mappings-emulate-grey-opacity-from-kilonova-ejecta" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta">
+<span class="sig-prename descclassname"><span class="pre">kilopop.mappings.</span></span><span class="sig-name descname"><span class="pre">emulate_grey_opacity_from_kilonova_ejecta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_ejecta_mass</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">median_ejecta_velocity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">electron_fraction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grey_opacity_gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kilopop/mappings.html#emulate_grey_opacity_from_kilonova_ejecta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kilopop.mappings.emulate_grey_opacity_from_kilonova_ejecta" title="Permalink to this definition"></a></dt>
+<dd><p>Map kilonova ejecta properties to grey opacity with emulator.</p>
+<p>Use an interpolation instance or other function to calculate the corresponding
+grey opacity that was fit from simulation data to triplets of ejecta mass,
+ejecta velocity, and electron fraction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total_ejecta_mass</strong> (<em>float</em>) – The total ejecta mass from the mereger.</p></li>
+<li><p><strong>median_ejecta_velocity</strong> (<em>float</em>) – The median ejecta velocity of the kilonova ejecta outflow.</p></li>
+<li><p><strong>electron_fraction</strong> (<em>float</em>) – The electron fraction composition of the outflow.</p></li>
+<li><p><strong>grey_opacity_gp</strong> (<em>class</em>) – The constructed Gaussian process emulator.</p></li>
+<li><p><strong>opacity_data</strong> (<em>pandas.Dataframe</em>) – The data on which the GP is conditioned.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>grey_opacity</strong> – The grey opacity for the instance set of binary and kilonova
+parameters to generate the kilonovae signal.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="kilopop.mappings.construct_opacity_gaussian_process.html" class="btn btn-neutral float-left" title="kilopop.mappings.construct_opacity_gaussian_process" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kilopop.mappings.map_to_dynamical_ejecta.html" class="btn btn-neutral float-right" title="kilopop.mappings.map_to_dynamical_ejecta" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Christian N. Setzer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
