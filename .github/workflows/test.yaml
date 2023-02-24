@@ -1,4 +1,4 @@
-name: Test
+name: Test and Cover
 on:
   push:
     branches:
@@ -43,11 +43,32 @@ jobs:
         env:
           SNCOSMO_DATA_DIR: "/home/runner/.astropy/cache/sncosmo"
           COVERAGE_FILE: .kilopop_coverage
+
       - name: "Upload coverage data"
         uses: actions/upload-artifact@v3
         with:
           name: covdata
           path: .kilopop_coverage*
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out the repo"
+        uses: "actions/checkout@v3"
+
+      - name: "Set up Python"
+        uses: "actions/setup-python@v4"
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          sudo apt install pandoc
+          python3 -m pip install --upgrade pip
+          python3 -m pip install .[tests]
+        env:
+          LD_LIBRARY_PATH: "DUMMY"
 
       - name: "Download coverage data"
         uses: actions/download-artifact@v3
@@ -63,7 +84,7 @@ jobs:
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload HTML report
+      - name: Upload HTML report if check failed.
         uses: actions/upload-artifact@v2
         with:
           name: html-report
@@ -81,4 +102,3 @@ jobs:
           minColorRange: 50
           maxColorRange: 90
           valColorRange: ${{ env.total }}
-
