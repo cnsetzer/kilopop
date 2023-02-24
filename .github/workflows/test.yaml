@@ -56,3 +56,37 @@ jobs:
         with:
           name: covdata
           path: .kilopop_coverage*
+
+      - name: "Download coverage data"
+        uses: actions/download-artifact@v3
+        with:
+          name: covdata
+
+      - name: Combine coverage
+        run: |
+          python -m coverage combine
+          python -m coverage html --skip-covered --skip-empty
+          python -m coverage report
+          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "total=$TOTAL" >> $GITHUB_ENV
+          echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload HTML report if check failed.
+        uses: actions/upload-artifact@v2
+        with:
+          name: html-report
+          path: htmlcov
+
+      - name: "Make badge"
+        uses: schneegans/dynamic-badges-action@v1.6.0
+        with:
+          # GIST_TOKEN is a GitHub personal access token with scope "gist".
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: f1a27976965673422ac94bc1afb240d3   # replace with your real Gist id.
+          filename: covbadge.json
+          label: Coverage
+          message: ${{ env.total }}%
+          minColorRange: 50
+          maxColorRange: 90
+          valColorRange: ${{ env.total }}
+
