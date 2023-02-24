@@ -84,12 +84,8 @@ jobs:
           export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload HTML report if check failed.
-        uses: actions/upload-artifact@v2
-        with:
-          name: html-report
-          path: htmlcov
+        env:
+          COVERAGE_FILE: .kilopop_coverage
 
       - name: "Make badge"
         uses: schneegans/dynamic-badges-action@v1.6.0
