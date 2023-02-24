@@ -46,6 +46,7 @@ jobs:
 
       - name: Create coverage data
         run: |
+          python -m coverage combine
           python -m coverage report
         env:
           COVERAGE_FILE: .kilopop_coverage
